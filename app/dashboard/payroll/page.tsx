@@ -7,6 +7,12 @@ import { Button } from "@/components/ui/button"
 import { Users, DollarSign, Calendar, FileText, Upload, UserPlus, Briefcase, TrendingUp } from "lucide-react"
 import { EmployeesTab } from "@/components/payroll/employees-tab"
 import { EmployeeFormDialog } from "@/components/payroll/employee-form-dialog"
+import { PayrollTab } from "@/components/payroll/payroll-tab"
+import { IncidentsTab } from "@/components/payroll/incidents-tab"
+import { ConceptsTab } from "@/components/payroll/concepts-tab"
+import { HRTab } from "@/components/payroll/hr-tab"
+import { ReportsTab } from "@/components/payroll/reports-tab"
+import { useToast } from "@/hooks/use-toast"
 
 const tabs = [
   { id: "employees", name: "Empleados", icon: Users },
@@ -21,6 +27,7 @@ export default function PayrollPage() {
   const [activeTab, setActiveTab] = useState("employees")
   const [isEmployeeDialogOpen, setIsEmployeeDialogOpen] = useState(false)
   const [editingEmployee, setEditingEmployee] = useState<any>(null)
+  const { toast } = useToast()
 
   const {
     employees,
@@ -35,10 +42,61 @@ export default function PayrollPage() {
     candidatosActivos,
     addEmployee,
     updateEmployee,
+    addPayrollPeriod,
+    processPayrollRun,
+    addIncident,
+    approveIncident,
+    addBenefitDeduction,
+    addCandidate,
+    addTimeEntry,
   } = usePayrollData()
 
   const safeEmployees = Array.isArray(employees) ? employees : []
+  const safePayrollPeriods = Array.isArray(payrollPeriods) ? payrollPeriods : []
   const safeIncidents = Array.isArray(incidents) ? incidents : []
+  const safePayrollConcepts = Array.isArray(payrollConcepts) ? payrollConcepts : []
+  const safeCandidates = Array.isArray(candidates) ? candidates : []
+
+  const handleAddEmployee = () => {
+    console.log("[Payroll] Opening employee dialog for new employee")
+    setEditingEmployee(null)
+    setIsEmployeeDialogOpen(true)
+  }
+
+  const handleEditEmployee = (employee: any) => {
+    console.log("[Payroll] Opening employee dialog for editing", employee.id)
+    setEditingEmployee(employee)
+    setIsEmployeeDialogOpen(true)
+  }
+
+  const handleSaveEmployee = async (employeeData: any) => {
+    try {
+      if (editingEmployee) {
+        console.log("[Payroll] Updating employee", editingEmployee.id, employeeData)
+        await updateEmployee(editingEmployee.id, employeeData)
+        toast({
+          title: "Empleado actualizado",
+          description: "Los datos del empleado se han actualizado correctamente.",
+        })
+      } else {
+        console.log("[Payroll] Creating new employee", employeeData)
+        await addEmployee(employeeData)
+        toast({
+          title: "Empleado creado",
+          description: "El empleado ha sido agregado exitosamente.",
+        })
+      }
+      setIsEmployeeDialogOpen(false)
+      setEditingEmployee(null)
+    } catch (error) {
+      console.error("[Payroll] Error saving employee", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "No se pudo guardar el empleado",
+        variant: "destructive",
+      })
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -52,12 +110,7 @@ export default function PayrollPage() {
             <Upload className="w-4 h-4 mr-2" />
             Importar
           </Button>
-          <Button
-            onClick={() => {
-              setEditingEmployee(null)
-              setIsEmployeeDialogOpen(true)
-            }}
-          >
+          <Button onClick={handleAddEmployee}>
             <UserPlus className="w-4 h-4 mr-2" />
             Nuevo Empleado
           </Button>
@@ -148,58 +201,44 @@ export default function PayrollPage() {
             <EmployeesTab
               employees={safeEmployees}
               loading={loading}
-              onEdit={(employee) => {
-                setEditingEmployee(employee)
-                setIsEmployeeDialogOpen(true)
-              }}
-              onDelete={async (id) => {
-                if (confirm("¿Estás seguro de eliminar este empleado?")) {
-                  await updateEmployee(id, { estado: "inactivo" })
-                }
-              }}
+              onAddEmployee={handleAddEmployee}
+              onEditEmployee={handleEditEmployee}
             />
           )}
 
           {activeTab === "payroll" && (
-            <div className="text-center py-12 text-muted-foreground">
-              <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Tab de Nómina en desarrollo</p>
-              <p className="text-sm mt-2">Aquí se mostrarán los períodos de nómina</p>
-            </div>
+            <PayrollTab
+              periods={safePayrollPeriods}
+              employees={safeEmployees}
+              loading={loading}
+              onAddPeriod={addPayrollPeriod}
+              onProcessPayroll={processPayrollRun}
+            />
           )}
 
           {activeTab === "incidents" && (
-            <div className="text-center py-12 text-muted-foreground">
-              <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Tab de Incidencias en desarrollo</p>
-              <p className="text-sm mt-2">Total de incidencias: {safeIncidents.length}</p>
-            </div>
+            <IncidentsTab
+              incidents={safeIncidents}
+              employees={safeEmployees}
+              loading={loading}
+              onAddIncident={addIncident}
+              onApproveIncident={approveIncident}
+            />
           )}
 
           {activeTab === "concepts" && (
-            <div className="text-center py-12 text-muted-foreground">
-              <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Tab de Conceptos en desarrollo</p>
-              <p className="text-sm mt-2">
-                Total de conceptos: {Array.isArray(payrollConcepts) ? payrollConcepts.length : 0}
-              </p>
-            </div>
+            <ConceptsTab concepts={safePayrollConcepts} loading={loading} onAddConcept={addBenefitDeduction} />
           )}
 
-          {activeTab === "hr" && (
-            <div className="text-center py-12 text-muted-foreground">
-              <Briefcase className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Tab de Recursos Humanos en desarrollo</p>
-              <p className="text-sm mt-2">Candidatos activos: {candidatosActivos}</p>
-            </div>
-          )}
+          {activeTab === "hr" && <HRTab candidates={safeCandidates} loading={loading} onAddCandidate={addCandidate} />}
 
           {activeTab === "reports" && (
-            <div className="text-center py-12 text-muted-foreground">
-              <TrendingUp className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Tab de Reportes en desarrollo</p>
-              <p className="text-sm mt-2">Reportes de nómina y análisis</p>
-            </div>
+            <ReportsTab
+              employees={safeEmployees}
+              periods={safePayrollPeriods}
+              incidents={safeIncidents}
+              loading={loading}
+            />
           )}
         </CardContent>
       </Card>
@@ -208,15 +247,7 @@ export default function PayrollPage() {
         open={isEmployeeDialogOpen}
         onOpenChange={setIsEmployeeDialogOpen}
         employee={editingEmployee}
-        onSave={async (employeeData) => {
-          if (editingEmployee) {
-            await updateEmployee(editingEmployee.id, employeeData)
-          } else {
-            await addEmployee(employeeData)
-          }
-          setIsEmployeeDialogOpen(false)
-          setEditingEmployee(null)
-        }}
+        onSave={handleSaveEmployee}
       />
     </div>
   )
