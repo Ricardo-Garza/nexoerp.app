@@ -12,6 +12,7 @@ import { AttributeFormDialog } from "@/components/attributes/attribute-form-dial
 import { CategoryFormDialog } from "@/components/attributes/category-form-dialog"
 import { AssignmentTab } from "@/components/attributes/assignment-tab"
 import { RegisteredAttributesTab } from "@/components/attributes/registered-attributes-tab"
+import { AnalyticsTab } from "@/components/attributes/analytics-tab"
 import type { ProductAttribute, ProductCategory } from "@/lib/types"
 
 export default function AttributesPage() {
@@ -41,6 +42,7 @@ export default function AttributesPage() {
     { id: "attributes", label: "Atributos" },
     { id: "assignment", label: "Asignación a Productos" },
     { id: "registered", label: "Registros" },
+    { id: "analytics", label: "Analítica" }, // Added analytics tab
   ]
 
   // Filter attributes
@@ -317,6 +319,8 @@ export default function AttributesPage() {
       {activeTab === "assignment" && <AssignmentTab />}
 
       {activeTab === "registered" && <RegisteredAttributesTab />}
+
+      {activeTab === "analytics" && <AnalyticsTab />}
 
       <AttributeFormDialog
         open={isAttributeDialogOpen}
