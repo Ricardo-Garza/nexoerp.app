@@ -2387,3 +2387,142 @@ export interface LayoutConfig {
   filas: number
   responsive: boolean
 }
+
+export interface PayrollRun extends BaseDocument {
+  periodoId: string
+  periodo: string
+  fechaInicio: Timestamp | string
+  fechaFin: Timestamp | string
+  fechaPago: Timestamp | string
+  estado: "borrador" | "calculando" | "calculada" | "autorizada" | "pagada" | "cerrada" | "cancelada"
+  recibos: string[] // PayrollReceipt IDs
+  totalNomina: number
+  totalPercepciones: number
+  totalDeducciones: number
+  totalEmpleados: number
+  totalISR: number
+  totalIMSS: number
+  autorizadoPor?: string
+  fechaAutorizacion?: Timestamp | string
+  pagadoPor?: string
+  fechaPago?: Timestamp | string
+  metodoPago: "transferencia" | "efectivo" | "cheque"
+  // Accounting integration
+  polizaGenerada: boolean
+  journalEntryId?: string
+  notas?: string
+}
+
+export interface TimeEntry extends BaseDocument {
+  empleadoId: string
+  empleadoNombre: string
+  numeroEmpleado: string
+  fecha: Timestamp | string
+  horaEntrada?: Timestamp | string | null
+  horaSalida?: Timestamp | string | null
+  horasTrabajadas: number
+  horasExtra: number
+  tipoRegistro: "normal" | "falta" | "retardo" | "permiso" | "vacaciones" | "incapacidad"
+  autorizado: boolean
+  autorizadoPor?: string
+  notas?: string
+}
+
+export interface Incident extends BaseDocument {
+  empleadoId: string
+  empleadoNombre: string
+  numeroEmpleado: string
+  tipo: "falta" | "retardo" | "permiso" | "vacaciones" | "incapacidad" | "suspension" | "otro"
+  fechaInicio: Timestamp | string
+  fechaFin: Timestamp | string
+  dias: number
+  horas?: number
+  motivo: string
+  descripcion?: string
+  documentoUrl?: string
+  estado: "pendiente" | "aprobada" | "rechazada" | "cancelada"
+  solicitadoPor: string
+  fechaSolicitud: Timestamp | string
+  aprobadoPor?: string
+  fechaAprobacion?: Timestamp | string
+  comentariosAprobador?: string
+  afectaNomina: boolean
+  notas?: string
+}
+
+export interface BenefitDeduction extends BaseDocument {
+  tipo: "prestacion" | "deduccion"
+  clave: string
+  nombre: string
+  descripcion?: string
+  categoriaISR: "gravado" | "exento" | "mixto"
+  categoriaIMSS: boolean
+  formula?: string // e.g., "salarioDiario * 0.1"
+  esObligatorio: boolean
+  esRecurrente: boolean
+  aplicaATodos: boolean
+  empleadosAplicables?: string[] // Employee IDs if not aplicaATodos
+  montoFijo?: number
+  porcentajeSalario?: number
+  activo: boolean
+  orden: number
+}
+
+export interface Candidate extends BaseDocument {
+  nombre: string
+  apellidoPaterno: string
+  apellidoMaterno: string
+  email: string
+  telefono: string
+  puestoSolicitado: string
+  departamento: string
+  salarioDeseado?: number
+  cvUrl?: string
+  fotoUrl?: string
+  etapa:
+    | "nuevo"
+    | "contacto_inicial"
+    | "entrevista_rh"
+    | "entrevista_tecnica"
+    | "evaluacion"
+    | "oferta"
+    | "contratado"
+    | "rechazado"
+  fechaAplicacion: Timestamp | string
+  fechaEntrevista?: Timestamp | string | null
+  entrevistadoPor?: string
+  calificacion?: number // 0-100
+  fortalezas?: string
+  debilidades?: string
+  comentarios?: string
+  estatus: "activo" | "contratado" | "rechazado" | "retirado"
+  fechaContratacion?: Timestamp | string | null
+  empleadoId?: string // If hired
+  razonRechazo?: string
+  notas?: string
+}
+
+export interface TrainingCourse extends BaseDocument {
+  nombre: string
+  descripcion?: string
+  tipo: "obligatorio" | "opcional" | "certificacion"
+  categoria: "seguridad" | "tecnico" | "soft_skills" | "cumplimiento" | "otro"
+  instructor?: string
+  duracionHoras: number
+  fechaInicio: Timestamp | string
+  fechaFin: Timestamp | string
+  lugar: "presencial" | "virtual" | "hibrido"
+  ubicacion?: string
+  enlaceVirtual?: string
+  cupoMaximo?: number
+  empleadosInscritos: string[] // Employee IDs
+  empleadosCompletados: string[] // Employee IDs
+  costo?: number
+  proveedor?: string
+  materialUrl?: string
+  certificadoUrl?: string
+  estado: "planificado" | "inscripcion" | "en_curso" | "completado" | "cancelado"
+  evaluacionRequerida: boolean
+  calificacionMinima?: number
+  notas?: string
+}

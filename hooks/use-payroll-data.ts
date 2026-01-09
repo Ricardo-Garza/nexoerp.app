@@ -1,29 +1,46 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { where } from "firebase/firestore"
+import { useState, useEffect, useMemo } from "react"
+import { where, orderBy } from "firebase/firestore"
 import { COLLECTIONS, subscribeToCollection, addItem, updateItem } from "@/lib/firestore"
-import type { Employee, PayrollPeriod, PayrollReceipt, AttendanceRecord, VacationRequest } from "@/lib/types"
+import type {
+  Employee,
+  PayrollPeriod,
+  PayrollRun,
+  PayrollReceipt,
+  TimeEntry,
+  Incident,
+  BenefitDeduction,
+  Candidate,
+  TrainingCourse,
+} from "@/lib/types"
 import { useAuth } from "@/contexts/auth-context"
 
 export function usePayrollData() {
   const { user } = useAuth()
-  const [employees, setEmployees] = useState<Employee[]>([])
-  const [payrollPeriods, setPayrollPeriods] = useState<PayrollPeriod[]>([])
-  const [payrollReceipts, setPayrollReceipts] = useState<PayrollReceipt[]>([])
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([])
-  const [vacationRequests, setVacationRequests] = useState<VacationRequest[]>([])
-  const [loading, setLoading] = useState(true)
-
-  // Safe defaults to prevent undefined errors
-  const safeEmployees = Array.isArray(employees) ? employees : []
-  const safePayrollPeriods = Array.isArray(payrollPeriods) ? payrollPeriods : []
-  const safePayrollReceipts = Array.isArray(payrollReceipts) ? payrollReceipts : []
-  const safeAttendanceRecords = Array.isArray(attendanceRecords) ? attendanceRecords : []
-  const safeVacationRequests = Array.isArray(vacationRequests) ? vacationRequests : []
-
   const companyId = user?.companyId || ""
   const userId = user?.uid || ""
+
+  const [employees, setEmployees] = useState<Employee[]>([])
+  const [payrollPeriods, setPayrollPeriods] = useState<PayrollPeriod[]>([])
+  const [payrollRuns, setPayrollRuns] = useState<PayrollRun[]>([])
+  const [payrollReceipts, setPayrollReceipts] = useState<PayrollReceipt[]>([])
+  const [payrollConcepts, setPayrollConcepts] = useState<BenefitDeduction[]>([])
+  const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([])
+  const [incidents, setIncidents] = useState<Incident[]>([])
+  const [candidates, setCandidates] = useState<Candidate[]>([])
+  const [trainingCourses, setTrainingCourses] = useState<TrainingCourse[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const safeEmployees = Array.isArray(employees) ? employees : []
+  const safePayrollPeriods = Array.isArray(payrollPeriods) ? payrollPeriods : []
+  const safePayrollRuns = Array.isArray(payrollRuns) ? payrollRuns : []
+  const safePayrollReceipts = Array.isArray(payrollReceipts) ? payrollReceipts : []
+  const safePayrollConcepts = Array.isArray(payrollConcepts) ? payrollConcepts : []
+  const safeTimeEntries = Array.isArray(timeEntries) ? timeEntries : []
+  const safeIncidents = Array.isArray(incidents) ? incidents : []
+  const safeCandidates = Array.isArray(candidates) ? candidates : []
+  const safeTrainingCourses = Array.isArray(trainingCourses) ? trainingCourses : []
 
   useEffect(() => {
     if (!companyId) {
@@ -34,20 +51,40 @@ export function usePayrollData() {
     setLoading(true)
 
     const unsubscribers = [
-      subscribeToCollection<Employee>(COLLECTIONS.employees, (data) => setEmployees(data), [
+      subscribeToCollection<Employee>(COLLECTIONS.employees, setEmployees, [
+        where("companyId", "==", companyId),
+        orderBy("numeroEmpleado", "asc"),
+      ]),
+      subscribeToCollection<PayrollPeriod>(COLLECTIONS.payrollPeriods, setPayrollPeriods, [
+        where("companyId", "==", companyId),
+        orderBy("fechaInicio", "desc"),
+      ]),
+      subscribeToCollection<PayrollRun>(COLLECTIONS.payrollRuns, setPayrollRuns, [
+        where("companyId", "==", companyId),
+        orderBy("fechaPago", "desc"),
+      ]),
+      subscribeToCollection<PayrollReceipt>(COLLECTIONS.payrollReceipts, setPayrollReceipts, [
         where("companyId", "==", companyId),
       ]),
-      subscribeToCollection<PayrollPeriod>(COLLECTIONS.payrollPeriods, (data) => setPayrollPeriods(data), [
+      subscribeToCollection<BenefitDeduction>(COLLECTIONS.benefitsDeductions, setPayrollConcepts, [
         where("companyId", "==", companyId),
+        orderBy("orden", "asc"),
       ]),
-      subscribeToCollection<PayrollReceipt>(COLLECTIONS.payrollReceipts, (data) => setPayrollReceipts(data), [
+      subscribeToCollection<TimeEntry>(COLLECTIONS.timeEntries, setTimeEntries, [
         where("companyId", "==", companyId),
+        orderBy("fecha", "desc"),
       ]),
-      subscribeToCollection<AttendanceRecord>(COLLECTIONS.attendanceRecords, (data) => setAttendanceRecords(data), [
+      subscribeToCollection<Incident>(COLLECTIONS.incidents, setIncidents, [
         where("companyId", "==", companyId),
+        orderBy("fechaSolicitud", "desc"),
       ]),
-      subscribeToCollection<VacationRequest>(COLLECTIONS.vacationRequests, (data) => setVacationRequests(data), [
+      subscribeToCollection<Candidate>(COLLECTIONS.candidates, setCandidates, [
         where("companyId", "==", companyId),
+        orderBy("fechaAplicacion", "desc"),
+      ]),
+      subscribeToCollection<TrainingCourse>(COLLECTIONS.trainingCourses, setTrainingCourses, [
+        where("companyId", "==", companyId),
+        orderBy("fechaInicio", "desc"),
       ]),
     ]
 
@@ -58,15 +95,19 @@ export function usePayrollData() {
     }
   }, [companyId])
 
-  // KPIs
-  const empleadosActivos = safeEmployees.filter((e) => e.estado === "activo").length
-  const totalNominaActual = safePayrollPeriods
-    .filter((p) => p.estado === "autorizada" || p.estado === "pagada")
-    .reduce((sum, p) => sum + (p.totalNomina || 0), 0)
-  const vacacionesPendientes = safeVacationRequests.filter((v) => v.estado === "pendiente").length
-  const incidenciasDelMes = safeAttendanceRecords.filter(
-    (a) => a.tipo !== "normal" && new Date(a.fecha as string).getMonth() === new Date().getMonth(),
-  ).length
+  const empleadosActivos = useMemo(() => safeEmployees.filter((e) => e.estado === "activo").length, [safeEmployees])
+
+  const nominaMensual = useMemo(() => {
+    const activeEmployees = safeEmployees.filter((e) => e.estado === "activo")
+    return activeEmployees.reduce((sum, emp) => sum + (emp.salarioMensual || 0), 0)
+  }, [safeEmployees])
+
+  const incidenciasPendientes = useMemo(
+    () => safeIncidents.filter((i) => i.estado === "pendiente").length,
+    [safeIncidents],
+  )
+
+  const candidatosActivos = useMemo(() => safeCandidates.filter((c) => c.estatus === "activo").length, [safeCandidates])
 
   const addEmployee = async (employee: Omit<Employee, "id">) => {
     return await addItem<Employee>(COLLECTIONS.employees, {
@@ -74,6 +115,9 @@ export function usePayrollData() {
       companyId,
       userId,
       estado: employee.estado || "activo",
+      salarioDiario: employee.salarioDiario || 0,
+      salarioMensual: employee.salarioMensual || 0,
+      moneda: employee.moneda || "MXN",
     })
   }
 
@@ -94,44 +138,176 @@ export function usePayrollData() {
     })
   }
 
-  const updatePayrollPeriod = async (id: string, updates: Partial<PayrollPeriod>) => {
-    return await updateItem<PayrollPeriod>(COLLECTIONS.payrollPeriods, id, updates)
-  }
+  const processPayrollRun = async (periodoId: string, generateJournalEntry = true) => {
+    // Create payroll run with all receipts
+    const period = safePayrollPeriods.find((p) => p.id === periodoId)
+    if (!period) throw new Error("Periodo no encontrado")
 
-  const addVacationRequest = async (request: Omit<VacationRequest, "id">) => {
-    return await addItem<VacationRequest>(COLLECTIONS.vacationRequests, {
-      ...request,
+    const activeEmployees = safeEmployees.filter((e) => e.estado === "activo")
+    const receipts: string[] = []
+    let totalNomina = 0
+    let totalPercepciones = 0
+    let totalDeducciones = 0
+
+    // Calculate receipts for each employee
+    for (const employee of activeEmployees) {
+      const receipt = await addItem<PayrollReceipt>(COLLECTIONS.payrollReceipts, {
+        companyId,
+        userId,
+        periodoId,
+        periodo: period.periodo,
+        empleadoId: employee.id,
+        empleadoNombre: `${employee.nombre} ${employee.apellidoPaterno}`,
+        numeroEmpleado: employee.numeroEmpleado,
+        fechaPago: period.fechaPago,
+        diasTrabajados: 15, // Default for quincenal
+        salarioDiario: employee.salarioDiario,
+        percepciones: [],
+        deducciones: [],
+        totalPercepciones: employee.salarioDiario * 15,
+        totalDeducciones: 0,
+        netoAPagar: employee.salarioDiario * 15,
+        estado: "calculado",
+        metodoPago: "transferencia",
+        timbrado: false,
+      })
+
+      receipts.push(receipt.id)
+      totalNomina += receipt.netoAPagar
+      totalPercepciones += receipt.totalPercepciones
+      totalDeducciones += receipt.totalDeducciones
+    }
+
+    // Create payroll run
+    const payrollRun = await addItem<PayrollRun>(COLLECTIONS.payrollRuns, {
       companyId,
       userId,
-      estado: request.estado || "pendiente",
+      periodoId,
+      periodo: period.periodo,
+      fechaInicio: period.fechaInicio,
+      fechaFin: period.fechaFin,
+      fechaPago: period.fechaPago,
+      estado: "calculada",
+      recibos: receipts,
+      totalNomina,
+      totalPercepciones,
+      totalDeducciones,
+      totalEmpleados: activeEmployees.length,
+      totalISR: 0,
+      totalIMSS: 0,
+      metodoPago: "transferencia",
+      polizaGenerada: false,
+    })
+
+    // Generate journal entry if requested
+    if (generateJournalEntry) {
+      // This would call accounting module to create journal entry
+      // For now, just mark as generated
+      await updateItem<PayrollRun>(COLLECTIONS.payrollRuns, payrollRun.id, {
+        polizaGenerada: true,
+      })
+    }
+
+    return payrollRun
+  }
+
+  const addIncident = async (incident: Omit<Incident, "id">) => {
+    return await addItem<Incident>(COLLECTIONS.incidents, {
+      ...incident,
+      companyId,
+      userId,
+      estado: incident.estado || "pendiente",
+      afectaNomina: incident.afectaNomina !== undefined ? incident.afectaNomina : true,
     })
   }
 
-  const approveVacation = async (id: string, approved: boolean, comments?: string) => {
-    return await updateItem<VacationRequest>(COLLECTIONS.vacationRequests, id, {
+  const approveIncident = async (id: string, approved: boolean, comments?: string) => {
+    return await updateItem<Incident>(COLLECTIONS.incidents, id, {
       estado: approved ? "aprobada" : "rechazada",
-      aprobadaPor: userId,
+      aprobadoPor: userId,
       fechaAprobacion: new Date().toISOString(),
-      comentarios: comments,
+      comentariosAprobador: comments,
+    })
+  }
+
+  const addBenefitDeduction = async (concept: Omit<BenefitDeduction, "id">) => {
+    return await addItem<BenefitDeduction>(COLLECTIONS.benefitsDeductions, {
+      ...concept,
+      companyId,
+      userId,
+      activo: concept.activo !== undefined ? concept.activo : true,
+      esObligatorio: concept.esObligatorio !== undefined ? concept.esObligatorio : false,
+      esRecurrente: concept.esRecurrente !== undefined ? concept.esRecurrente : true,
+      aplicaATodos: concept.aplicaATodos !== undefined ? concept.aplicaATodos : true,
+      categoriaIMSS: concept.categoriaIMSS !== undefined ? concept.categoriaIMSS : false,
+      orden: concept.orden || 0,
+    })
+  }
+
+  const addCandidate = async (candidate: Omit<Candidate, "id">) => {
+    return await addItem<Candidate>(COLLECTIONS.candidates, {
+      ...candidate,
+      companyId,
+      userId,
+      etapa: candidate.etapa || "nuevo",
+      estatus: candidate.estatus || "activo",
+      fechaAplicacion: candidate.fechaAplicacion || new Date().toISOString(),
+    })
+  }
+
+  const addTrainingCourse = async (course: Omit<TrainingCourse, "id">) => {
+    return await addItem<TrainingCourse>(COLLECTIONS.trainingCourses, {
+      ...course,
+      companyId,
+      userId,
+      empleadosInscritos: course.empleadosInscritos || [],
+      empleadosCompletados: course.empleadosCompletados || [],
+      estado: course.estado || "planificado",
+      evaluacionRequerida: course.evaluacionRequerida !== undefined ? course.evaluacionRequerida : false,
+    })
+  }
+
+  const addTimeEntry = async (entry: Omit<TimeEntry, "id">) => {
+    return await addItem<TimeEntry>(COLLECTIONS.timeEntries, {
+      ...entry,
+      companyId,
+      userId,
+      horasTrabajadas: entry.horasTrabajadas || 0,
+      horasExtra: entry.horasExtra || 0,
+      tipoRegistro: entry.tipoRegistro || "normal",
+      autorizado: entry.autorizado !== undefined ? entry.autorizado : true,
     })
   }
 
   return {
+    // Collections
     employees: safeEmployees,
     payrollPeriods: safePayrollPeriods,
+    payrollRuns: safePayrollRuns,
     payrollReceipts: safePayrollReceipts,
-    attendanceRecords: safeAttendanceRecords,
-    vacationRequests: safeVacationRequests,
+    payrollConcepts: safePayrollConcepts,
+    timeEntries: safeTimeEntries,
+    incidents: safeIncidents,
+    candidates: safeCandidates,
+    trainingCourses: safeTrainingCourses,
     loading,
+
+    // KPIs
     empleadosActivos,
-    totalNominaActual,
-    vacacionesPendientes,
-    incidenciasDelMes,
+    nominaMensual,
+    incidenciasPendientes,
+    candidatosActivos,
+
+    // Methods
     addEmployee,
     updateEmployee,
     addPayrollPeriod,
-    updatePayrollPeriod,
-    addVacationRequest,
-    approveVacation,
+    processPayrollRun,
+    addIncident,
+    approveIncident,
+    addBenefitDeduction,
+    addCandidate,
+    addTrainingCourse,
+    addTimeEntry,
   }
 }

@@ -105,6 +105,13 @@ export const COLLECTIONS = {
   contractAgreements: "contractAgreements",
   reportTemplates: "reportTemplates",
   dashboardConfigs: "dashboardConfigs",
+
+  payrollRuns: "payrollRuns",
+  timeEntries: "timeEntries",
+  incidents: "incidents",
+  benefitsDeductions: "benefitsDeductions",
+  candidates: "candidates",
+  trainingCourses: "trainingCourses",
 } as const
 
 export type CollectionName = (typeof COLLECTIONS)[keyof typeof COLLECTIONS]
