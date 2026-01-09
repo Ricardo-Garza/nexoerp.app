@@ -15,9 +15,11 @@ import type {
   TrainingCourse,
 } from "@/lib/types"
 import { useAuth } from "@/contexts/auth-context"
+import { useToast } from "@/hooks/use-toast"
 
 export function usePayrollData() {
   const { user } = useAuth()
+  const { toast } = useToast()
   const companyId = user?.companyId || ""
   const userId = user?.uid || ""
 
@@ -44,10 +46,12 @@ export function usePayrollData() {
 
   useEffect(() => {
     if (!companyId) {
+      console.log("[v0] No companyId available, skipping Firestore subscriptions")
       setLoading(false)
       return
     }
 
+    console.log("[v0] Setting up Firestore subscriptions for companyId:", companyId)
     setLoading(true)
 
     const unsubscribers = [
@@ -91,6 +95,7 @@ export function usePayrollData() {
     setLoading(false)
 
     return () => {
+      console.log("[v0] Cleaning up Firestore subscriptions")
       unsubscribers.forEach((unsub) => unsub())
     }
   }, [companyId])
@@ -110,19 +115,86 @@ export function usePayrollData() {
   const candidatosActivos = useMemo(() => safeCandidates.filter((c) => c.estatus === "activo").length, [safeCandidates])
 
   const addEmployee = async (employee: Omit<Employee, "id">) => {
-    return await addItem<Employee>(COLLECTIONS.employees, {
-      ...employee,
-      companyId,
-      userId,
-      estado: employee.estado || "activo",
-      salarioDiario: employee.salarioDiario || 0,
-      salarioMensual: employee.salarioMensual || 0,
-      moneda: employee.moneda || "MXN",
-    })
+    try {
+      console.log("[v0] Adding employee with data:", employee)
+
+      const normalizedEmployee = {
+        ...employee,
+        companyId,
+        userId,
+        estado: employee.estado || "activo",
+        salarioDiario: Number(employee.salarioDiario) || 0,
+        salarioMensual: Number(employee.salarioMensual) || 0,
+        moneda: employee.moneda || "MXN",
+        numeroEmpleado: employee.numeroEmpleado || "",
+        nombre: employee.nombre || "",
+        apellidoPaterno: employee.apellidoPaterno || "",
+        apellidoMaterno: employee.apellidoMaterno || "",
+        rfc: employee.rfc || "",
+        curp: employee.curp || "",
+        nss: employee.nss || "",
+        departamento: employee.departamento || "",
+        puesto: employee.puesto || "",
+        nivelPuesto: employee.nivelPuesto || "",
+        tipoContrato: employee.tipoContrato || "planta",
+        email: employee.email || "",
+        telefono: employee.telefono || "",
+      }
+
+      const result = await addItem<Employee>(COLLECTIONS.employees, normalizedEmployee)
+
+      console.log("[v0] Employee added successfully:", result.id)
+
+      toast({
+        title: "Empleado creado",
+        description: `${employee.nombre} ${employee.apellidoPaterno} ha sido agregado exitosamente.`,
+      })
+
+      return result
+    } catch (error) {
+      console.error("[v0] Error adding employee:", error)
+
+      toast({
+        title: "Error al crear empleado",
+        description: error instanceof Error ? error.message : "Ocurrió un error al guardar el empleado.",
+        variant: "destructive",
+      })
+
+      throw error
+    }
   }
 
   const updateEmployee = async (id: string, updates: Partial<Employee>) => {
-    return await updateItem<Employee>(COLLECTIONS.employees, id, updates)
+    try {
+      console.log("[v0] Updating employee", id, "with data:", updates)
+
+      const normalizedUpdates = {
+        ...updates,
+        salarioDiario: updates.salarioDiario !== undefined ? Number(updates.salarioDiario) || 0 : undefined,
+        salarioMensual: updates.salarioMensual !== undefined ? Number(updates.salarioMensual) || 0 : undefined,
+      }
+
+      const result = await updateItem<Employee>(COLLECTIONS.employees, id, normalizedUpdates)
+
+      console.log("[v0] Employee updated successfully")
+
+      toast({
+        title: "Empleado actualizado",
+        description: "Los cambios se han guardado exitosamente.",
+      })
+
+      return result
+    } catch (error) {
+      console.error("[v0] Error updating employee:", error)
+
+      toast({
+        title: "Error al actualizar empleado",
+        description: error instanceof Error ? error.message : "Ocurrió un error al actualizar el empleado.",
+        variant: "destructive",
+      })
+
+      throw error
+    }
   }
 
   const addPayrollPeriod = async (period: Omit<PayrollPeriod, "id">) => {
@@ -139,7 +211,6 @@ export function usePayrollData() {
   }
 
   const processPayrollRun = async (periodoId: string, generateJournalEntry = true) => {
-    // Create payroll run with all receipts
     const period = safePayrollPeriods.find((p) => p.id === periodoId)
     if (!period) throw new Error("Periodo no encontrado")
 
@@ -149,7 +220,6 @@ export function usePayrollData() {
     let totalPercepciones = 0
     let totalDeducciones = 0
 
-    // Calculate receipts for each employee
     for (const employee of activeEmployees) {
       const receipt = await addItem<PayrollReceipt>(COLLECTIONS.payrollReceipts, {
         companyId,
@@ -160,7 +230,7 @@ export function usePayrollData() {
         empleadoNombre: `${employee.nombre} ${employee.apellidoPaterno}`,
         numeroEmpleado: employee.numeroEmpleado,
         fechaPago: period.fechaPago,
-        diasTrabajados: 15, // Default for quincenal
+        diasTrabajados: 15,
         salarioDiario: employee.salarioDiario,
         percepciones: [],
         deducciones: [],
@@ -178,7 +248,6 @@ export function usePayrollData() {
       totalDeducciones += receipt.totalDeducciones
     }
 
-    // Create payroll run
     const payrollRun = await addItem<PayrollRun>(COLLECTIONS.payrollRuns, {
       companyId,
       userId,
@@ -199,10 +268,7 @@ export function usePayrollData() {
       polizaGenerada: false,
     })
 
-    // Generate journal entry if requested
     if (generateJournalEntry) {
-      // This would call accounting module to create journal entry
-      // For now, just mark as generated
       await updateItem<PayrollRun>(COLLECTIONS.payrollRuns, payrollRun.id, {
         polizaGenerada: true,
       })
@@ -280,7 +346,6 @@ export function usePayrollData() {
   }
 
   return {
-    // Collections
     employees: safeEmployees,
     payrollPeriods: safePayrollPeriods,
     payrollRuns: safePayrollRuns,
@@ -292,13 +357,11 @@ export function usePayrollData() {
     trainingCourses: safeTrainingCourses,
     loading,
 
-    // KPIs
     empleadosActivos,
     nominaMensual,
     incidenciasPendientes,
     candidatosActivos,
 
-    // Methods
     addEmployee,
     updateEmployee,
     addPayrollPeriod,
