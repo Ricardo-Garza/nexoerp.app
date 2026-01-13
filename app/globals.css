@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 /* Removed tw-animate-css import that was causing syntax errors */
 
@@ -122,4 +123,8 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.crm-board {
+  font-family: "Space Grotesk", "DM Sans", sans-serif;
 }

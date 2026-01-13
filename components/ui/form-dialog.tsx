@@ -47,6 +47,13 @@ export function FormDialog({
   const [values, setValues] = useState<Record<string, any>>({})
   const [loading, setLoading] = useState(false)
 
+  const areValuesEqual = (a: Record<string, any>, b: Record<string, any>) => {
+    const aKeys = Object.keys(a)
+    const bKeys = Object.keys(b)
+    if (aKeys.length !== bKeys.length) return false
+    return aKeys.every((key) => a[key] === b[key])
+  }
+
   useEffect(() => {
     console.log("[v0] FormDialog opened, initialValues:", initialValues)
     if (open) {
@@ -57,7 +64,9 @@ export function FormDialog({
         safeDefaults[field.name] = initialValue ?? ""
       })
       console.log("[v0] Setting safe defaults:", safeDefaults)
-      setValues(safeDefaults)
+      if (!areValuesEqual(values, safeDefaults)) {
+        setValues(safeDefaults)
+      }
     }
   }, [open, initialValues, fields])
 

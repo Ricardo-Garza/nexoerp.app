@@ -37,12 +37,7 @@ export function ProductsTab() {
 
   const handleAddProduct = () => {
     setSelectedProduct(undefined)
-    // For simplicity, use the first supplier or prompt user
-    if (products.length > 0) {
-      setSelectedSupplier({ id: products[0].proveedorId, name: products[0].proveedorNombre })
-    } else {
-      setSelectedSupplier({ id: "temp", name: "Proveedor" })
-    }
+    setSelectedSupplier(null)
     setShowDialog(true)
   }
 
@@ -160,8 +155,16 @@ export function ProductsTab() {
           open={showDialog}
           onOpenChange={setShowDialog}
           product={selectedProduct}
-          supplierId={selectedSupplier.id}
-          supplierName={selectedSupplier.name}
+          supplierId={selectedSupplier?.id}
+          supplierName={selectedSupplier?.name}
+          onSave={handleSaveProduct}
+        />
+      )}
+      {!selectedSupplier && (
+        <SupplierProductDialog
+          open={showDialog}
+          onOpenChange={setShowDialog}
+          product={selectedProduct}
           onSave={handleSaveProduct}
         />
       )}

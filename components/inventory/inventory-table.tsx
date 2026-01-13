@@ -13,6 +13,7 @@ import { COLLECTIONS } from "@/lib/firestore"
 import { ColumnConfigModal } from "./column-config-modal"
 import { DemandPeriodSelector } from "./demand-period-selector"
 import { GoodsReceiptDialog } from "./goods-receipt-dialog"
+import { ProductFormDialog } from "./product-form-dialog"
 import type { StockMovement } from "@/lib/types"
 
 interface Product {
@@ -51,8 +52,10 @@ export function InventoryTable() {
   const [configModalOpen, setConfigModalOpen] = useState(false)
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
 
-  const { items: products, loading, remove } = useFirestore<Product>(COLLECTIONS.products, [], true)
+  const { items: products, loading, remove, update } = useFirestore<Product>(COLLECTIONS.products, [], true)
   const { preferences, loading: prefsLoading, savePreferences } = useUserPreferences()
   const { demandData, loading: demandLoading } = useInventoryCalculations(products, preferences.demandPeriodDays)
 
@@ -81,6 +84,24 @@ export function InventoryTable() {
   const handleReceiveGoods = (product: Product) => {
     setSelectedProduct(product)
     setReceiptDialogOpen(true)
+  }
+
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product)
+    setEditDialogOpen(true)
+  }
+
+  const handleSaveProduct = async (data: Partial<Product>) => {
+    if (!editingProduct) return
+    try {
+      await update(editingProduct.id, data)
+    } catch (error) {
+      console.error("[InventoryTable] Error updating product:", error)
+      alert("Error al guardar el producto")
+    } finally {
+      setEditDialogOpen(false)
+      setEditingProduct(null)
+    }
   }
 
   const handleSaveReceipt = async (receiptData: Partial<StockMovement>) => {
@@ -311,7 +332,12 @@ export function InventoryTable() {
                             >
                               <PackagePlus className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="icon">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEditProduct(product)}
+                              title="Editar producto"
+                            >
                               <Edit className="w-4 h-4" />
                             </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleDelete(product.id)}>
@@ -345,6 +371,13 @@ export function InventoryTable() {
           onSave={handleSaveReceipt}
         />
       )}
+
+      <ProductFormDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        product={editingProduct}
+        onSave={handleSaveProduct}
+      />
     </>
   )
 }

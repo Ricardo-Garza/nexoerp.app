@@ -8,9 +8,10 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useFirestore } from "@/hooks/use-firestore"
+import { useAuth } from "@/hooks/use-auth"
 import { toast } from "@/hooks/use-toast"
 import { COLLECTIONS } from "@/lib/firestore"
-import { formatCurrency } from "@/lib/utils/sales-calculations"
+import { calculateLineTotal, formatCurrency } from "@/lib/utils/sales-calculations"
 import {
   Minus,
   Plus,
@@ -21,6 +22,7 @@ import {
   CreditCard,
   Sparkles,
 } from "lucide-react"
+import { serverTimestamp } from "firebase/firestore"
 
 interface Product {
   id: string
@@ -45,7 +47,9 @@ interface CartLine {
 const TAX_RATE = 0.16
 
 export function PosPage() {
-  const { items: products, loading } = useFirestore<Product>(COLLECTIONS.products, [], true)
+  const { user } = useAuth()
+  const { items: products, loading, update: updateProduct } = useFirestore<Product>(COLLECTIONS.products, [], true)
+  const { create: createSale } = useFirestore<any>(COLLECTIONS.salesOrders, [], true)
   const [search, setSearch] = useState("")
   const [activeCategory, setActiveCategory] = useState("Todos")
   const [cartLines, setCartLines] = useState<CartLine[]>([])
@@ -127,6 +131,71 @@ export function PosPage() {
 
   const handleClearCart = () => {
     setCartLines([])
+  }
+
+  const handleCheckout = async () => {
+    if (cartLines.length === 0) return
+    if (!user) {
+      toast({ title: "Sesion requerida", description: "Inicia sesion para registrar la venta." })
+      return
+    }
+
+    const lines = cartLines.map((line, index) =>
+      calculateLineTotal({
+        id: `${line.id}-${index}`,
+        type: "product",
+        productId: line.id,
+        productName: line.name,
+        description: line.name,
+        quantity: line.quantity,
+        unit: "PZA",
+        unitPrice: line.price,
+        tax: TAX_RATE * 100,
+        discount: 0,
+        order: index,
+      }),
+    )
+
+    const orderNumber = `POS-${Date.now()}`
+    const companyId = (user as any).companyId || user.uid
+
+    try {
+      await createSale({
+        orderNumber,
+        type: "order",
+        status: "confirmed",
+        customerId: "walk-in",
+        customerName: "Venta mostrador",
+        currency: "MXN",
+        exchangeRate: 1,
+        lines,
+        subtotal,
+        taxTotal: taxes,
+        discountTotal: 0,
+        total,
+        paymentTerms: "Contado",
+        paymentMethod: "Efectivo",
+        orderDate: serverTimestamp(),
+        deliveryIds: [],
+        invoiceIds: [],
+        companyId,
+        userId: user.uid,
+      })
+
+      await Promise.all(
+        cartLines.map((line) =>
+          updateProduct(line.id, {
+            stock: Math.max(line.stock - line.quantity, 0),
+          }),
+        ),
+      )
+
+      toast({ title: "Venta registrada", description: `Folio ${orderNumber}` })
+      setCartLines([])
+    } catch (error) {
+      console.error("[POS] Error al cobrar venta:", error)
+      toast({ title: "Error al cobrar", description: "No se pudo registrar la venta." })
+    }
   }
 
   return (
@@ -223,7 +292,7 @@ export function PosPage() {
           </div>
 
           <div className="grid gap-2">
-            <Button size="lg" disabled={cartLines.length === 0}>
+            <Button size="lg" disabled={cartLines.length === 0} onClick={handleCheckout}>
               <CreditCard className="w-4 h-4 mr-2" />
               Cobrar venta
             </Button>

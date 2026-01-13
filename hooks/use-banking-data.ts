@@ -3,7 +3,7 @@
 import { useMemo, useEffect, useState } from "react"
 import { useFirestore } from "./use-firestore"
 import { COLLECTIONS, migrateDocumentsWithoutUserId } from "@/lib/firestore"
-import type { BankAccount, Check, BankTransfer, BankTransaction } from "@/lib/types"
+import type { BankAccount, Check, BankTransfer, BankTransaction, CashFlowPeriod } from "@/lib/types"
 import { orderBy } from "firebase/firestore"
 
 export function useBankingData() {
@@ -99,6 +99,69 @@ export function useBankingData() {
     return (transactions || []).slice(0, 10)
   }, [transactions])
 
+  const cashFlowData = useMemo<CashFlowPeriod[]>(() => {
+    const grouped = new Map<
+      string,
+      { periodStart: Date; periodEnd: Date; ingresosReales: number; egresosReales: number }
+    >()
+
+    ;(transactions || []).forEach((t) => {
+      const date = t.fecha instanceof Date ? t.fecha : new Date(t.fecha)
+      if (Number.isNaN(date.getTime())) return
+
+      const periodStart = new Date(date)
+      periodStart.setHours(0, 0, 0, 0)
+      periodStart.setDate(periodStart.getDate() - periodStart.getDay())
+
+      const periodEnd = new Date(periodStart)
+      periodEnd.setDate(periodEnd.getDate() + 6)
+
+      const key = periodStart.toISOString().slice(0, 10)
+      const entry = grouped.get(key) || {
+        periodStart,
+        periodEnd,
+        ingresosReales: 0,
+        egresosReales: 0,
+      }
+
+      if (t.tipo === "ingreso") {
+        entry.ingresosReales += t.monto || 0
+      }
+      if (t.tipo === "egreso") {
+        entry.egresosReales += t.monto || 0
+      }
+
+      grouped.set(key, entry)
+    })
+
+    const periods = Array.from(grouped.values())
+      .sort((a, b) => a.periodStart.getTime() - b.periodStart.getTime())
+      .map((period) => ({
+        periodo: `${period.periodStart.toLocaleDateString("es-MX")} - ${period.periodEnd.toLocaleDateString("es-MX")}`,
+        fechaInicio: period.periodStart,
+        fechaFin: period.periodEnd,
+        ingresosReales: period.ingresosReales,
+        egresosReales: period.egresosReales,
+        ingresosProyectados: 0,
+        egresosProyectados: 0,
+        saldoInicial: 0,
+        saldoFinal: period.ingresosReales - period.egresosReales,
+        saldoProyectado: 0,
+      }))
+
+    let runningBalance = 0
+    return periods.map((period) => {
+      const saldoInicial = runningBalance
+      runningBalance += period.ingresosReales - period.egresosReales
+      return {
+        ...period,
+        saldoInicial,
+        saldoFinal: runningBalance,
+        saldoProyectado: runningBalance,
+      }
+    })
+  }, [transactions])
+
   return {
     bankAccounts: bankAccounts || [],
     accounts: bankAccounts || [],
@@ -128,6 +191,7 @@ export function useBankingData() {
     monthlyIncome,
     monthlyExpenses,
     recentTransactions,
+    cashFlowData,
 
     loading,
   }

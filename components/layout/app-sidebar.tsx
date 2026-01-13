@@ -29,6 +29,7 @@ const navigation = [
   { name: "Bancos", href: "/dashboard/banking", icon: Building2, color: "blue" },
   { name: "Clientes / CRM", href: "/dashboard/clients", icon: Users, color: "blue" },
   { name: "Ventas", href: "/dashboard/ventas/ordenes", icon: ShoppingBasket, color: "blue" },
+  { name: "Inventario", href: "/dashboard/inventory", icon: Package, color: "blue" },
   { name: "Punto de Venta", href: "/dashboard/punto-venta", icon: Store, color: "blue" },
   { name: "Proveedores", href: "/dashboard/suppliers", icon: Package, color: "blue" },
   { name: "Almacén", href: "/dashboard/warehouse", icon: Warehouse, color: "blue" },

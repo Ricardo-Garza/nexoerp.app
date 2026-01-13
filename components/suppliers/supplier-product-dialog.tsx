@@ -511,7 +511,7 @@ export function SupplierProductDialog({
                       <PopoverContent className="w-[400px] p-0">
                         <Command>
                           <CommandInput
-                            placeholder="Buscar producto..."
+                            placeholder="Buscar o escribir nuevo producto..."
                             value={productSearch}
                             onValueChange={setProductSearch}
                           />

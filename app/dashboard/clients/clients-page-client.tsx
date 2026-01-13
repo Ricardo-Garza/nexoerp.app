@@ -23,6 +23,9 @@ import {
   Plus,
   Eye,
   TrendingDown,
+  Search,
+  Sparkles,
+  MoreHorizontal,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -399,6 +402,18 @@ export default function ClientsPageClient() {
   const totalClients = clientsSafe.length
   const activeClients = clientsSafe.filter((c) => c?.status === "active" || c?.status === "vip").length
   const totalRevenue = clientsSafe.reduce((acc, c) => acc + (c?.balance || 0), 0)
+  const pipelineValue = prospectsSafe.reduce((acc, p) => acc + (p?.value ?? 0), 0)
+  const weightedPipelineValue = prospectsSafe.reduce(
+    (acc, p) => acc + (p?.value ?? 0) * ((p?.probability ?? 0) / 100),
+    0,
+  )
+
+  const crmStages = [
+    { id: "contacto", label: "Contacto inicial", accent: "from-cyan-400/80 to-sky-500/80" },
+    { id: "calificado", label: "Calificados", accent: "from-emerald-400/80 to-lime-400/80" },
+    { id: "presentacion", label: "Presentacion", accent: "from-amber-400/80 to-yellow-300/80" },
+    { id: "negociacion", label: "Negociacion", accent: "from-violet-400/80 to-fuchsia-500/80" },
+  ]
 
   const getCurrentFields = () => {
     switch (currentModule) {
@@ -601,181 +616,196 @@ export default function ClientsPageClient() {
         </TabsContent>
 
         <TabsContent value="crm" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <Target className="w-6 h-6 text-blue-500" />
-                  <Badge variant="outline">Pipeline</Badge>
-                </div>
-                <p className="text-xs text-muted-foreground">Contacto Inicial</p>
-                <p className="text-xl font-bold mt-1">{prospectsSafe.filter((p) => p?.stage === "contacto").length}</p>
-              </CardContent>
-            </Card>
+          <div
+            className="crm-board relative overflow-hidden rounded-3xl border border-white/15 bg-slate-950 p-6 text-white shadow-[0_30px_80px_rgba(15,23,42,0.45)] sm:p-8"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 18% 12%, rgba(56,189,248,0.35), transparent 45%), radial-gradient(circle at 80% 20%, rgba(14,165,233,0.28), transparent 45%), radial-gradient(circle at 50% 90%, rgba(16,185,129,0.18), transparent 55%), linear-gradient(135deg, rgba(15,23,42,0.95), rgba(7,10,23,0.92))",
+            }}
+          >
+            <div className="absolute -left-20 -top-16 h-40 w-40 rounded-full bg-cyan-400/20 blur-3xl" />
+            <div className="absolute -right-12 top-24 h-32 w-32 rounded-full bg-emerald-400/20 blur-3xl" />
+            <div className="absolute bottom-10 left-1/3 h-48 w-48 rounded-full bg-indigo-400/15 blur-[120px]" />
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <CheckCircle2 className="w-6 h-6 text-green-500" />
+            <div className="relative space-y-6">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.28em] text-white/70">
+                    <Sparkles className="h-3 w-3" />
+                    Pipeline comercial
+                  </div>
+                  <h2 className="text-2xl font-semibold sm:text-3xl">Negociaciones activas</h2>
+                  <p className="text-sm text-white/70">
+                    Visualiza oportunidades, valor del pipeline y tareas de seguimiento sin salir del CRM.
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">Calificados</p>
-                <p className="text-xl font-bold mt-1">
-                  {prospectsSafe.filter((p) => p?.stage === "calificado").length}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <Package className="w-6 h-6 text-yellow-500" />
-                </div>
-                <p className="text-xs text-muted-foreground">Presentación</p>
-                <p className="text-xl font-bold mt-1">
-                  {prospectsSafe.filter((p) => p?.stage === "presentacion").length}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <DollarSign className="w-6 h-6 text-green-500" />
-                </div>
-                <p className="text-xs text-muted-foreground">Negociación</p>
-                <p className="text-xl font-bold mt-1">
-                  {prospectsSafe.filter((p) => p?.stage === "negociacion").length}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Pipeline de Ventas</CardTitle>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Buscar prospectos..."
-                    className="max-w-xs"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <Button onClick={() => openDialog("prospects")}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Nuevo Prospecto
+                <div className="flex flex-wrap gap-3">
+                  <Button className="bg-cyan-400 text-slate-950 hover:bg-cyan-300" onClick={() => openDialog("prospects")}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Nueva oportunidad
+                  </Button>
+                  <Button variant="outline" className="border-white/20 bg-white/5 text-white hover:bg-white/10">
+                    <Target className="mr-2 h-4 w-4" />
+                    Reglas
                   </Button>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              {loadingProspects ? (
-                <div className="text-center py-8 text-muted-foreground">Cargando...</div>
-              ) : filteredProspects.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground mb-4">No hay prospectos registrados</p>
-                  <Button onClick={() => openDialog("prospects")}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Agregar Primer Prospecto
+
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-wrap gap-2">
+                  {crmStages.map((stage) => (
+                    <span
+                      key={stage.id}
+                      className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/70"
+                    >
+                      <span className={`h-2 w-2 rounded-full bg-gradient-to-r ${stage.accent}`} />
+                      {stage.label}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
+                  <div className="relative flex-1 sm:min-w-[260px]">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" />
+                    <Input
+                      placeholder="Busca empresas, contactos o valor..."
+                      className="h-10 border-white/20 bg-white/10 pl-10 text-white placeholder:text-white/50"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  <Button variant="outline" className="border-white/20 bg-white/5 text-white hover:bg-white/10">
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    En proceso
                   </Button>
                 </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border">
-                        <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Empresa</th>
-                        <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Contacto</th>
-                        <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Fuente</th>
-                        <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Etapa</th>
-                        <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Valor</th>
-                        <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Probabilidad</th>
-                        <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredProspects.map((prospect) => (
-                        <tr
-                          key={prospect?.id ?? Math.random()}
-                          className="border-b border-border last:border-0 hover:bg-muted/50"
-                        >
-                          <td className="py-3 px-2">
-                            <div className="text-sm font-medium">{prospect?.company ?? "Sin nombre"}</div>
-                          </td>
-                          <td className="py-3 px-2">
-                            <div className="flex flex-col gap-1">
-                              <div className="text-xs font-medium">{prospect?.contact ?? "N/A"}</div>
-                              <div className="text-xs text-muted-foreground">{prospect?.email ?? "N/A"}</div>
-                            </div>
-                          </td>
-                          <td className="py-3 px-2">
-                            <Badge variant="outline">{prospect?.source ?? "N/A"}</Badge>
-                          </td>
-                          <td className="py-3 px-2">
-                            <Badge
-                              variant={
-                                prospect?.stage === "negociacion"
-                                  ? "default"
-                                  : prospect?.stage === "presentacion"
-                                    ? "secondary"
-                                    : "outline"
-                              }
-                            >
-                              {prospect?.stage === "contacto"
-                                ? "Contacto"
-                                : prospect?.stage === "calificado"
-                                  ? "Calificado"
-                                  : prospect?.stage === "presentacion"
-                                    ? "Presentación"
-                                    : "Negociación"}
-                            </Badge>
-                          </td>
-                          <td className="py-3 px-2 text-sm font-medium">
-                            ${(prospect?.value ?? 0).toLocaleString("es-MX")}
-                          </td>
-                          <td className="py-3 px-2">
-                            <div className="flex items-center gap-2">
-                              <div className="flex-1 bg-secondary rounded-full h-2 overflow-hidden">
-                                <div
-                                  className="bg-green-500 h-full"
-                                  style={{ width: `${prospect?.probability ?? 0}%` }}
-                                />
-                              </div>
-                              <span className="text-xs font-medium w-10 text-right">{prospect?.probability ?? 0}%</span>
-                            </div>
-                          </td>
-                          <td className="py-3 px-2">
-                            <div className="flex justify-end gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => openDialog("prospects", prospect)}
-                              >
-                                <Pencil className="w-3.5 h-3.5" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive hover:text-destructive"
-                                onClick={() => {
-                                  setItemToDelete(prospect)
-                                  setCurrentModule("prospects")
-                                  setDeleteDialogOpen(true)
-                                }}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
+                  <p className="text-xs uppercase tracking-wide text-white/60">Oportunidades</p>
+                  <p className="mt-2 text-2xl font-semibold">{prospectsSafe.length}</p>
+                  <p className="text-xs text-white/60">Total en pipeline</p>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
+                  <p className="text-xs uppercase tracking-wide text-white/60">Valor bruto</p>
+                  <p className="mt-2 text-2xl font-semibold">
+                    ${pipelineValue.toLocaleString("es-MX", { minimumFractionDigits: 0 })}
+                  </p>
+                  <p className="text-xs text-white/60">Monto estimado</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
+                  <p className="text-xs uppercase tracking-wide text-white/60">Valor ponderado</p>
+                  <p className="mt-2 text-2xl font-semibold">
+                    ${weightedPipelineValue.toLocaleString("es-MX", { minimumFractionDigits: 0 })}
+                  </p>
+                  <p className="text-xs text-white/60">Probabilidad aplicada</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
+                  <p className="text-xs uppercase tracking-wide text-white/60">Conversion</p>
+                  <p className="mt-2 text-2xl font-semibold">
+                    {prospectsSafe.length
+                      ? Math.round((prospectsSafe.filter((p) => p?.stage === "negociacion").length / prospectsSafe.length) * 100)
+                      : 0}
+                    %
+                  </p>
+                  <p className="text-xs text-white/60">A negociacion</p>
+                </div>
+              </div>
+
+              <div className="mt-2 overflow-x-auto pb-4">
+                <div className="flex min-w-[900px] gap-4">
+                  {crmStages.map((stage) => {
+                    const stageItems = filteredProspects.filter((p) => p?.stage === stage.id)
+                    const stageTotal = stageItems.reduce((acc, p) => acc + (p?.value ?? 0), 0)
+                    return (
+                      <div key={stage.id} className="flex min-w-[240px] flex-1 flex-col gap-3">
+                        <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className={`h-2.5 w-2.5 rounded-full bg-gradient-to-r ${stage.accent}`} />
+                              <p className="text-sm font-semibold">{stage.label}</p>
+                            </div>
+                            <Badge variant="outline" className="border-white/20 text-white/70">
+                              {stageItems.length}
+                            </Badge>
+                          </div>
+                          <p className="mt-2 text-sm text-white/70">
+                            ${stageTotal.toLocaleString("es-MX", { minimumFractionDigits: 0 })}
+                          </p>
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                          {stageItems.length === 0 ? (
+                            <div className="rounded-2xl border border-dashed border-white/20 bg-white/5 p-4 text-sm text-white/60">
+                              Sin prospectos en esta etapa.
+                            </div>
+                          ) : (
+                            stageItems.map((prospect) => (
+                              <div
+                                key={prospect?.id ?? Math.random()}
+                                className="rounded-2xl bg-white p-4 text-slate-900 shadow-[0_12px_35px_rgba(15,23,42,0.18)]"
+                              >
+                                <div className="flex items-start justify-between">
+                                  <div>
+                                    <p className="text-sm font-semibold">{prospect?.company ?? "Sin nombre"}</p>
+                                    <p className="text-xs text-slate-500">{prospect?.contact ?? "Contacto"}</p>
+                                  </div>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <MoreHorizontal className="h-4 w-4 text-slate-400" />
+                                  </Button>
+                                </div>
+                                <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+                                  <Mail className="h-3.5 w-3.5" />
+                                  {prospect?.email ?? "correo@empresa.com"}
+                                </div>
+                                <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+                                  <Phone className="h-3.5 w-3.5" />
+                                  {prospect?.phone ?? "Telefono"}
+                                </div>
+                                <div className="mt-3 flex items-center justify-between">
+                                  <div>
+                                    <p className="text-xs text-slate-400">Valor</p>
+                                    <p className="text-sm font-semibold text-slate-900">
+                                      ${(prospect?.value ?? 0).toLocaleString("es-MX")}
+                                    </p>
+                                  </div>
+                                  <Badge className="bg-slate-900 text-white">
+                                    {prospect?.probability ?? 0}% prob.
+                                  </Badge>
+                                </div>
+                                <div className="mt-3 flex items-center justify-between">
+                                  <Badge variant="outline" className="border-slate-200 text-slate-500">
+                                    {prospect?.source ?? "Fuente"}
+                                  </Badge>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 border-slate-200 text-slate-700 hover:bg-slate-100"
+                                    onClick={() => openDialog("prospects", prospect)}
+                                  >
+                                    Editar
+                                  </Button>
+                                </div>
+                              </div>
+                            ))
+                          )}
+
+                          <Button
+                            variant="outline"
+                            className="border-white/20 bg-white/5 text-white hover:bg-white/10"
+                            onClick={() => openDialog("prospects")}
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Agregar oportunidad
+                          </Button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="documentos" className="space-y-4">
