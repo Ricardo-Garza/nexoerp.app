@@ -52,7 +52,7 @@ export function ProductsTab() {
       case "USD":
         return "$"
       case "EUR":
-        return "€"
+        return "EUR"
       case "MXN":
       default:
         return "$"
@@ -126,7 +126,7 @@ export function ProductsTab() {
                         <Package className="w-3 h-3" />
                         SKU: {product.sku}
                       </span>
-                      {product.codigoProveedor && <span>Código Proveedor: {product.codigoProveedor}</span>}
+                      {product.codigoProveedor && <span>Codigo Proveedor: {product.codigoProveedor}</span>}
                       <span className="flex items-center gap-1">
                         <DollarSign className="w-3 h-3" />
                         {getCurrencySymbol(product.monedaPrincipal)} {product.costoUltimo?.toFixed(2) || "0.00"}
@@ -171,3 +171,4 @@ export function ProductsTab() {
     </>
   )
 }
+

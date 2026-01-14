@@ -11,6 +11,7 @@ import { SuppliersTab } from "@/components/suppliers/suppliers-tab"
 import { DocumentsTab } from "@/components/suppliers/documents-tab"
 import { PayablesTab } from "@/components/suppliers/payables-tab"
 import { StatisticsTab } from "@/components/suppliers/statistics-tab"
+import { ProductsTab } from "@/components/suppliers/products-tab"
 import { SupplierFormDialog } from "@/components/suppliers/supplier-form-dialog"
 
 export default function SuppliersPage() {
@@ -30,7 +31,7 @@ export default function SuppliersPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-<Button onClick={() => setShowSupplierDialog(true)}>
+        <Button onClick={() => setShowSupplierDialog(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Nuevo Proveedor
         </Button>
@@ -67,7 +68,7 @@ export default function SuppliersPage() {
               <Badge variant="outline">{ordenesPendientes} pendientes</Badge>
             </div>
             <div className="mt-4">
-              <p className="text-sm text-muted-foreground">Órdenes de Compra</p>
+              <p className="text-sm text-muted-foreground">Ordenes de Compra</p>
               <p className="text-2xl font-bold mt-1">{ordenesCompraActivas}</p>
             </div>
           </CardContent>
@@ -113,13 +114,18 @@ export default function SuppliersPage() {
       <Tabs defaultValue="suppliers" className="space-y-4">
         <TabsList>
           <TabsTrigger value="suppliers">Proveedores</TabsTrigger>
+          <TabsTrigger value="products">Productos</TabsTrigger>
           <TabsTrigger value="documents">Documentos</TabsTrigger>
           <TabsTrigger value="payables">Cuentas por Pagar</TabsTrigger>
-          <TabsTrigger value="statistics">Estadísticas</TabsTrigger>
+          <TabsTrigger value="statistics">Estadisticas</TabsTrigger>
         </TabsList>
 
         <TabsContent value="suppliers">
           <SuppliersTab />
+        </TabsContent>
+
+        <TabsContent value="products">
+          <ProductsTab />
         </TabsContent>
 
         <TabsContent value="documents">
@@ -139,3 +145,6 @@ export default function SuppliersPage() {
     </div>
   )
 }
+
+
+
