@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { onAuthStateChanged, type User as FirebaseUser } from "firebase/auth"
 import { auth, db } from "@/lib/firebase"
 import { doc, getDoc } from "firebase/firestore"
+import { authService } from "@/lib/auth"
 
 interface AuthUser extends FirebaseUser {
   companyId?: string
@@ -14,18 +15,24 @@ interface AuthContextType {
   user: AuthUser | null
   companyId: string | null
   loading: boolean
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   companyId: null,
   loading: true,
+  logout: async () => {},
 })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [companyId, setCompanyId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+
+  const logout = async () => {
+    await authService.logout()
+  }
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -83,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe()
   }, [])
 
-  return <AuthContext.Provider value={{ user, companyId, loading }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ user, companyId, loading, logout }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

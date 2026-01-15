@@ -3,9 +3,9 @@
 import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import Link from "next/link"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
-import { Logo } from "@/components/auth/logo"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -46,7 +46,16 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-6 pb-8">
           <div className="flex justify-center">
-            <Logo />
+            <div className="flex flex-col items-center gap-4">
+              <Image
+                src="/Logo Nexo ERP (1).png"
+                alt="Nexo ERP"
+                width={260}
+                height={72}
+                className="h-14 w-auto"
+                priority
+              />
+            </div>
           </div>
           <div className="space-y-2 text-center">
             <CardTitle className="text-2xl font-bold">Ingresa a tu cuenta</CardTitle>
