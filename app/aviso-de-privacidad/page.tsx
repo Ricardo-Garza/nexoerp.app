@@ -15,7 +15,7 @@ export default function PrivacyNoticePage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <section className="container mx-auto px-6 py-16 max-w-4xl">
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">Aviso de Privacidad ? NEXO ERP</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-2">Aviso de Privacidad - NEXO ERP</h1>
         <p className="text-sm text-muted-foreground mb-8">?ltima actualizaci?n: {today}</p>
 
         <div className="space-y-8 text-sm md:text-base leading-relaxed text-foreground/90">
