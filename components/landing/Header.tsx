@@ -45,9 +45,9 @@ const Header = () => {
             <Image
               src="/Logo Nexo ERP (1).png"
               alt="Nexo ERP"
-              width={260}
-              height={72}
-              className="h-14 w-auto md:h-16"
+              width={240}
+              height={68}
+              className="h-12 w-auto md:h-14"
               priority
             />
           </a>
