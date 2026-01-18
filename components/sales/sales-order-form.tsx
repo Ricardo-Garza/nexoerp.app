@@ -23,6 +23,7 @@ import { getNextFolio } from "@/lib/utils/folio-generator"
 import { SalesOrderLinesTab } from "./sales-order-lines-tab"
 import { GenerateDeliveryDialog } from "./generate-delivery-dialog"
 import { GenerateInvoiceDialog } from "./generate-invoice-dialog"
+import { PostConfirmDialog } from "./post-confirm-dialog"
 import { serverTimestamp, where } from "firebase/firestore"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
@@ -58,6 +59,7 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
   const [saving, setSaving] = useState(false)
   const [showDeliveryDialog, setShowDeliveryDialog] = useState(false)
   const [showInvoiceDialog, setShowInvoiceDialog] = useState(false)
+  const [showPostConfirmDialog, setShowPostConfirmDialog] = useState(false)
   // Add stock validation state
   const [stockWarnings, setStockWarnings] = useState<string[]>([])
 
@@ -147,7 +149,7 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
     setOrder((prev) => ({ ...prev, lines }))
   }
 
-  const handleSave = async (asDraft = true) => {
+  const handleSave = async (asDraft = true, documentType?: "remision" | "invoice") => {
     // Validate required fields including warehouse
     if (!order.customerId) {
       toast.error("Selecciona un cliente")
@@ -213,6 +215,7 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
         termsAndConditions: order.termsAndConditions || "",
         deliveryIds: order.deliveryIds || [],
         invoiceIds: order.invoiceIds || [],
+        ...(documentType && { documentType }),
         companyId,
         userId: user?.uid || "",
       }
@@ -236,9 +239,9 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
         console.log("[v0] Order created with ID:", orderId)
       }
 
-      // If confirming, fulfill order and create inventory movements
-      if (!asDraft && !isQuotationOrder && orderId && order.warehouseId) {
-        console.log("[v0] Confirming order, creating inventory movements")
+      // If confirming with remision, fulfill order and create inventory movements
+      if (!asDraft && !isQuotationOrder && documentType === "remision" && orderId && order.warehouseId) {
+        console.log("[v0] Confirming order with remision, creating inventory movements")
         await fulfillSalesOrder(orderId, order.warehouseId, warehouse?.nombre || "")
       }
 
@@ -254,7 +257,10 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
   }
 
   const handleConfirm = async () => {
+    // First save the order as confirmed (without document type yet)
     await handleSave(false)
+    // Then show the post-confirm dialog
+    setShowPostConfirmDialog(true)
   }
 
   const handleSend = async () => {
@@ -277,6 +283,41 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
   const handleCancel = () => {
     if (onCancel) {
       onCancel()
+    }
+  }
+
+  const handleSelectRemision = async () => {
+    if (!salesOrderId) return
+
+    setSaving(true)
+    try {
+      // Update order with document type and trigger fulfillment
+      await handleSave(false, "remision")
+      setShowPostConfirmDialog(false)
+      toast.success("Remisión creada correctamente")
+    } catch (error) {
+      console.error("[v0] Error creating remision:", error)
+      toast.error("Error al crear la remisión")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleSelectFacturacion = async () => {
+    if (!salesOrderId) return
+
+    setSaving(true)
+    try {
+      // Update order with document type
+      await handleSave(false, "invoice")
+      // Show invoice dialog
+      setShowPostConfirmDialog(false)
+      setShowInvoiceDialog(true)
+    } catch (error) {
+      console.error("[v0] Error setting invoice type:", error)
+      toast.error("Error al configurar facturación")
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -658,6 +699,15 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
           }}
         />
       )}
+
+      <PostConfirmDialog
+        open={showPostConfirmDialog}
+        onClose={() => setShowPostConfirmDialog(false)}
+        onSelectRemision={handleSelectRemision}
+        onSelectFacturacion={handleSelectFacturacion}
+        orderNumber={order.orderNumber || "N/A"}
+        isProcessing={saving}
+      />
     </div>
   )
 }

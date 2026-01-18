@@ -317,6 +317,9 @@ export interface SalesOrder extends BaseDocument {
   // Status workflow: draft -> confirmed -> in_progress -> delivered -> invoiced
   status: "draft" | "quotation" | "confirmed" | "in_progress" | "delivered" | "invoiced" | "invoiced_partial" | "cancelled"
 
+  // Document type after confirmation
+  documentType?: "remision" | "invoice"
+
   // Items
   items: SalesOrderItem[]
 

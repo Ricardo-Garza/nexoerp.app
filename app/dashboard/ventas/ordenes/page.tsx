@@ -216,6 +216,7 @@ export default function OrdenesVentaPage() {
                     <TableHead>Cliente</TableHead>
                     <TableHead>Fecha</TableHead>
                     <TableHead>Estado</TableHead>
+                    <TableHead>Tipo</TableHead>
                     <TableHead>Total</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
@@ -231,6 +232,15 @@ export default function OrdenesVentaPage() {
                       <TableCell>{order.customerName}</TableCell>
                       <TableCell>{formatDate(order.orderDate)}</TableCell>
                       <TableCell>{getStatusBadge(order.status)}</TableCell>
+                      <TableCell>
+                        {order.documentType ? (
+                          <Badge variant={order.documentType === "remision" ? "default" : "secondary"}>
+                            {order.documentType === "remision" ? "Remisión" : "Factura"}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
                       <TableCell className="font-semibold">{formatCurrency(order.total, order.currency)}</TableCell>
                       <TableCell className="text-right">
                         <Button
