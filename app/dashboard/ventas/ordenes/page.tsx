@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -11,14 +11,17 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Search, FileText, TrendingUp, Clock, Package, X, RotateCcw } from "lucide-react"
+import { Plus, Search, FileText, TrendingUp, Clock, Package, X, RotateCcw, XCircle, BarChart3 } from "lucide-react"
 import { formatCurrency } from "@/lib/utils/sales-calculations"
 import { normalizeOrderStatus } from "@/lib/utils"
 import type { SalesOrder } from "@/lib/types"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
+import { CancelacionesDevolucionesTab } from "@/components/sales/cancelaciones-devoluciones-tab"
+import { ReportesTab } from "@/components/sales/reportes-tab"
 
 export default function OrdenesVentaPage() {
   const router = useRouter()
@@ -27,6 +30,7 @@ export default function OrdenesVentaPage() {
   const userId = user?.uid || ""
   const { salesOrders, stats, loading, error, updateOrderStatus } = useSalesData(companyId, userId)
 
+  const [activeTab, setActiveTab] = useState("ordenes")
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
 
@@ -46,18 +50,26 @@ export default function OrdenesVentaPage() {
     console.log("[v0] OrdenesVentaPage - error:", error)
   }, [user, companyId, userId, salesOrders, loading, error])
 
-  const filteredOrders = useMemo(() => {
+  const activeOrders = useMemo(() => {
     return salesOrders.filter((order) => {
       const matchesSearch =
         order.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.customerName?.toLowerCase().includes(searchTerm.toLowerCase())
 
       const statusValue = normalizeOrderStatus(order.status)
+      const isActive = statusValue !== "cancelled" && statusValue !== "returned"
       const matchesStatus = statusFilter === "all" || statusValue === statusFilter
 
-      return matchesSearch && matchesStatus
+      return isActive && matchesSearch && matchesStatus
     })
   }, [salesOrders, searchTerm, statusFilter])
+
+  const cancelledCount = useMemo(() => {
+    return salesOrders.filter((order) => {
+      const statusValue = normalizeOrderStatus(order.status)
+      return statusValue === "cancelled" || statusValue === "returned"
+    }).length
+  }, [salesOrders])
 
   const getStatusBadge = (status: SalesOrder["status"]) => {
     const statusValue = normalizeOrderStatus(status)
@@ -152,7 +164,7 @@ export default function OrdenesVentaPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-<Button onClick={() => router.push("/dashboard/ventas/ordenes/new")} size="lg">
+        <Button onClick={() => router.push("/dashboard/ventas/ordenes/new")} size="lg">
           <Plus className="w-4 h-4 mr-2" />
           Nueva Orden
         </Button>
@@ -205,8 +217,30 @@ export default function OrdenesVentaPage() {
         </Card>
       </div>
 
-      {/* Filters */}
-      <Card>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3 justify-center">
+          <TabsTrigger value="ordenes" className="flex items-center justify-center gap-2">
+            <FileText className="w-4 h-4" />
+            {"\u00D3rdenes"}
+          </TabsTrigger>
+          <TabsTrigger value="cancelaciones" className="flex items-center justify-center gap-2">
+            <XCircle className="w-4 h-4" />
+            Cancelaciones / Devoluciones
+            {cancelledCount > 0 && (
+              <Badge className="ml-1 rounded-full bg-destructive px-2 py-0.5 text-xs text-destructive-foreground">
+                {cancelledCount}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="reportes" className="flex items-center justify-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Reportes Generados
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="ordenes">
+          {/* Filters */}
+          <Card>
         <CardHeader>
           <div className="flex items-center gap-4">
             <div className="flex-1">
@@ -239,7 +273,7 @@ export default function OrdenesVentaPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {filteredOrders.length === 0 ? (
+          {activeOrders.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="font-semibold text-lg mb-2">
@@ -272,7 +306,7 @@ export default function OrdenesVentaPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredOrders.map((order) => (
+                  {activeOrders.map((order) => (
                     <TableRow
                       key={order.id}
                       className="cursor-pointer hover:bg-muted/50"
@@ -343,8 +377,18 @@ export default function OrdenesVentaPage() {
             </div>
           )}
         </CardContent>
-      </Card>
+          </Card>
 
+        </TabsContent>
+
+        <TabsContent value="cancelaciones">
+          <CancelacionesDevolucionesTab />
+        </TabsContent>
+
+        <TabsContent value="reportes">
+          <ReportesTab />
+        </TabsContent>
+      </Tabs>
       {/* Cancel/Return Dialog */}
       <Dialog open={showCancelReturnDialog} onOpenChange={setShowCancelReturnDialog}>
         <DialogContent>
@@ -401,3 +445,8 @@ export default function OrdenesVentaPage() {
     </div>
   )
 }
+
+
+
+
+

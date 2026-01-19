@@ -106,9 +106,9 @@ export function CancelacionesDevolucionesTab() {
   const getTypeBadge = (type?: string) => {
     switch (type) {
       case "cancellation":
-        return <Badge variant="destructive">CancelaciÃ³n</Badge>
+        return <Badge variant="destructive">Cancelación</Badge>
       case "return":
-        return <Badge variant="secondary">DevoluciÃ³n</Badge>
+        return <Badge variant="secondary">Devolución</Badge>
       default:
         return <Badge variant="outline">Sin especificar</Badge>
     }
@@ -139,7 +139,7 @@ export function CancelacionesDevolucionesTab() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  placeholder="Buscar por folio, cliente o razÃ³n..."
+                  placeholder="Buscar por folio, cliente o razón..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -166,12 +166,12 @@ export function CancelacionesDevolucionesTab() {
       {/* Orders Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Ã“rdenes Canceladas/Devueltas</CardTitle>
+          <CardTitle>Órdenes Canceladas/Devueltas</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {filteredOrders.length === 0 ? (
             <div className="p-6 text-center text-muted-foreground">
-              No hay Ã³rdenes canceladas o devueltas.
+              No hay órdenes canceladas o devueltas.
             </div>
           ) : (
             <Table>
@@ -182,7 +182,7 @@ export function CancelacionesDevolucionesTab() {
                   <TableHead>Fecha</TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead>Tipo</TableHead>
-                  <TableHead>RazÃ³n</TableHead>
+                  <TableHead>Razón</TableHead>
                   <TableHead>Realizado por</TableHead>
                   <TableHead>Acciones</TableHead>
                 </TableRow>
@@ -208,7 +208,7 @@ export function CancelacionesDevolucionesTab() {
                     <TableCell>{formatCurrency(order.total || 0)}</TableCell>
                     <TableCell>{getTypeBadge(getCancelReturnMeta(order).cancelReturnType)}</TableCell>
                     <TableCell className="max-w-xs truncate">
-                      {getCancelReturnMeta(order).cancelReturnReason || "Sin razÃ³n especificada"}
+                      {getCancelReturnMeta(order).cancelReturnReason || "Sin razón especificada"}
                     </TableCell>
                     <TableCell>{getCancelReturnMeta(order).cancelReturnBy || "Sistema"}</TableCell>
                     <TableCell>
@@ -229,10 +229,10 @@ export function CancelacionesDevolucionesTab() {
                                 Eliminar Permanentemente
                               </AlertDialogTitle>
                               <AlertDialogDescription>
-                                Esta acciÃ³n no se puede deshacer. Se eliminarÃ¡ permanentemente la orden{" "}
+                                Esta acción no se puede deshacer. Se eliminará permanentemente la orden{" "}
                                 <strong>{order.orderNumber}</strong> de la base de datos.
                                 <br /><br />
-                                Â¿EstÃ¡ seguro de que desea continuar?
+                                ¿Está seguro de que desea continuar?
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>

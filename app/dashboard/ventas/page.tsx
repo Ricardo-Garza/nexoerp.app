@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+﻿import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { useSalesData } from "@/hooks/use-sales-data"
@@ -32,7 +32,7 @@ export default function VentasPage() {
   const userId = user?.uid || ""
   const { salesOrders, stats, loading, error, updateOrderStatus } = useSalesData(companyId, userId)
 
-  const [activeTab, setActiveTab] = useState("activas")
+  const [activeTab, setActiveTab] = useState("ordenes")
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
 
@@ -59,6 +59,13 @@ export default function VentasPage() {
       return isActive && matchesSearch && matchesStatus
     })
   }, [salesOrders, searchTerm, statusFilter])
+
+  const cancelledCount = useMemo(() => {
+    return salesOrders.filter((order) => {
+      const statusValue = normalizeOrderStatus(order.status)
+      return statusValue === "cancelled" || statusValue === "returned"
+    }).length
+  }, [salesOrders])
 
   const getStatusBadge = (status: SalesOrder["status"] | any) => {
     const statusValue = normalizeOrderStatus(status)
@@ -219,26 +226,31 @@ export default function VentasPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="activas" className="flex items-center gap-2">
+        <TabsList className="grid w-full grid-cols-3 justify-center">
+          <TabsTrigger value="ordenes" className="flex items-center justify-center gap-2">
             <FileText className="w-4 h-4" />
-            Órdenes Activas
+            {"\u00D3rdenes"}
           </TabsTrigger>
-          <TabsTrigger value="cancelaciones" className="flex items-center gap-2">
+          <TabsTrigger value="cancelaciones" className="flex items-center justify-center gap-2">
             <XCircle className="w-4 h-4" />
             Cancelaciones / Devoluciones
+            {cancelledCount > 0 && (
+              <Badge className="ml-1 rounded-full bg-destructive px-2 py-0.5 text-xs text-destructive-foreground">
+                {cancelledCount}
+              </Badge>
+            )}
           </TabsTrigger>
-          <TabsTrigger value="reportes" className="flex items-center gap-2">
+          <TabsTrigger value="reportes" className="flex items-center justify-center gap-2">
             <BarChart3 className="w-4 h-4" />
-            Reportes
+            Reportes Generados
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="activas">
+        <TabsContent value="ordenes">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Órdenes de Venta Activas</CardTitle>
+                <CardTitle>{"\u00D3rdenes"}</CardTitle>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <Search className="w-4 h-4 text-muted-foreground" />
@@ -419,3 +431,8 @@ export default function VentasPage() {
     </div>
   )
 }
+
+
+
+
+
