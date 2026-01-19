@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
+import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 const data = [
@@ -30,15 +30,13 @@ export function SalesChart() {
           }}
           className="h-[350px]"
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="day" className="text-xs" />
-              <YAxis className="text-xs" />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="ventas" fill="var(--color-ventas)" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+            <XAxis dataKey="day" className="text-xs" />
+            <YAxis className="text-xs" />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <Bar dataKey="ventas" fill="var(--color-ventas)" radius={[8, 8, 0, 0]} />
+          </BarChart>
         </ChartContainer>
       </CardContent>
     </Card>

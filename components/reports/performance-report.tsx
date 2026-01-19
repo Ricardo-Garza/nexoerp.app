@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Line, LineChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
+import { Line, LineChart, XAxis, YAxis, CartesianGrid } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { TrendingUp, TrendingDown } from "lucide-react"
 
@@ -42,16 +42,14 @@ export function PerformanceReport() {
             }}
             className="h-[300px]"
           >
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="month" className="text-xs" />
-                <YAxis className="text-xs" />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Line type="monotone" dataKey="ventas" stroke="var(--color-ventas)" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="clientes" stroke="var(--color-clientes)" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis dataKey="month" className="text-xs" />
+              <YAxis className="text-xs" />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Line type="monotone" dataKey="ventas" stroke="var(--color-ventas)" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="clientes" stroke="var(--color-clientes)" strokeWidth={2} dot={false} />
+            </LineChart>
           </ChartContainer>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

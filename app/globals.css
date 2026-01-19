@@ -448,3 +448,39 @@ body.crm-shell {
   padding: 6px 0;
 }
 
+/* Print styles for document preview */
+@media print {
+  /* Hide modal overlay and UI elements */
+  [data-radix-dialog-overlay],
+  [data-radix-dialog-content] > [data-radix-dialog-header] {
+    display: none !important;
+  }
+
+  /* Make document content visible and full width */
+  [data-radix-dialog-content] {
+    position: static !important;
+    max-width: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Ensure document content takes full page */
+  [data-radix-dialog-content] > div:last-child {
+    position: static !important;
+    visibility: visible !important;
+  }
+
+  /* Hide all other page content */
+  body > *:not([data-radix-portal]) {
+    display: none !important;
+  }
+
+  /* Show only the dialog portal content */
+  [data-radix-portal] {
+    position: static !important;
+  }
+}

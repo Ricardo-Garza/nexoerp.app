@@ -10,7 +10,10 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Search, FileText, TrendingUp, Clock, Package } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Plus, Search, FileText, TrendingUp, Clock, Package, X, RotateCcw } from "lucide-react"
 import { formatCurrency } from "@/lib/utils/sales-calculations"
 import type { SalesOrder } from "@/lib/types"
 import { format } from "date-fns"
@@ -21,10 +24,17 @@ export default function OrdenesVentaPage() {
   const { user } = useAuth()
   const companyId = user?.companyId || ""
   const userId = user?.uid || ""
-  const { salesOrders, stats, loading, error } = useSalesData(companyId, userId)
+  const { salesOrders, stats, loading, error, updateOrderStatus } = useSalesData(companyId, userId)
 
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
+
+  // Cancel/Return dialog state
+  const [showCancelReturnDialog, setShowCancelReturnDialog] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<SalesOrder | null>(null)
+  const [cancelReturnType, setCancelReturnType] = useState<"cancellation" | "return">("cancellation")
+  const [cancelReturnReason, setCancelReturnReason] = useState("")
+  const [processingCancelReturn, setProcessingCancelReturn] = useState(false)
 
   useEffect(() => {
     console.log("[v0] OrdenesVentaPage - user:", user)
@@ -69,6 +79,43 @@ export default function OrdenesVentaPage() {
       return format(d, "dd MMM yyyy", { locale: es })
     } catch {
       return "Invalid Date"
+    }
+  }
+
+  const handleCancelReturn = (order: SalesOrder) => {
+    setSelectedOrder(order)
+    setCancelReturnType("cancellation")
+    setCancelReturnReason("")
+    setShowCancelReturnDialog(true)
+  }
+
+  const handleConfirmCancelReturn = async () => {
+    if (!selectedOrder || !cancelReturnReason.trim()) return
+
+    setProcessingCancelReturn(true)
+    try {
+      // Update order status and add cancel/return fields
+      const updateData = {
+        status: cancelReturnType === "cancellation" ? "cancelled" : "returned",
+        cancelReturnType,
+        cancelReturnReason: cancelReturnReason.trim(),
+        cancelReturnAt: new Date(),
+        cancelReturnBy: user?.email || user?.displayName || "Usuario"
+      }
+
+      // Use the sales data hook to update
+      await updateOrderStatus(selectedOrder.id!, updateData)
+
+      setShowCancelReturnDialog(false)
+      setSelectedOrder(null)
+      setCancelReturnReason("")
+
+      // Refresh the page to show updated data
+      window.location.reload()
+    } catch (error) {
+      console.error("Error updating order:", error)
+    } finally {
+      setProcessingCancelReturn(false)
     }
   }
 
@@ -243,16 +290,47 @@ export default function OrdenesVentaPage() {
                       </TableCell>
                       <TableCell className="font-semibold">{formatCurrency(order.total, order.currency)}</TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            router.push(`/dashboard/ventas/ordenes/${order.id}`)
-                          }}
-                        >
-                          Ver Detalle
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              router.push(`/dashboard/ventas/ordenes/${order.id}`)
+                            }}
+                          >
+                            Ver Detalle
+                          </Button>
+                          {(order.status === "confirmed" || order.status === "invoiced_partial") && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleCancelReturn(order)
+                                }}
+                                className="text-orange-600 hover:text-orange-700"
+                              >
+                                <X className="w-4 h-4 mr-1" />
+                                Cancelar
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setCancelReturnType("return")
+                                  handleCancelReturn(order)
+                                }}
+                                className="text-blue-600 hover:text-blue-700"
+                              >
+                                <RotateCcw className="w-4 h-4 mr-1" />
+                                Devolver
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -262,6 +340,60 @@ export default function OrdenesVentaPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Cancel/Return Dialog */}
+      <Dialog open={showCancelReturnDialog} onOpenChange={setShowCancelReturnDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {cancelReturnType === "cancellation" ? "Cancelar Orden" : "Devolver Orden"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="type">Tipo de acción</Label>
+              <Select value={cancelReturnType} onValueChange={(value: "cancellation" | "return") => setCancelReturnType(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cancellation">Cancelación</SelectItem>
+                  <SelectItem value="return">Devolución</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="reason">Razón (requerida)</Label>
+              <Textarea
+                id="reason"
+                placeholder="Especifique la razón de la cancelación o devolución..."
+                value={cancelReturnReason}
+                onChange={(e) => setCancelReturnReason(e.target.value)}
+                rows={3}
+              />
+            </div>
+            {selectedOrder && (
+              <div className="bg-muted p-3 rounded-md">
+                <p className="text-sm font-medium">Orden: {selectedOrder.orderNumber}</p>
+                <p className="text-sm text-muted-foreground">Cliente: {selectedOrder.customerName}</p>
+                <p className="text-sm text-muted-foreground">Total: {formatCurrency(selectedOrder.total, selectedOrder.currency)}</p>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCancelReturnDialog(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleConfirmCancelReturn}
+              disabled={!cancelReturnReason.trim() || processingCancelReturn}
+              variant={cancelReturnType === "cancellation" ? "destructive" : "default"}
+            >
+              {processingCancelReturn ? "Procesando..." : `Confirmar ${cancelReturnType === "cancellation" ? "Cancelación" : "Devolución"}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -10,13 +10,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useFirestore } from "@/hooks/use-firestore"
 import { COLLECTIONS } from "@/lib/firestore"
-import { FileText, Plus, Pencil, Trash2, Search } from "lucide-react"
+import { InvoiceSelector } from "@/components/facturacion/invoice-selector"
+import { DocumentPreview } from "@/components/documents/document-preview"
+import { FileText, Plus, Pencil, Trash2, Search, Eye } from "lucide-react"
 
 type CfdiDoc = {
   id: string
-  tipo: "factura" | "nota_credito" | "complemento_pago" | "cancelacion" | "sustitucion"
+  tipo: "factura" | "nota_credito" | "complemento_pago"
   estatus: "borrador" | "aprobado" | "cancelado"
   uuid?: string
+  folio?: string // Invoice number/folio
+  serie?: string // Invoice series
   clienteId?: string
   clienteNombre?: string
   vendedor?: string
@@ -26,12 +30,18 @@ type CfdiDoc = {
   total?: number
   facturacionTipo?: "parcial" | "total"
   montoFacturado?: number
-  motivoCancelacion?: string
-  uuidSustituye?: string
   pacStatus?: string
   satStatus?: string
   xmlUrl?: string
   pdfUrl?: string
+  // For credit notes and payment complements - reference to originating invoice
+  invoiceId?: string // ID of the originating invoice
+  invoiceFolio?: string // Folio of the originating invoice
+  invoiceUuid?: string // UUID of the originating invoice
+  // For payment complements
+  paymentAmount?: number
+  paymentMethod?: string
+  paymentDate?: any
   createdAt?: any
 }
 
@@ -45,8 +55,6 @@ const tipoTabs = [
   { value: "factura", label: "Facturas" },
   { value: "nota_credito", label: "Notas de credito" },
   { value: "complemento_pago", label: "Complementos de pago" },
-  { value: "cancelacion", label: "Cancelaciones" },
-  { value: "sustitucion", label: "Sustituciones" },
 ]
 
 const statusLabels: Record<string, string> = {
@@ -65,6 +73,9 @@ export default function FacturacionPage() {
   const [clienteFilter, setClienteFilter] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<CfdiDoc | null>(null)
+  const [selectedInvoice, setSelectedInvoice] = useState<CfdiDoc | null>(null)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewItem, setPreviewItem] = useState<CfdiDoc | null>(null)
 
   const customerOptions = useMemo(
     () =>
@@ -82,9 +93,10 @@ export default function FacturacionPage() {
       const matchesCustomer = clienteFilter ? doc.clienteId === clienteFilter : true
       const searchLower = search.toLowerCase()
       const matchesSearch =
-        doc.uuid?.toLowerCase().includes(searchLower) ||
+        doc.folio?.toLowerCase().includes(searchLower) ||
         doc.clienteNombre?.toLowerCase().includes(searchLower) ||
-        doc.salesOrderId?.toLowerCase().includes(searchLower)
+        doc.salesOrderId?.toLowerCase().includes(searchLower) ||
+        doc.serie?.toLowerCase().includes(searchLower)
       return matchesTab && matchesStatus && matchesCustomer && (search ? matchesSearch : true)
     })
   }, [cfdis, activeTab, statusFilter, clienteFilter, search])
@@ -129,6 +141,8 @@ export default function FacturacionPage() {
     { name: "clienteNombre", label: "Cliente (texto)", type: "text" as const },
     { name: "vendedor", label: "Vendedor asignado", type: "text" as const },
     { name: "salesOrderId", label: "Pedido de venta", type: "text" as const },
+    { name: "folio", label: "Folio", type: "text" as const },
+    { name: "serie", label: "Serie", type: "text" as const },
     { name: "uuid", label: "UUID", type: "text" as const },
     { name: "pacStatus", label: "Estatus PAC", type: "text" as const },
     { name: "satStatus", label: "Estatus SAT", type: "text" as const },
@@ -145,8 +159,13 @@ export default function FacturacionPage() {
       ],
     },
     { name: "montoFacturado", label: "Monto facturado", type: "number" as const },
-    { name: "motivoCancelacion", label: "Motivo cancelacion SAT", type: "text" as const },
-    { name: "uuidSustituye", label: "UUID sustituye", type: "text" as const },
+    // Fields for linking credit notes and payment complements to invoices
+    { name: "invoiceId", label: "ID Factura origen", type: "text" as const },
+    { name: "invoiceFolio", label: "Folio Factura origen", type: "text" as const },
+    { name: "invoiceUuid", label: "UUID Factura origen", type: "text" as const },
+    // Payment complement specific fields
+    { name: "paymentAmount", label: "Monto del pago", type: "number" as const },
+    { name: "paymentMethod", label: "Método de pago", type: "text" as const },
     { name: "xmlUrl", label: "XML (URL)", type: "text" as const },
     { name: "pdfUrl", label: "PDF (URL)", type: "text" as const },
   ]
@@ -172,20 +191,52 @@ export default function FacturacionPage() {
 
     setDialogOpen(false)
     setEditingItem(null)
+    setSelectedInvoice(null)
   }
 
   const openNew = () => {
-    setEditingItem({
-      id: "",
-      tipo: activeTab as CfdiDoc["tipo"],
-      estatus: "borrador",
-    })
+    const tipo = activeTab as CfdiDoc["tipo"]
+
+    // For credit notes and payment complements, require invoice selection first
+    if (tipo === "nota_credito" || tipo === "complemento_pago") {
+      if (!selectedInvoice) {
+        // Don't open dialog, user needs to select invoice first
+        return
+      }
+
+      // Pre-populate with invoice data
+      setEditingItem({
+        id: "",
+        tipo,
+        estatus: "borrador",
+        clienteId: selectedInvoice.clienteId,
+        clienteNombre: selectedInvoice.clienteNombre,
+        salesOrderId: selectedInvoice.salesOrderId,
+        invoiceId: selectedInvoice.id,
+        invoiceFolio: selectedInvoice.folio,
+        invoiceUuid: selectedInvoice.uuid,
+      })
+    } else {
+      // For regular invoices, clear selected invoice
+      setSelectedInvoice(null)
+      setEditingItem({
+        id: "",
+        tipo,
+        estatus: "borrador",
+      })
+    }
+
     setDialogOpen(true)
   }
 
   const openEdit = (item: CfdiDoc) => {
     setEditingItem(item)
     setDialogOpen(true)
+  }
+
+  const openPreview = (item: CfdiDoc) => {
+    setPreviewItem(item)
+    setPreviewOpen(true)
   }
 
   return (
@@ -195,9 +246,21 @@ export default function FacturacionPage() {
           <h2 className="text-lg font-semibold">Facturacion CFDI</h2>
           <p className="text-sm text-muted-foreground">Gestiona facturas, notas de credito y complementos.</p>
         </div>
-        <Button onClick={openNew}>
+        {(activeTab === "nota_credito" || activeTab === "complemento_pago") && (
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium">Factura de origen:</label>
+            <InvoiceSelector
+              selectedInvoice={selectedInvoice}
+              onSelect={setSelectedInvoice}
+            />
+          </div>
+        )}
+        <Button
+          onClick={openNew}
+          disabled={(activeTab === "nota_credito" || activeTab === "complemento_pago") && !selectedInvoice}
+        >
           <Plus className="w-4 h-4 mr-2" />
-          Nuevo CFDI
+          Nuevo {tipoTabs.find(tab => tab.value === activeTab)?.label}
         </Button>
       </div>
 
@@ -207,7 +270,7 @@ export default function FacturacionPage() {
             <div className="relative flex-1 min-w-[220px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por UUID, cliente o pedido..."
+                placeholder="Buscar por folio, cliente o pedido..."
                 className="pl-10"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -241,7 +304,7 @@ export default function FacturacionPage() {
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
+        <TabsList className="grid w-full grid-cols-3 justify-center">
           {tipoTabs.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
               {tab.label}
@@ -256,17 +319,32 @@ export default function FacturacionPage() {
                 {loading ? (
                   <div className="p-6 text-sm text-muted-foreground">Cargando...</div>
                 ) : filteredDocs.length === 0 ? (
-                  <div className="p-6 text-sm text-muted-foreground">No hay registros para este tipo.</div>
+                  <div className="p-6 text-center">
+                    <div className="text-sm text-muted-foreground mb-4">
+                      {activeTab === "factura"
+                        ? "No hay facturas registradas."
+                        : activeTab === "nota_credito"
+                        ? "No hay notas de crédito. Selecciona una factura para crear una."
+                        : "No hay complementos de pago. Selecciona una factura para crear uno."}
+                    </div>
+                    {activeTab === "factura" && (
+                      <Button onClick={openNew}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Crear primera factura
+                      </Button>
+                    )}
+                  </div>
                 ) : (
                   <div className="overflow-hidden rounded-2xl border border-white/10">
                     <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead className="h-9">Cliente</TableHead>
-                          <TableHead className="h-9">UUID</TableHead>
+                          <TableHead className="h-9">Folio</TableHead>
+                          <TableHead className="h-9">Factura Origen</TableHead>
                           <TableHead className="h-9">Estatus</TableHead>
                           <TableHead className="h-9">Total</TableHead>
-                          <TableHead className="h-9">Vendedor</TableHead>
+                          <TableHead className="h-9">Pedido</TableHead>
                           <TableHead className="h-9 text-right">Acciones</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -274,16 +352,23 @@ export default function FacturacionPage() {
                         {filteredDocs.map((doc) => (
                           <TableRow key={doc.id} className="h-12">
                             <TableCell className="py-2 font-medium">{doc.clienteNombre || "Sin cliente"}</TableCell>
-                            <TableCell className="py-2">{doc.uuid || "-"}</TableCell>
+                            <TableCell className="py-2">{doc.folio || doc.serie ? `${doc.serie || ""}${doc.folio || ""}`.trim() || "-" : "-"}</TableCell>
+                            <TableCell className="py-2">
+                              {doc.tipo !== "factura" && (doc.invoiceFolio || doc.invoiceUuid) ?
+                                (doc.invoiceFolio || doc.invoiceUuid) : "-"}
+                            </TableCell>
                             <TableCell>
                               <Badge variant="outline">{statusLabels[doc.estatus] || doc.estatus}</Badge>
                             </TableCell>
                             <TableCell className="py-2">
                               {(doc.total || 0).toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
                             </TableCell>
-                            <TableCell className="py-2">{doc.vendedor || "-"}</TableCell>
+                            <TableCell className="py-2">{doc.salesOrderId || "-"}</TableCell>
                             <TableCell className="py-2 text-right">
                               <div className="flex justify-end gap-1">
+                                <Button size="icon" variant="ghost" onClick={() => openPreview(doc)} title="Vista previa">
+                                  <Eye className="w-4 h-4" />
+                                </Button>
                                 <Button size="icon" variant="ghost" onClick={() => openEdit(doc)}>
                                   <Pencil className="w-4 h-4" />
                                 </Button>
@@ -324,7 +409,7 @@ export default function FacturacionPage() {
                     <FileText className="w-4 h-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">{doc.tipo}</p>
-                      <p className="text-xs text-muted-foreground">{doc.uuid || "Sin UUID"}</p>
+                      <p className="text-xs text-muted-foreground">{doc.folio || doc.serie || "Sin folio"}</p>
                     </div>
                   </div>
                   <Badge variant="outline">{statusLabels[doc.estatus] || doc.estatus}</Badge>
@@ -341,10 +426,23 @@ export default function FacturacionPage() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         title={editingItem?.id ? "Editar CFDI" : "Nuevo CFDI"}
-        description="Registra facturas, notas de credito, cancelaciones y complementos."
+        description={
+          editingItem?.tipo === "nota_credito"
+            ? "Crea una nota de crédito vinculada a la factura seleccionada."
+            : editingItem?.tipo === "complemento_pago"
+            ? "Registra un complemento de pago para la factura seleccionada."
+            : "Registra facturas, notas de credito, cancelaciones y complementos."
+        }
         fields={fields}
         initialValues={editingItem || { tipo: activeTab, estatus: "borrador" }}
         onSubmit={handleSave}
+      />
+
+      <DocumentPreview
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        documentType="cfdi"
+        cfdi={previewItem}
       />
     </div>
   )

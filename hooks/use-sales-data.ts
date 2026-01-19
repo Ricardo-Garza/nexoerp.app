@@ -50,10 +50,26 @@ export function useSalesData(companyId: string, userId?: string) {
       const unsubSalesOrders = onSnapshot(
         salesOrdersQuery,
         (snapshot) => {
-          const orders = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          })) as SalesOrder[]
+          const orders = snapshot.docs.map((doc) => {
+            const data = doc.data()
+            
+            // Normalize corrupted status data (backward compatibility)
+            let normalizedData = { ...data }
+            if (typeof data.status === "object" && data.status !== null) {
+              // If status is an object, extract the actual status and move other fields to top level
+              const statusObj = data.status as any
+              normalizedData.status = statusObj.status || "unknown"
+              if (statusObj.cancelReturnType) normalizedData.cancelReturnType = statusObj.cancelReturnType
+              if (statusObj.cancelReturnReason) normalizedData.cancelReturnReason = statusObj.cancelReturnReason
+              if (statusObj.cancelReturnAt) normalizedData.cancelReturnAt = statusObj.cancelReturnAt
+              if (statusObj.cancelReturnBy) normalizedData.cancelReturnBy = statusObj.cancelReturnBy
+            }
+            
+            return {
+              id: doc.id,
+              ...normalizedData,
+            }
+          }) as SalesOrder[]
           console.log("[v0] useSalesData - Loaded orders:", orders.length)
           if (orders.length > 0) {
             console.log("[v0] useSalesData - First order:", orders[0])

@@ -21,6 +21,8 @@ const statusConfig = {
   invoiced: { label: "Facturada", variant: "outline" as const },
   invoiced_partial: { label: "Facturada parcial", variant: "outline" as const },
   cancelled: { label: "Cancelada", variant: "destructive" as const },
+  returned: { label: "Devuelta", variant: "destructive" as const },
+  unknown: { label: "Desconocido", variant: "outline" as const },
 }
 
 export function RecentOrders() {
@@ -30,6 +32,14 @@ export function RecentOrders() {
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const { salesOrders, loading } = useSalesData(user?.companyId || "")
+  const getStatusValue = (status: unknown) => {
+    if (typeof status === "string") return status
+    if (status && typeof status === "object" && "status" in status) {
+      const statusField = (status as { status?: unknown }).status
+      return typeof statusField === "string" ? statusField : "unknown"
+    }
+    return "unknown"
+  }
 
   const recentOrders = [...(salesOrders || [])]
     .sort((a, b) => {
@@ -123,8 +133,11 @@ export function RecentOrders() {
                         <td className="py-3 px-2 text-sm text-white/70">{productDisplay}</td>
                         <td className="py-3 px-2 text-sm font-semibold text-white">{formatCurrency(order.total)}</td>
                         <td className="py-3 px-2">
-                          <Badge variant="outline" className="border-white/20 text-white/80">
-                            {statusConfig[order.status]?.label || order.status}
+                          <Badge
+                            variant={statusConfig[getStatusValue(order.status) as keyof typeof statusConfig]?.variant || "outline"}
+                            className="border-white/20 text-white/80"
+                          >
+                            {statusConfig[getStatusValue(order.status) as keyof typeof statusConfig]?.label || "Desconocido"}
                           </Badge>
                         </td>
                         <td className="py-3 px-2 text-sm text-white/70">{formatDate(order.orderDate)}</td>

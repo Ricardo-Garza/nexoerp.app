@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { useSearchParams } from "next/navigation"
 import { useFirestore } from "@/hooks/use-firestore"
@@ -15,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
-import { Save, Send, Printer, CheckCircle2, Eye, X, Loader2, Truck, Receipt, AlertTriangle } from "lucide-react"
+import { Save, Send, CheckCircle2, Eye, X, Loader2, Truck, Receipt, AlertTriangle } from "lucide-react"
 import { COLLECTIONS, addItem, getItem, updateItem } from "@/lib/firestore"
 import type { SalesOrder, SalesOrderLine, Customer, Product } from "@/lib/types"
 import { calculateOrderTotals, formatCurrency } from "@/lib/utils/sales-calculations"
@@ -24,6 +25,7 @@ import { SalesOrderLinesTab } from "./sales-order-lines-tab"
 import { GenerateDeliveryDialog } from "./generate-delivery-dialog"
 import { GenerateInvoiceDialog } from "./generate-invoice-dialog"
 import { PostConfirmDialog } from "./post-confirm-dialog"
+import { DocumentPreview } from "@/components/documents/document-preview"
 import { serverTimestamp, where } from "firebase/firestore"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
@@ -34,6 +36,7 @@ interface SalesOrderFormProps {
 }
 
 export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrderFormProps) {
+  const router = useRouter()
   const { user } = useAuth()
   const companyId = user?.companyId || user?.uid || ""
   const searchParams = useSearchParams()
@@ -60,6 +63,7 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
   const [showDeliveryDialog, setShowDeliveryDialog] = useState(false)
   const [showInvoiceDialog, setShowInvoiceDialog] = useState(false)
   const [showPostConfirmDialog, setShowPostConfirmDialog] = useState(false)
+  const [showDocumentPreview, setShowDocumentPreview] = useState(false)
   // Add stock validation state
   const [stockWarnings, setStockWarnings] = useState<string[]>([])
 
@@ -271,15 +275,6 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
     await sendOrderByEmail(salesOrderId, user?.uid, user?.email || "")
   }
 
-  const handlePrint = async () => {
-    if (!salesOrderId) {
-      toast.error("Guarda la orden primero")
-      return
-    }
-    await printOrder(salesOrderId, user?.uid, user?.email || "")
-    window.print()
-  }
-
   const handleCancel = () => {
     if (onCancel) {
       onCancel()
@@ -295,6 +290,8 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
       await handleSave(false, "remision")
       setShowPostConfirmDialog(false)
       toast.success("Remisión creada correctamente")
+      // Navigate to sales dashboard
+      router.push("/dashboard/ventas/ordenes")
     } catch (error) {
       console.error("[v0] Error creating remision:", error)
       toast.error("Error al crear la remisión")
@@ -319,6 +316,13 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleInvoiceSuccess = () => {
+    setShowInvoiceDialog(false)
+    loadOrder() // Refresh the order data
+    // Navigate to sales dashboard after invoice creation
+    router.push("/dashboard/ventas/ordenes")
   }
 
   const isQuotationStatus = order.type === "quotation"
@@ -357,13 +361,13 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowDocumentPreview(true)} disabled={!salesOrderId || saving}>
+                <Eye className="w-4 h-4 mr-2" />
+                Vista Previa
+              </Button>
               <Button variant="outline" size="sm" onClick={handleSend} disabled={!salesOrderId || saving}>
                 <Send className="w-4 h-4 mr-2" />
                 Enviar
-              </Button>
-              <Button variant="outline" size="sm" onClick={handlePrint} disabled={!salesOrderId || saving}>
-                <Printer className="w-4 h-4 mr-2" />
-                Imprimir
               </Button>
               {order.status === "draft" || order.status === "quotation" ? (
                 <Button size="sm" onClick={handleConfirm} disabled={saving || stockWarnings.length > 0}>
@@ -387,10 +391,6 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
                   Generar Factura
                 </Button>
               )}
-              <Button variant="outline" size="sm" disabled>
-                <Eye className="w-4 h-4 mr-2" />
-                Vista Previa
-              </Button>
               <Button variant="ghost" size="sm" onClick={handleCancel}>
                 <X className="w-4 h-4 mr-2" />
                 Cancelar
@@ -693,10 +693,7 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
           salesOrder={order as SalesOrder}
           open={showInvoiceDialog}
           onClose={() => setShowInvoiceDialog(false)}
-          onSuccess={() => {
-            setShowInvoiceDialog(false)
-            loadOrder()
-          }}
+          onSuccess={handleInvoiceSuccess}
         />
       )}
 
@@ -707,6 +704,14 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
         onSelectFacturacion={handleSelectFacturacion}
         orderNumber={order.orderNumber || "N/A"}
         isProcessing={saving}
+      />
+
+      <DocumentPreview
+        open={showDocumentPreview}
+        onOpenChange={setShowDocumentPreview}
+        documentType={order.documentType === "invoice" ? "factura" : "remision"}
+        salesOrder={order as SalesOrder}
+        onSend={handleSend}
       />
     </div>
   )

@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
+import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 const data = [
@@ -45,16 +45,14 @@ export function FinancialReport() {
           }}
           className="h-[300px]"
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="month" className="text-xs" />
-              <YAxis className="text-xs" />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="ingresos" fill="var(--color-ingresos)" radius={[8, 8, 0, 0]} />
-              <Bar dataKey="gastos" fill="var(--color-gastos)" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+            <XAxis dataKey="month" className="text-xs" />
+            <YAxis className="text-xs" />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <Bar dataKey="ingresos" fill="var(--color-ingresos)" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="gastos" fill="var(--color-gastos)" radius={[8, 8, 0, 0]} />
+          </BarChart>
         </ChartContainer>
 
         <div className="grid grid-cols-3 gap-4 mt-6">

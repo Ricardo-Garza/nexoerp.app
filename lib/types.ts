@@ -315,7 +315,7 @@ export interface SalesOrder extends BaseDocument {
   customerName: string
 
   // Status workflow: draft -> confirmed -> in_progress -> delivered -> invoiced
-  status: "draft" | "quotation" | "confirmed" | "in_progress" | "delivered" | "invoiced" | "invoiced_partial" | "cancelled"
+  status: "draft" | "quotation" | "confirmed" | "in_progress" | "delivered" | "invoiced" | "invoiced_partial" | "cancelled" | "returned"
 
   // Document type after confirmation
   documentType?: "remision" | "invoice"
@@ -356,6 +356,12 @@ export interface SalesOrder extends BaseDocument {
   // Users
   createdBy: string
   confirmedBy?: string
+
+  // Cancel/Return fields
+  cancelReturnType?: "cancellation" | "return"
+  cancelReturnReason?: string
+  cancelReturnAt?: Timestamp | string
+  cancelReturnBy?: string
 
   notes?: string
 }

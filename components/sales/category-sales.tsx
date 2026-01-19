@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Pie, PieChart, Cell, ResponsiveContainer } from "recharts"
+import { Pie, PieChart, Cell } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 const data = [
@@ -30,16 +30,14 @@ export function CategorySales() {
             }}
             className="h-[200px]"
           >
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} dataKey="value">
-                  {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
+            <PieChart>
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} dataKey="value">
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+            </PieChart>
           </ChartContainer>
 
           <div className="space-y-2">
