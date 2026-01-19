@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Plus, Search, FileText, TrendingUp, Clock, Package, X, RotateCcw } from "lucide-react"
 import { formatCurrency } from "@/lib/utils/sales-calculations"
+import { normalizeOrderStatus } from "@/lib/utils"
 import type { SalesOrder } from "@/lib/types"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
@@ -51,13 +52,15 @@ export default function OrdenesVentaPage() {
         order.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.customerName?.toLowerCase().includes(searchTerm.toLowerCase())
 
-      const matchesStatus = statusFilter === "all" || order.status === statusFilter
+      const statusValue = normalizeOrderStatus(order.status)
+      const matchesStatus = statusFilter === "all" || statusValue === statusFilter
 
       return matchesSearch && matchesStatus
     })
   }, [salesOrders, searchTerm, statusFilter])
 
   const getStatusBadge = (status: SalesOrder["status"]) => {
+    const statusValue = normalizeOrderStatus(status)
     const variants = {
       draft: { label: "Borrador", variant: "secondary" as const },
       quotation: { label: "Cotización", variant: "outline" as const },
@@ -68,7 +71,7 @@ export default function OrdenesVentaPage() {
       invoiced_partial: { label: "Facturada parcial", variant: "outline" as const },
       cancelled: { label: "Cancelada", variant: "destructive" as const },
     }
-    const config = variants[status] || variants.draft
+    const config = variants[statusValue] || variants.draft
     return <Badge variant={config.variant}>{config.label}</Badge>
   }
 
@@ -301,7 +304,8 @@ export default function OrdenesVentaPage() {
                           >
                             Ver Detalle
                           </Button>
-                          {(order.status === "confirmed" || order.status === "invoiced_partial") && (
+                          {(normalizeOrderStatus(order.status) === "confirmed" ||
+                            normalizeOrderStatus(order.status) === "invoiced_partial") && (
                             <>
                               <Button
                                 size="sm"

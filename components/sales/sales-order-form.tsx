@@ -28,6 +28,7 @@ import { PostConfirmDialog } from "./post-confirm-dialog"
 import { DocumentPreview } from "@/components/documents/document-preview"
 import { serverTimestamp, where } from "firebase/firestore"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { normalizeOrderStatus } from "@/lib/utils"
 
 interface SalesOrderFormProps {
   salesOrderId?: string
@@ -192,7 +193,7 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
       const orderData: Partial<SalesOrder> = {
         orderNumber: order.orderNumber || "",
         type: order.type || "order",
-        status: asDraft ? order.status || "draft" : isQuotationOrder ? "quotation" : "confirmed",
+        status: asDraft ? (normalizeOrderStatus(order.status) || "draft") : isQuotationOrder ? "quotation" : "confirmed",
         customerId: order.customerId,
         customerName: customer?.nombre || "",
         // Always include warehouse info
@@ -326,8 +327,10 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
   }
 
   const isQuotationStatus = order.type === "quotation"
-  const canGenerateDelivery = !isQuotationStatus && (order.status === "confirmed" || order.status === "in_progress")
-  const canGenerateInvoice = !isQuotationStatus && (order.status === "confirmed" || order.status === "delivered" || order.status === "invoiced_partial")
+  const statusValue = normalizeOrderStatus(order.status)
+  const canGenerateDelivery = !isQuotationStatus && (statusValue === "confirmed" || statusValue === "in_progress")
+  const canGenerateInvoice =
+    !isQuotationStatus && (statusValue === "confirmed" || statusValue === "delivered" || statusValue === "invoiced_partial")
 
   if (loading || loadingWarehouse) {
     return (
@@ -346,16 +349,16 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
             <div className="flex items-center gap-3">
               <div>
                 <CardTitle>{salesOrderId ? order.orderNumber : "Nueva Orden"}</CardTitle>
-                {order.status && (
-                  <Badge className="mt-2" variant={order.status === "confirmed" ? "default" : "secondary"}>
-                    {order.status === "draft" && "Borrador"}
-                    {order.status === "quotation" && "Cotización"}
-                    {order.status === "confirmed" && "Confirmada"}
-                    {order.status === "in_progress" && "En Proceso"}
-                    {order.status === "delivered" && "Entregada"}
-                    {order.status === "invoiced" && "Facturada"}
-                    {order.status === "invoiced_partial" && "Facturada parcial"}
-                    {order.status === "cancelled" && "Cancelada"}
+                {statusValue && (
+                  <Badge className="mt-2" variant={statusValue === "confirmed" ? "default" : "secondary"}>
+                    {statusValue === "draft" && "Borrador"}
+                    {statusValue === "quotation" && "Cotización"}
+                    {statusValue === "confirmed" && "Confirmada"}
+                    {statusValue === "in_progress" && "En Proceso"}
+                    {statusValue === "delivered" && "Entregada"}
+                    {statusValue === "invoiced" && "Facturada"}
+                    {statusValue === "invoiced_partial" && "Facturada parcial"}
+                    {statusValue === "cancelled" && "Cancelada"}
                   </Badge>
                 )}
               </div>
@@ -369,7 +372,7 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
                 <Send className="w-4 h-4 mr-2" />
                 Enviar
               </Button>
-              {order.status === "draft" || order.status === "quotation" ? (
+              {statusValue === "draft" || statusValue === "quotation" ? (
                 <Button size="sm" onClick={handleConfirm} disabled={saving || stockWarnings.length > 0}>
                   {saving ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -434,7 +437,7 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
                     lines={order.lines || []}
                     products={products}
                     onChange={handleLinesChange}
-                    readOnly={order.status === "cancelled"}
+                    readOnly={statusValue === "cancelled"}
                     warehouseId={order.warehouseId}
                     inventoryStock={inventoryStock}
                   />
@@ -517,7 +520,7 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
                 <Select
                   value={order.warehouseId || ""}
                   onValueChange={(value) => setOrder((prev) => ({ ...prev, warehouseId: value }))}
-                  disabled={order.status === "delivered" || order.status === "cancelled"}
+                  disabled={statusValue === "delivered" || statusValue === "cancelled"}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar almacén" />

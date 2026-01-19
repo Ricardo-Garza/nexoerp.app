@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { subscribeToDocument } from "@/lib/firestore"
 import { COLLECTIONS } from "@/lib/firestore"
 import type { SalesOrder } from "@/lib/types"
+import { normalizeOrderStatus } from "@/lib/utils"
 import { Timestamp } from "firebase/firestore"
 import { Package, Calendar, DollarSign, User, FileText, CreditCard, MapPin } from "lucide-react"
 
@@ -103,10 +104,10 @@ export function OrderDetailDrawer({ orderId, open, onOpenChange }: OrderDetailDr
                       <p className="text-lg font-bold break-all">{order.orderNumber || "-"}</p>
                     </div>
                     <Badge
-                      variant={statusConfig[order.status]?.variant || "secondary"}
+                      variant={statusConfig[normalizeOrderStatus(order.status)]?.variant || "secondary"}
                       className="shrink-0 text-xs px-3 py-1"
                     >
-                      {statusConfig[order.status]?.label || order.status}
+                      {statusConfig[normalizeOrderStatus(order.status)]?.label || "Desconocido"}
                     </Badge>
                   </div>
                   {order.type && (

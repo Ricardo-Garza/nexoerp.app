@@ -49,6 +49,11 @@ service cloud.firestore {
       allow update, delete: if isOwner(userId) || (isAdmin() && sameCompany(resource.data.companyId));
     }
 
+    // User preferences (subcollections)
+    match /users/{userId}/preferences/{prefId} {
+      allow read, write: if isOwner(userId);
+    }
+
     // CRM Collections
     match /customers/{customerId} {
       allow read: if isAuthenticated();

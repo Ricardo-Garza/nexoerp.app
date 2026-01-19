@@ -9,6 +9,7 @@ import type { SalesOrder } from "@/lib/types"
 import { Timestamp } from "firebase/firestore"
 import { useEffect, useState } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { normalizeOrderStatus } from "@/lib/utils"
 
 interface MonthlyData {
   month: string
@@ -48,7 +49,8 @@ export function SalesChart() {
 
     salesOrders.forEach((order: SalesOrder) => {
       try {
-        if (order && ["confirmed", "in_progress", "delivered", "invoiced", "invoiced_partial"].includes(order.status)) {
+        const statusValue = normalizeOrderStatus(order?.status)
+        if (order && ["confirmed", "in_progress", "delivered", "invoiced", "invoiced_partial"].includes(statusValue)) {
           const orderDate = order.orderDate instanceof Timestamp ? order.orderDate.toDate() : new Date(order.orderDate)
           if (!latestOrderDate || orderDate > latestOrderDate) {
             latestOrderDate = orderDate
@@ -67,7 +69,8 @@ export function SalesChart() {
       targetYear = latestOrderDate.getFullYear()
       salesOrders.forEach((order: SalesOrder) => {
         try {
-          if (order && ["confirmed", "in_progress", "delivered", "invoiced", "invoiced_partial"].includes(order.status)) {
+          const statusValue = normalizeOrderStatus(order?.status)
+          if (order && ["confirmed", "in_progress", "delivered", "invoiced", "invoiced_partial"].includes(statusValue)) {
             const orderDate =
               order.orderDate instanceof Timestamp ? order.orderDate.toDate() : new Date(order.orderDate)
             if (orderDate && orderDate.getFullYear() === targetYear) {

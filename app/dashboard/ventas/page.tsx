@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FileText, XCircle, BarChart3, Plus, Search, File, TrendingUp, Clock, Package, X, RotateCcw } from "lucide-react"
 import { formatCurrency } from "@/lib/utils/sales-calculations"
+import { normalizeOrderStatus } from "@/lib/utils"
 import type { SalesOrder } from "@/lib/types"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
@@ -46,21 +47,21 @@ export default function VentasPage() {
   const activeOrders = useMemo(() => {
     return salesOrders.filter((order) => {
       // Active orders: not cancelled or returned
-      const isActive = order.status !== "cancelled" && order.status !== "returned"
+      const statusValue = normalizeOrderStatus(order.status)
+      const isActive = statusValue !== "cancelled" && statusValue !== "returned"
 
       const matchesSearch =
         order.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.customerName?.toLowerCase().includes(searchTerm.toLowerCase())
 
-      const matchesStatus = statusFilter === "all" || order.status === statusFilter
+      const matchesStatus = statusFilter === "all" || statusValue === statusFilter
 
       return isActive && matchesSearch && matchesStatus
     })
   }, [salesOrders, searchTerm, statusFilter])
 
   const getStatusBadge = (status: SalesOrder["status"] | any) => {
-    // Handle corrupted status data defensively
-    const statusValue = typeof status === "string" ? status : status?.status || "unknown"
+    const statusValue = normalizeOrderStatus(status)
     
     const variants = {
       draft: { label: "Borrador", variant: "secondary" as const },
@@ -322,7 +323,8 @@ export default function VentasPage() {
                               >
                                 <File className="w-4 h-4" />
                               </Button>
-                              {(order.status === "confirmed" || order.status === "in_progress") && (
+                              {(normalizeOrderStatus(order.status) === "confirmed" ||
+                                normalizeOrderStatus(order.status) === "in_progress") && (
                                 <Button
                                   variant="ghost"
                                   size="sm"

@@ -8,6 +8,7 @@ import type { SalesOrder } from "@/lib/types"
 import { useEffect, useState } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Package } from "lucide-react"
+import { normalizeOrderStatus } from "@/lib/utils"
 
 interface ProductSales {
   name: string
@@ -31,7 +32,8 @@ export function TopProducts() {
 
     salesOrders.forEach((order: SalesOrder) => {
       try {
-        if (order && ["confirmed", "in_progress", "delivered", "invoiced", "invoiced_partial"].includes(order.status)) {
+        const statusValue = normalizeOrderStatus(order?.status)
+        if (order && ["confirmed", "in_progress", "delivered", "invoiced", "invoiced_partial"].includes(statusValue)) {
           const items = order.items || order.lines || []
           items.forEach((item) => {
             const productName = item.nombre || item.productName || "Producto Desconocido"

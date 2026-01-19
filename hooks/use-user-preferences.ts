@@ -63,7 +63,11 @@ export function useUserPreferences() {
 
     try {
       const db = getFirebaseDb()
-      const prefsRef = doc(db, `users/${user.uid}/preferences/inventoryTable`)
+      const prefsPath = `users/${user.uid}/preferences/inventoryTable`
+      if (process.env.NODE_ENV !== "production") {
+        console.info("[Preferences] Loading preferences from:", prefsPath)
+      }
+      const prefsRef = doc(db, prefsPath)
       const prefsSnap = await getDoc(prefsRef)
 
       if (prefsSnap.exists()) {
@@ -78,9 +82,22 @@ export function useUserPreferences() {
         })
       } else {
         setPreferences(DEFAULT_PREFERENCES)
+        try {
+          await setDoc(prefsRef, DEFAULT_PREFERENCES, { merge: true })
+        } catch (error) {
+          if ((error as { code?: string }).code === "permission-denied") {
+            console.warn("[Preferences] Missing permissions to create defaults; using local defaults.")
+          } else {
+            console.error("[Preferences] Error creating default preferences:", error)
+          }
+        }
       }
     } catch (error) {
-      console.error("[Preferences] Error loading preferences:", error)
+      if ((error as { code?: string }).code === "permission-denied") {
+        console.warn("[Preferences] Missing permissions; using local defaults.")
+      } else {
+        console.error("[Preferences] Error loading preferences:", error)
+      }
       setPreferences(DEFAULT_PREFERENCES)
     } finally {
       setLoading(false)

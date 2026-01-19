@@ -13,6 +13,7 @@ import { formatCurrency } from "@/lib/utils/sales-calculations"
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from "date-fns"
 import { es } from "date-fns/locale"
 import type { SalesOrder } from "@/lib/types"
+import { normalizeOrderStatus } from "@/lib/utils"
 
 type DateRange = {
   start: Date
@@ -115,7 +116,8 @@ export function ReportesTab() {
 
     // Count by status
     const statusCounts = filteredOrders.reduce((acc, order) => {
-      acc[order.status || "unknown"] = (acc[order.status || "unknown"] || 0) + 1
+      const statusValue = normalizeOrderStatus(order.status)
+      acc[statusValue || "unknown"] = (acc[statusValue || "unknown"] || 0) + 1
       return acc
     }, {} as Record<string, number>)
 
