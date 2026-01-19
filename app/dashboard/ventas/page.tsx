@@ -1,4 +1,6 @@
-﻿import { useState, useMemo } from "react"
+﻿"use client"
+
+import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { useSalesData } from "@/hooks/use-sales-data"
