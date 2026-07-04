@@ -31,7 +31,7 @@ export function QueriesTab({
   const [editingQuery, setEditingQuery] = useState<BIQuery | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
 
-  const filteredQueries = queries.filter((q) => q.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredQueries = queries.filter((q) => (q.name ?? q.nombre ?? '').toLowerCase().includes(searchTerm.toLowerCase()))
 
   const handleAdd = () => {
     setEditingQuery(null)

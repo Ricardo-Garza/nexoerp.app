@@ -21,7 +21,7 @@ interface TicketFormDialogProps {
 }
 
 export function TicketFormDialog({ open, onOpenChange, onSubmit, customers, nextTicketNumber }: TicketFormDialogProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     clienteId: "",
     clienteNombre: "",
     canal: "email" as const,

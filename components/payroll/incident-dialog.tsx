@@ -20,7 +20,7 @@ interface IncidentDialogProps {
 }
 
 export function IncidentDialog({ open, onOpenChange, onSave, incident, employees }: IncidentDialogProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     empleadoId: "",
     tipo: "falta" as "falta" | "retardo" | "permiso" | "incapacidad" | "vacaciones" | "suspension",
     fechaInicio: "",

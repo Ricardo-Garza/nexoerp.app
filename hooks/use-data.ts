@@ -7,7 +7,7 @@ import { getItems, addItem, updateItem, deleteItem, initializeMockData } from "@
  * @deprecated Use hooks/use-firestore.ts for new implementations
  * This hook uses localStorage and is kept for backward compatibility
  */
-export function useData<T extends { id: string | number }>(collection: string) {
+export function useData<T extends { id: string | number }>(collection: string, initialItems?: T[]) {
   const [items, setItems] = useState<T[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -15,18 +15,21 @@ export function useData<T extends { id: string | number }>(collection: string) {
   useEffect(() => {
     initializeMockData()
     loadItems()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadItems = useCallback(() => {
     setLoading(true)
     const data = getItems<T>(collection as any)
     const sanitized = Array.isArray(data) ? data.filter((item) => item && typeof item === "object") : []
-    setItems(sanitized)
+    // Semilla local: si el storage está vacío y la página aporta datos demo, úsalos
+    setItems(sanitized.length === 0 && initialItems ? initialItems : sanitized)
     setLoading(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [collection])
 
   const create = useCallback(
-    async (item: Omit<T, "id">) => {
+    async (item: Omit<T, "id"> & { id?: T["id"] }) => {
       const newItem = addItem<T>(collection as any, item as T)
       loadItems()
       return newItem
@@ -58,6 +61,10 @@ export function useData<T extends { id: string | number }>(collection: string) {
     create,
     update,
     remove,
+    // Alias legacy: varias páginas v0 consumen estos nombres
+    addItem: create,
+    updateItem: update,
+    deleteItem: remove,
     refresh: loadItems,
   }
 }

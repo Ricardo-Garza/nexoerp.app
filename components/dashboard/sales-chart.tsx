@@ -66,7 +66,7 @@ export function SalesChart() {
     })
 
     if (Object.keys(monthlyTotals).length === 0 && latestOrderDate) {
-      targetYear = latestOrderDate.getFullYear()
+      targetYear = (latestOrderDate as Date).getFullYear()
       salesOrders.forEach((order: SalesOrder) => {
         try {
           const statusValue = normalizeOrderStatus(order?.status)

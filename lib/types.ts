@@ -2,6 +2,8 @@ import type { Timestamp } from "firebase/firestore"
 
 // Base interface for all documents
 export interface BaseDocument {
+  /** Usuario que creó/posee el documento (auditoría; opcional en legacy) */
+  userId?: string
   id: string
   createdAt?: Timestamp
   updatedAt?: Timestamp
@@ -31,6 +33,8 @@ export interface OrderItem {
 
 // Products
 export interface Product extends BaseDocument {
+  /** Stock plano legacy (la fuente de verdad moderna es el módulo de inventario) */
+  stock?: number
   sku: string
   name: string
   description?: string
@@ -137,7 +141,7 @@ export interface Customer extends BaseDocument {
   telefono: string
   direccion?: string
   ciudad?: string
-  estado?: string
+  entidadFederativa?: string
   codigoPostal?: string
   limiteCredito: number
   saldo: number // Calculated from accountsReceivable
@@ -306,6 +310,8 @@ export interface SalesOrderLine {
 }
 
 export interface SalesOrder extends BaseDocument {
+  /** Alias es-MX de status usado por hooks legacy */
+  estado?: string
   // Order identification
   type: "quotation" | "order"
   folio: string
@@ -338,7 +344,7 @@ export interface SalesOrder extends BaseDocument {
 
   // Delivery
   deliveryAddress?: string
-  deliveryDate?: Timestamp | string
+  deliveryDate?: Timestamp | string | null
   deliveryNotes?: string
 
   // References
@@ -357,6 +363,37 @@ export interface SalesOrder extends BaseDocument {
   createdBy: string
   confirmedBy?: string
 
+  // Alias inglés del almacén usado por la generación anterior del formulario
+  warehouseId?: string
+  warehouseName?: string
+  // Campos opcionales de la generación anterior del módulo de ventas
+  // (sales-order-form, order-detail-drawer, generate-*-dialog los consumen;
+  // los documentos Firestore históricos pueden traer esta forma)
+  orderNumber?: string
+  lines?: SalesOrderLine[]
+  billingAddress?: string
+  shippingAddress?: string
+  expirationDate?: Timestamp | string | null
+  paymentTerms?: string
+  paymentMethod?: string
+  cfdiUse?: string
+  priceList?: string
+  exchangeRate?: number
+  taxTotal?: number
+  discountTotal?: number
+  internalNotes?: string
+  termsAndConditions?: string
+  customerSignature?: string
+  signatureDate?: Timestamp | string
+  signedBy?: string
+  deliveryIds?: string[]
+  invoiceIds?: string[]
+  salesPerson?: string
+  source?: string
+  confirmedAt?: Timestamp | string
+  cancelledAt?: Timestamp | string
+  cancellationReason?: string
+
   // Cancel/Return fields
   cancelReturnType?: "cancellation" | "return"
   cancelReturnReason?: string
@@ -367,6 +404,12 @@ export interface SalesOrder extends BaseDocument {
 }
 
 export interface SalesOrderItem {
+  productName?: string
+  quantity?: number
+  total?: number
+  // Campos de la generación anterior (documentos históricos)
+  productId?: string
+  variantId?: string
   productoId: string
   sku: string
   nombre: string
@@ -396,6 +439,20 @@ export interface SalesOrderItem {
 }
 
 export interface Delivery extends BaseDocument {
+  [key: string]: any
+  // Campos de la generación anterior
+  deliveryNumber?: string
+  salesOrderId?: string
+  customerId?: string
+  deliveryDate?: Timestamp | string
+  status?: string
+  salesOrderNumber?: string
+  customerName?: string
+  shippingAddress?: string
+  inventoryProcessed?: boolean
+  inventoryProcessedAt?: Timestamp | string
+  notes?: string
+  lines?: SalesOrderLine[]
   folio: string
 
   // References
@@ -446,6 +503,11 @@ export interface DeliveryItem {
 }
 
 export interface Invoice extends BaseDocument {
+  [key: string]: any
+  amountPaid?: number
+  // Campos de la generación anterior
+  paymentStatus?: string
+  invoiceNumber?: string
   folio: string
   serie?: string
 
@@ -899,7 +961,7 @@ export interface Employee extends BaseDocument {
   telefono: string
   direccion?: string
   ciudad?: string
-  estado?: string
+  entidadFederativa?: string
   codigoPostal?: string
   contactoEmergencia?: string
   telefonoEmergencia?: string
@@ -1011,6 +1073,7 @@ export interface ReviewScore {
 }
 
 export interface EcommerceProduct extends BaseDocument {
+  status?: string
   productoId: string // Reference to main product
   sku: string
   nombre: string
@@ -1431,7 +1494,7 @@ export interface PayrollRun extends BaseDocument {
   autorizadoPor?: string
   fechaAutorizacion?: Timestamp | string
   pagadoPor?: string
-  fechaPago?: Timestamp | string
+  fechaPagoReal?: Timestamp | string
   metodoPago: "transferencia" | "efectivo" | "cheque"
   // Accounting integration
   polizaGenerada: boolean
@@ -1477,6 +1540,10 @@ export interface Incident extends BaseDocument {
 }
 
 export interface BenefitDeduction extends BaseDocument {
+  // Campos legacy del diálogo de conceptos
+  porcentaje?: number
+  tipocalculo?: string
+  monto?: number
   tipo: "prestacion" | "deduccion"
   clave: string
   nombre: string
@@ -1495,6 +1562,8 @@ export interface BenefitDeduction extends BaseDocument {
 }
 
 export interface Candidate extends BaseDocument {
+  /** Alias legacy de posición */
+  puesto?: string
   nombre: string
   apellidoPaterno: string
   apellidoMaterno: string
@@ -1558,6 +1627,9 @@ export interface TrainingCourse extends BaseDocument {
 // ============================================================================
 
 export interface BIQuery extends BaseDocument {
+  // Alias inglés usados por componentes BI
+  name?: string
+  description?: string
   nombre: string
   descripcion?: string
   categoria: "ventas" | "inventario" | "compras" | "financiero" | "rrhh" | "produccion" | "custom"
@@ -1649,6 +1721,11 @@ export interface BIWidget {
 }
 
 export interface BIReport extends BaseDocument {
+  // Alias/campos usados por componentes BI
+  name?: string
+  format?: string
+  schedule?: { frequency?: "daily" | "weekly" | "monthly"; nextRun?: string | null }
+  recipients?: string[]
   nombre: string
   descripcion?: string
   categoria: "ventas" | "inventario" | "compras" | "financiero" | "rrhh" | "custom"
@@ -1675,7 +1752,7 @@ export interface BIReport extends BaseDocument {
   // Ownership
   creadoPor: string
   userId: string
-  status: "active" | "inactive"
+  status: "active" | "inactive" | "paused"
 }
 
 export interface BIExport extends BaseDocument {
@@ -1713,4 +1790,828 @@ export interface CalendarEvent extends BaseDocument {
   leadName?: string
   status: "programado" | "completado" | "cancelado"
   color?: string
+}
+
+
+// ============================================================
+// Tipos portados del repositorio donante (v0-flower-shop-erp-ricky)
+// Los hooks/componentes del oficial ya los importaban pero no existían
+// (ver docs/REPOSITORY_COMPARISON_AND_PORTING_PLAN.md)
+// ============================================================
+
+export interface AccountPayable extends BaseDocument {
+  [key: string]: any
+  proveedorId: string
+  proveedorNombre: string
+  facturaProveedor: string // Supplier invoice number
+  ordenCompraId?: string
+  recepcionId?: string
+  fecha: Timestamp | string
+  fechaVencimiento: Timestamp | string
+  montoOriginal: number
+  montoPagado: number
+  saldo: number
+  moneda: "MXN" | "USD" | "EUR"
+  estado: "pendiente" | "parcial" | "pagada" | "vencida"
+  autorizada: boolean
+  autorizadoPor?: string
+  pagos: SupplierPayment[]
+  notas?: string
+}
+
+export interface AccountReceivable extends BaseDocument {
+  [key: string]: any
+  clienteId: string
+  clienteNombre: string
+  documentoId?: string // Reference to invoice or document
+  documentoFolio?: string
+  monto: number
+  montoOriginal: number
+  montoPagado: number
+  saldo: number
+  fechaEmision: Timestamp | string
+  fechaVencimiento: Timestamp | string
+  estado: "pendiente" | "parcial" | "pagada" | "vencida"
+  pagos: Payment[]
+  notas?: string
+}
+
+export interface BankAccount extends BaseDocument {
+  [key: string]: any
+  banco: string // Bank name
+  alias: string // Friendly name for the account
+  numeroEnmascarado: string // Masked number (e.g., "****1234")
+  numeroCompleto?: string // Full account number (encrypted)
+  tipo: "cheques" | "inversion" | "ahorro" | "nomina"
+  moneda: "MXN" | "USD" | "EUR"
+  saldoInicial: number
+  saldoActual: number
+  estado: "activa" | "inactiva" | "suspendida"
+  clabe?: string
+  sucursal?: string
+  ejecutivo?: string
+  notas?: string
+}
+
+export interface BankStatement extends BaseDocument {
+  [key: string]: any
+  cuentaId: string
+  periodo: string // YYYY-MM format
+  fechaInicio: Timestamp | string
+  fechaFin: Timestamp | string
+  archivoUrl?: string // Storage link to uploaded CSV/PDF
+  archivoNombre?: string
+  saldoInicial: number
+  saldoFinal: number
+  totalIngresos: number
+  totalEgresos: number
+  estado: "procesando" | "conciliado" | "parcial"
+  transaccionesConciliadas: number
+  transaccionesPendientes: number
+  diferencia: number
+}
+
+export interface BankTransaction extends BaseDocument {
+  [key: string]: any
+  cuentaId: string // Reference to BankAccount
+  tipo: "ingreso" | "egreso" | "transferencia"
+  concepto: string
+  monto: number
+  fecha: Timestamp | string
+  referencia?: string
+  origen?: string // For transfers
+  destino?: string // For transfers
+  categoria?: string
+  conciliado: boolean
+  conciliadoFecha?: Timestamp | string
+  notas?: string
+}
+
+export interface BankTransfer extends BaseDocument {
+  [key: string]: any
+  tipo: "interna" | "externa" | "spei" | "internacional"
+  cuentaOrigenId: string
+  cuentaDestinoId?: string // For internal transfers
+  beneficiario: string
+  clabe?: string
+  banco?: string
+  monto: number
+  moneda: "MXN" | "USD" | "EUR"
+  fechaProgramada: Timestamp | string
+  fechaEjecutada?: Timestamp | string
+  referencia?: string
+  concepto: string
+  estado: "programada" | "procesando" | "completada" | "fallida" | "cancelada"
+  comision?: number
+  layoutGenerado: boolean
+  layoutUrl?: string // Link to generated file
+  notas?: string
+}
+
+export interface CFDI extends BaseDocument {
+  [key: string]: any
+  clienteId: string
+  clienteNombre: string
+  clienteRFC: string
+  folio: string
+  uuid?: string // After "timbrado"
+  serie?: string
+  fecha: Timestamp | string
+  subtotal: number
+  iva: number
+  total: number
+  moneda: "MXN" | "USD"
+  tipoCambio?: number
+  formaPago: string
+  metodoPago: string
+  usoCFDI: string
+  items: CFDIItem[]
+  estado: "pendiente" | "timbrada" | "cancelada"
+  xmlUrl?: string
+  pdfUrl?: string
+  fechaTimbrado?: Timestamp | string
+  fechaCancelacion?: Timestamp | string
+  motivoCancelacion?: string
+}
+
+export interface CashFlowPeriod {
+  [key: string]: any
+  periodo: string // Week/Month identifier
+  fechaInicio: Date
+  fechaFin: Date
+  ingresosReales: number
+  ingresosProyectados: number
+  egresosReales: number
+  egresosProyectados: number
+  saldoInicial: number
+  saldoFinal: number
+  saldoProyectado: number
+}
+
+export interface Check extends BaseDocument {
+  [key: string]: any
+  numero: string
+  cuentaId: string // Reference to BankAccount
+  beneficiario: string
+  monto: number
+  fechaEmision: Timestamp | string
+  fechaCobro?: Timestamp | string
+  concepto: string
+  estado: "emitido" | "entregado" | "cobrado" | "cancelado"
+  notas?: string
+}
+
+export interface CustomerDocument extends BaseDocument {
+  [key: string]: any
+  clienteId: string
+  clienteNombre: string
+  tipo: "cotizacion" | "pedido" | "remision" | "factura" | "nota_credito"
+  folio: string
+  fecha: Timestamp | string
+  monto: number
+  estado: "borrador" | "enviada" | "aceptada" | "rechazada" | "cancelada"
+  items: DocumentItem[]
+  archivoUrl?: string
+  notas?: string
+}
+
+export interface FieldServiceMetrics {
+  [key: string]: any
+  serviciosActivos: number
+  tecnicosEnCampo: number
+  serviciosDelMes: number
+  tiempoPromedioHoras: number
+  serviciosPorEstado: Record<string, number>
+  serviciosPorPrioridad: Record<string, number>
+  eficienciaTecnicos: number // Percentage
+  cumplimientoSLA: number // Percentage
+}
+
+export interface FieldServiceOrder extends BaseDocument {
+  [key: string]: any
+  folio: string // SRV-001
+  clienteId: string
+  clienteNombre: string
+  contacto: string
+  telefono: string
+  direccion: string
+  ciudad?: string
+  entidadFederativa?: string
+  codigoPostal?: string
+  latitud: number
+  longitud: number
+  tipo: "mantenimiento" | "reparacion" | "instalacion" | "inspeccion" | "emergencia"
+  categoria: string
+  descripcion: string
+  prioridad: "baja" | "media" | "alta" | "urgente"
+  estado: "nuevo" | "asignado" | "en_ruta" | "en_sitio" | "finalizado" | "cancelado" | "draft" | "completado"
+  slaHoras: number
+  fechaCreacion: Timestamp | string
+  fechaProgramada: Timestamp | string
+  ventanaInicio?: string // e.g., "08:00"
+  ventanaFin?: string // e.g., "12:00"
+  tecnicoId?: string
+  tecnicoNombre?: string
+  checkIn?: Timestamp | string
+  checkOut?: Timestamp | string
+  duracionMinutos?: number
+  evidencias: ServiceEvidence[]
+  firmaCliente?: string
+  checklist: ChecklistItem[]
+  refacciones: RefaccionUsada[]
+  costoServicio: number
+  costoRefacciones: number
+  costoTotal: number
+  notas: string
+  bitacora: ServiceLogEntry[]
+}
+
+export interface FieldTechnician extends BaseDocument {
+  [key: string]: any
+  nombre: string
+  email: string
+  telefono: string
+  especialidades: string[]
+  zona: string
+  disponibilidad: "disponible" | "en_servicio" | "no_disponible" | "descanso"
+  rating: number // 0-5
+  totalServicios: number
+  serviciosCompletados: number
+  unidad?: string // Vehicle info
+  placas?: string
+  latitudActual?: number
+  longitudActual?: number
+  ultimaActualizacion?: Timestamp | string
+  certificaciones?: string[]
+  nivelExperiencia: "junior" | "mid" | "senior"
+}
+
+export interface GoodsReceipt extends BaseDocument {
+  [key: string]: any
+  folio: string
+  ordenCompraId: string
+  ordenCompraFolio: string
+  proveedorId: string
+  proveedorNombre: string
+  fecha: Timestamp | string
+  items: GoodsReceiptItem[]
+  estado: "completa" | "parcial" | "devolucion"
+  facturaVinculada: boolean
+  facturaId?: string
+  notas?: string
+}
+
+export interface InventoryStock extends BaseDocument {
+  [key: string]: any
+  almacenId: string
+  almacenNombre: string
+  productoId: string
+  productoNombre: string
+  sku: string
+  cantidadActual: number
+  cantidadDisponible: number // Actual - Reserved
+  cantidadReservada: number // For orders
+  cantidadEnTransito: number // In transfer
+  ubicacionFisica?: string // e.g., "A-01", "B-12"
+  lote?: string
+  fechaVencimiento?: Timestamp | string
+  costoPromedio: number
+  metodoValuacion: "promedio" | "PEPS" | "UEPS"
+  minimoStock?: number
+  maximoStock?: number
+  puntoReorden?: number
+  ultimaActualizacion: Timestamp | string
+}
+
+export interface Lead extends BaseDocument {
+  [key: string]: any
+  empresa: string
+  contacto: string
+  email: string
+  telefono: string
+  fuente: "web" | "referido" | "cold_call" | "evento" | "otro"
+  etapa: "prospecto" | "contactado" | "calificado" | "propuesta" | "negociacion" | "cerrado" | "perdido"
+  valorEstimado: number
+  probabilidad: number // 0-100
+  fechaCierre?: Timestamp | string
+  notas?: string
+  convertidoACliente: boolean
+  clienteId?: string
+}
+
+export interface MaterialPlanning extends BaseDocument {
+  [key: string]: any
+  material: string
+  materialId: string
+  available: number
+  required: number
+  unit: string
+  purchaseOrderId?: string
+  status: "sufficient" | "pending" | "critical"
+  lastUpdated: Timestamp | string
+}
+
+export interface PhysicalCount extends BaseDocument {
+  [key: string]: any
+  folio: string
+  almacenId: string
+  almacenNombre: string
+  fechaConteo: Timestamp | string
+  fechaCierre?: Timestamp | string
+  estado: "en_progreso" | "completado" | "ajustado" | "finalizado"
+  conteos: CountItem[]
+  totalDiferencias: number
+  valorDiferencias: number
+  contadoPor: string
+  supervisadoPor?: string
+  notas?: string
+}
+
+export interface ProductFormula extends BaseDocument {
+  [key: string]: any
+  productId: string
+  productName: string
+  version: number
+  components: FormulaComponent[]
+  laborCost: number
+  manufacturingCost: number
+  totalCost: number
+  isActive: boolean
+  createdBy?: string
+  approvedBy?: string
+  approvedDate?: Timestamp | string
+}
+
+export interface ProductionOrder extends BaseDocument {
+  [key: string]: any
+  folio: string // PROD-001
+  customerOrderId?: string // Link to sales order
+  productId: string
+  productName: string
+  quantity: number
+  completed: number
+  status: "pending" | "in_process" | "completed" | "on_hold" | "cancelled"
+  priority: "low" | "normal" | "high" | "urgent"
+  startDate: Timestamp | string
+  endDate: Timestamp | string
+  scheduledStart?: Timestamp | string
+  scheduledEnd?: Timestamp | string
+  assignedTo?: string[] // Worker IDs
+  formulaId?: string
+  batchNumber?: string
+  notes?: string
+}
+
+export interface ProductionResult extends BaseDocument {
+  [key: string]: any
+  productionOrderId: string
+  orderNumber: string
+  productName: string
+  plannedQuantity: number
+  producedQuantity: number
+  secondQualityQuantity: number
+  efficiency: number
+  productionDate: Timestamp | string
+  notes?: string
+}
+
+export interface PurchaseOrder extends BaseDocument {
+  [key: string]: any
+  folio: string
+  proveedorId: string
+  proveedorNombre: string
+  fecha: Timestamp | string
+  fechaEntrega: Timestamp | string
+  subtotal: number
+  iva: number
+  total: number
+  moneda: "MXN" | "USD" | "EUR"
+  tolerancia: number // Percentage allowed variance
+  estado: "borrador" | "autorizada" | "enviada" | "recibida_parcial" | "recibida_completa" | "cancelada"
+  items: PurchaseOrderItem[]
+  autorizadoPor?: string
+  fechaAutorizacion?: Timestamp | string
+  notas?: string
+}
+
+export interface QualityCertificate extends BaseDocument {
+  [key: string]: any
+  productId: string
+  productName: string
+  batchNumber: string
+  productionOrderId: string
+  inspectionDate: Timestamp | string
+  inspector: string
+  status: "approved" | "review" | "rejected"
+  rating: number // 0-100
+  defectsFound?: string[]
+  notas?: string
+}
+
+export interface ReconciliationItem extends BaseDocument {
+  [key: string]: any
+  estadoCuentaId: string
+  transaccionSistemaId?: string
+  fecha: Timestamp | string
+  concepto: string
+  montoSistema: number
+  montoBanco: number
+  diferencia: number
+  estado: "conciliado" | "pendiente" | "diferencia"
+  notas?: string
+}
+
+export interface RefaccionUsada {
+  [key: string]: any
+  id: string
+  productoId?: string
+  descripcion: string
+  cantidad: number
+  costoUnitario: number
+  costoTotal: number
+}
+
+export interface ReorderRule extends BaseDocument {
+  [key: string]: any
+  almacenId: string
+  productoId: string
+  productoNombre: string
+  sku: string
+  minimoStock: number
+  maximoStock: number
+  puntoReorden: number
+  cantidadOrden: number
+  proveedorId?: string
+  proveedorNombre?: string
+  leadTime: number // Days
+  activo: boolean
+}
+
+export interface ServiceMetrics {
+  [key: string]: any
+  totalTickets: number
+  ticketsAbiertos: number
+  ticketsEnProceso: number
+  ticketsResueltos: number
+  tiempoPromedioRespuesta: number // Hours
+  tiempoPromedioResolucion: number // Hours
+  satisfaccionPromedio: number // 1-5
+  cumplimientoSLA: number // Percentage
+  distribucionCanales: Record<string, number>
+  distribucionCategorias: Record<string, number>
+  distribucionSatisfaccion: Record<number, number> // Rating count
+}
+
+export interface ServiceTicket extends BaseDocument {
+  [key: string]: any
+  numero: string // TKT-001
+  clienteId?: string
+  clienteNombre: string
+  canal: "whatsapp" | "email" | "telefono" | "portal" | "presencial"
+  asunto: string
+  descripcion: string
+  categoria: string
+  subcategoria?: string
+  prioridad: "baja" | "media" | "alta" | "critica"
+  estado: "abierto" | "en_proceso" | "en_espera" | "resuelto" | "cerrado"
+  slaObjetivo: number // Hours
+  fechaCreacion: Timestamp | string
+  fechaUltimaActualizacion: Timestamp | string
+  fechaPrimeraRespuesta?: Timestamp | string
+  fechaResolucion?: Timestamp | string
+  fechaCierre?: Timestamp | string
+  agenteAsignado?: string
+  departamento?: string
+  etiquetas: string[]
+  adjuntos: TicketAttachment[]
+  notasInternas: TicketNote[]
+  historial: TicketActivity[]
+  calificacion?: number // 1-5 stars (CSAT)
+  comentarioCliente?: string
+  tiempoPrimeraRespuesta?: number // Minutes
+  tiempoResolucion?: number // Minutes
+  slaViolado: boolean
+}
+
+export interface StockMovement extends BaseDocument {
+  [key: string]: any
+  folio: string
+  almacenId: string
+  almacenNombre: string
+  productoId: string
+  productoNombre: string
+  sku: string
+  tipo: string // uniones divergentes entre generaciones (entrada/salida/ajuste/compra/venta/recepcion_compra/...)
+  cantidad: number
+  cantidadAnterior: number
+  cantidadNueva: number
+  costo?: number
+  costoTotal?: number
+  fecha: Timestamp | string
+  referencia?: string // e.g., "OC-123", "FAC-456"
+  motivo: string
+  origenReferencia?: string // For transfers/returns
+  destinoReferencia?: string
+  transferenciaId?: string // Link to transfer if applicable
+  usuarioId?: string
+  usuarioNombre?: string
+  notas?: string
+}
+
+export interface Supplier extends BaseDocument {
+  [key: string]: any
+  nombre: string
+  razonSocial: string
+  rfc: string
+  email: string
+  telefono: string
+  direccion?: string
+  ciudad?: string
+  entidadFederativa?: string
+  codigoPostal?: string
+  pais: string
+  contactoPrincipal: string
+  cuentaBancaria?: string
+  clabe?: string
+  banco?: string
+  diasCredito: number
+  limiteCredito: number
+  saldoPorPagar: number // Calculated from accountsPayable
+  moneda: "MXN" | "USD" | "EUR"
+  rating: number // 0-5
+  estadoProveedor: "activo" | "inactivo" | "suspendido"
+  categorias: string[] // Tags for categorization
+  productosSuministrados: string[]
+  comprasTotales: number
+  ultimaCompra?: Timestamp | string
+  leadTime?: number // Days
+  notas?: string
+}
+
+export interface SupplierDocument extends BaseDocument {
+  [key: string]: any
+  proveedorId: string
+  proveedorNombre: string
+  tipo: "factura" | "contrato" | "cotizacion" | "orden" | "recepcion" | "otro"
+  folio: string
+  fecha: Timestamp | string
+  monto?: number
+  moneda: "MXN" | "USD" | "EUR"
+  archivoUrl?: string // Storage link
+  archivoNombre?: string
+  estado: "activo" | "archivado" | "cancelado"
+  notas?: string
+}
+
+export interface SupplierProduct extends BaseDocument {
+  [key: string]: any
+  proveedorId: string
+  proveedorNombre: string
+  sku: string
+  nombre: string
+  descripcion?: string
+  unidadMedida: string
+  moneda: "MXN" | "USD" | "EUR"
+  costoUltimo: number
+  costoPromedio?: number
+  leadTime?: number // Days
+  cantidadMinima?: number
+  activo: boolean
+  ultimaActualizacion: Timestamp | string
+  notas?: string
+}
+
+export interface TechnicianLocation extends BaseDocument {
+  [key: string]: any
+  tecnicoId: string
+  tecnicoNombre: string
+  latitud: number
+  longitud: number
+  precision?: number
+  velocidad?: number
+  rumbo?: number
+  timestamp: Timestamp | string
+  servicioActualId?: string
+}
+
+export interface Warehouse extends BaseDocument {
+  [key: string]: any
+  nombre: string
+  codigo: string
+  ubicacion: string
+  ciudad?: string
+  entidadFederativa?: string
+  codigoPostal?: string
+  responsable?: string
+  telefono?: string
+  email?: string
+  tipo: "principal" | "sucursal" | "bodega" | "transito" | "consignacion"
+  estado: "activo" | "inactivo" | "mantenimiento"
+  capacidadM3?: number
+  area?: number
+  notas?: string
+}
+
+export interface WarehouseTransfer extends BaseDocument {
+  [key: string]: any
+  folio: string
+  almacenOrigenId: string
+  almacenOrigenNombre: string
+  almacenDestinoId: string
+  almacenDestinoNombre: string
+  productos: TransferItem[]
+  fechaSolicitud: Timestamp | string
+  fechaEnvio?: Timestamp | string
+  fechaRecepcion?: Timestamp | string
+  estado: "solicitada" | "aprobada" | "en_transito" | "recibida" | "cancelada" | "completada"
+  solicitadoPor: string
+  aprobadoPor?: string
+  recibidoPor?: string
+  observaciones?: string
+  motivoCancelacion?: string
+}
+
+export interface DocumentItem {
+  [key: string]: any
+  productoId?: string
+  descripcion: string
+  cantidad: number
+  precioUnitario: number
+  subtotal: number
+}
+
+export interface Payment {
+  [key: string]: any
+  id: string
+  fecha: Timestamp | string
+  monto: number
+  metodoPago: "efectivo" | "transferencia" | "cheque" | "tarjeta"
+  referencia?: string
+  cuentaBancariaId?: string
+  chequeId?: string
+  notas?: string
+}
+
+export interface CFDIItem {
+  [key: string]: any
+  claveProdServ: string
+  claveUnidad: string
+  descripcion: string
+  cantidad: number
+  valorUnitario: number
+  importe: number
+  objetoImp: string
+}
+
+export interface PurchaseOrderItem {
+  [key: string]: any
+  productoId?: string
+  sku: string
+  descripcion: string
+  cantidad: number
+  precioUnitario: number
+  subtotal: number
+  cantidadRecibida: number
+}
+
+export interface GoodsReceiptItem {
+  [key: string]: any
+  productoId?: string
+  sku: string
+  descripcion: string
+  cantidadOrdenada: number
+  cantidadRecibida: number
+  precioUnitario: number
+}
+
+export interface SupplierPayment {
+  [key: string]: any
+  id: string
+  fecha: Timestamp | string
+  monto: number
+  metodoPago: "efectivo" | "transferencia" | "cheque" | "tarjeta"
+  referencia?: string
+  cuentaBancariaId?: string
+  chequeId?: string
+  notas?: string
+}
+
+export interface TransferItem {
+  [key: string]: any
+  productoId: string
+  sku: string
+  nombre: string
+  cantidadSolicitada: number
+  cantidadEnviada?: number
+  cantidadRecibida?: number
+  costo: number
+}
+
+export interface CountItem {
+  [key: string]: any
+  productoId: string
+  sku: string
+  nombre: string
+  cantidadSistema: number
+  cantidadFisica?: number
+  diferencia: number
+  costo: number
+  valorDiferencia: number
+  ubicacion?: string
+  ajusteAplicado: boolean
+}
+
+export interface FormulaComponent {
+  [key: string]: any
+  materialId: string
+  materialName: string
+  quantity: number
+  unit: string
+  costPerUnit: number
+}
+
+export interface TicketAttachment {
+  [key: string]: any
+  id: string
+  nombre: string
+  url: string
+  tipo: string
+  tamanio: number
+  fecha: Timestamp | string
+  subidoPor: string
+}
+
+export interface TicketNote {
+  [key: string]: any
+  id: string
+  fecha: Timestamp | string
+  autor: string
+  contenido: string
+  interno: boolean
+}
+
+export interface TicketActivity {
+  [key: string]: any
+  id: string
+  fecha: Timestamp | string
+  usuario: string
+  tipo: "creacion" | "actualizacion" | "comentario" | "asignacion" | "estado" | "resolucion" | "calificacion"
+  descripcion: string
+  campoModificado?: string
+  valorAnterior?: string
+  valorNuevo?: string
+}
+
+export interface ServiceEvidence {
+  [key: string]: any
+  id: string
+  tipo: "foto_antes" | "foto_durante" | "foto_despues" | "documento"
+  url: string
+  descripcion?: string
+  fecha: Timestamp | string
+}
+
+export interface ChecklistItem {
+  [key: string]: any
+  id: string
+  descripcion: string
+  completado: boolean
+  observaciones?: string
+}
+
+export interface ServiceLogEntry {
+  [key: string]: any
+  id: string
+  fecha: Timestamp | string
+  usuario: string
+  accion: string
+  detalles?: string
+}
+
+
+// Tipos mínimos requeridos por hooks del oficial (no existían en ningún repo;
+// forma abierta hasta validar el modelo con el módulo correspondiente)
+export interface ProductoRetirado {
+  [key: string]: any
+  productId?: string
+  cantidad?: number
+}
+
+export interface ReservedMaterial {
+  [key: string]: any
+  materialId?: string
+  cantidad?: number
+}
+
+export interface ReturnLine {
+  [key: string]: any
+  productId?: string
+  quantity?: number
+}
+
+export interface SalesInvoice {
+  [key: string]: any
+  id?: string
+  folio?: string
+  total?: number
 }

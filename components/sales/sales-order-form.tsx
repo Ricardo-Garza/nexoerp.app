@@ -26,7 +26,7 @@ import { GenerateDeliveryDialog } from "./generate-delivery-dialog"
 import { GenerateInvoiceDialog } from "./generate-invoice-dialog"
 import { PostConfirmDialog } from "./post-confirm-dialog"
 import { DocumentPreview } from "@/components/documents/document-preview"
-import { serverTimestamp, where } from "firebase/firestore"
+import { serverTimestamp, where, type WithFieldValue} from "firebase/firestore"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { normalizeOrderStatus } from "@/lib/utils"
 
@@ -190,10 +190,10 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
       const warehouse = warehouses.find((w) => w.id === order.warehouseId)
 
       const isQuotationOrder = order.type === "quotation"
-      const orderData: Partial<SalesOrder> = {
+      const orderData: WithFieldValue<Partial<SalesOrder>> = {
         orderNumber: order.orderNumber || "",
         type: order.type || "order",
-        status: asDraft ? (normalizeOrderStatus(order.status) || "draft") : isQuotationOrder ? "quotation" : "confirmed",
+        status: (asDraft ? (normalizeOrderStatus(order.status) || "draft") : isQuotationOrder ? "quotation" : "confirmed") as SalesOrder["status"],
         customerId: order.customerId,
         customerName: customer?.nombre || "",
         // Always include warehouse info
@@ -229,7 +229,7 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
 
       // Generate order number if new
       if (!salesOrderId) {
-        const existingNumbers = existingOrders.map((o) => o.orderNumber)
+        const existingNumbers = existingOrders.map((o) => o.orderNumber).filter((n): n is string => Boolean(n))
         orderData.orderNumber = getNextFolio(existingNumbers, "ORD")
       }
 

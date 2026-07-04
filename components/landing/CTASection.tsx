@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowRight, MessageCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { getFirebaseDb } from "@/lib/firebase";
 
 const CTASection = () => {
   const ref = useRef(null);
@@ -27,7 +27,7 @@ const CTASection = () => {
     setIsSubmitting(true);
     
     try {
-      await addDoc(collection(db, "demo_requests"), {
+      await addDoc(collection(getFirebaseDb(), "demo_requests"), {
         name: formData.name,
         company: formData.company,
         email: formData.email,

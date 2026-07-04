@@ -1,0 +1,17 @@
+| code | name | dimension | reference_factor_note |
+| --- | --- | --- | --- |
+| EA | Pieza | count | 1 |
+| CASE | Caja | count | 1 |
+| SACHET | Sobre | count | 1 |
+| G | Gramo | mass | 1 |
+| KG | Kilogramo | mass | 1000 |
+| ML | Mililitro | volume | 1 |
+| L | Litro | volume | 1000 |
+| GAL | Galón/presentación comercial | other |  |
+| BAG | Bolsa/Pouch | count | 1 |
+| JUG | Garrafa/Galón físico | count | 1 |
+| DRUM | Porrón | count | 1 |
+| BUCKET | Cubeta | count | 1 |
+| SACK | Saco/Bulto | count | 1 |
+| BOTTLE | Botella | count | 1 |
+| JAR | Bote | count | 1 |

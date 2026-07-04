@@ -19,7 +19,7 @@ interface PayrollPeriodDialogProps {
 }
 
 export function PayrollPeriodDialog({ open, onOpenChange, onSave, period, employeeCount }: PayrollPeriodDialogProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     periodo: "",
     tipo: "quincenal" as "semanal" | "quincenal" | "mensual",
     fechaInicio: "",

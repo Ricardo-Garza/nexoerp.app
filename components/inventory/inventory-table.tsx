@@ -127,7 +127,7 @@ export function InventoryTable() {
     setReceiptDialogOpen(true)
   }
 
-  const mapProductToSupplierProduct = (product: Product): SupplierProduct => {
+  const mapProductToSupplierProduct = (product: Product): any => {
     return {
       id: product.id,
       proveedorId: (product as any).supplierId || "",
@@ -160,7 +160,7 @@ export function InventoryTable() {
       notas: (product as any).notes || "",
       notasEntrega: (product as any).notasEntrega || "",
       precios: (product as any).precios,
-    } as SupplierProduct
+    } as unknown as SupplierProduct
   }
 
   const handleEditProduct = (product: Product) => {

@@ -263,13 +263,13 @@ export function useSuppliersData() {
       // Update purchase order status
       const po = purchaseOrders.find((p) => p.id === data.ordenCompraId)
       if (po) {
-        const allItemsReceived = data.items.every((item) => item.cantidadRecibida >= item.cantidadOrdenada)
-        const someItemsReceived = data.items.some((item) => item.cantidadRecibida > 0)
+        const allItemsReceived = data.items.every((item: any) => item.cantidadRecibida >= item.cantidadOrdenada)
+        const someItemsReceived = data.items.some((item: any) => item.cantidadRecibida > 0)
         const newStatus = allItemsReceived ? "recibida_completa" : someItemsReceived ? "recibida_parcial" : po.estado
 
         await updatePurchaseOrder(po.id, {
           estado: newStatus,
-          items: data.items.map((item) => ({
+          items: data.items.map((item: any) => ({
             ...po.items.find((poi) => poi.sku === item.sku)!,
             cantidadRecibida: item.cantidadRecibida,
           })),
@@ -283,6 +283,7 @@ export function useSuppliersData() {
   )
 
   return {
+    loading,
     // Collections
     suppliers: suppliers || [],
     documents: documents || [],

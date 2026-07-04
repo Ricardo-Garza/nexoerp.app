@@ -11,6 +11,7 @@ import {
   subscribeToCollection,
   type CollectionName,
 } from "@/lib/firestore"
+import { getAuthMode } from "@/lib/config/auth-mode"
 import { getAuth } from "@/lib/firebase"
 
 export function useFirestore<T extends { id: string }>(
@@ -24,6 +25,15 @@ export function useFirestore<T extends { id: string }>(
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // Modo demo: no hay Firebase configurado. Los módulos legacy basados en
+    // Firestore muestran estado vacío; el dominio DELAR usa el store en memoria.
+    if (getAuthMode() === "demo") {
+      setItems([])
+      setLoading(false)
+      setError(null)
+      return
+    }
+
     const auth = getAuth()
     const currentUser = auth.currentUser
 
@@ -57,6 +67,11 @@ export function useFirestore<T extends { id: string }>(
 
   const loadItems = useCallback(
     async (userConstraints?: QueryConstraint[]) => {
+      if (getAuthMode() === "demo") {
+        setItems([])
+        setLoading(false)
+        return
+      }
       setLoading(true)
       try {
         const auth = getAuth()
@@ -147,5 +162,9 @@ export function useFirestore<T extends { id: string }>(
     update,
     remove,
     refresh: loadItems,
+    // Alias legacy: hooks/páginas v0 consumen estos nombres
+    addItem: create,
+    updateItem: update,
+    deleteItem: remove,
   }
 }

@@ -430,7 +430,7 @@ export function useProductionData() {
       const sanitized = {
         ...data,
         totalCost:
-          data.components.reduce((sum, c) => sum + c.quantity * c.costPerUnit, 0) +
+          data.components.reduce((sum: any, c: any) => sum + c.quantity * c.costPerUnit, 0) +
           data.laborCost +
           data.manufacturingCost,
         companyId,
@@ -480,6 +480,7 @@ export function useProductionData() {
   }, [materials])
 
   return {
+    createResult: createResultBase,
     orders: orders || [],
     formulas: formulas || [],
     materials: materials || [],

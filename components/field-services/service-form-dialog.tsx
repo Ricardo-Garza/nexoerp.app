@@ -37,7 +37,7 @@ export default function ServiceFormDialog({
     telefono: "",
     direccion: "",
     ciudad: "",
-    estado: "",
+    entidadFederativa: "",
     codigoPostal: "",
     latitud: 0,
     longitud: 0,
@@ -76,7 +76,7 @@ export default function ServiceFormDialog({
         telefono: "",
         direccion: "",
         ciudad: "",
-        estado: "",
+        entidadFederativa: "",
         codigoPostal: "",
         latitud: 0,
         longitud: 0,
@@ -127,7 +127,7 @@ export default function ServiceFormDialog({
         telefono: customer.telefono,
         direccion: customer.direccion || "",
         ciudad: customer.ciudad || "",
-        estado: customer.estado || "",
+        entidadFederativa: customer.entidadFederativa || "",
         codigoPostal: customer.codigoPostal || "",
       })
     }
@@ -232,8 +232,8 @@ export default function ServiceFormDialog({
               <Label htmlFor="estado">Estado</Label>
               <Input
                 id="estado"
-                value={formData.estado}
-                onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
+                value={formData.entidadFederativa}
+                onChange={(e) => setFormData({ ...formData, entidadFederativa: e.target.value })}
               />
             </div>
 

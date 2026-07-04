@@ -24,7 +24,7 @@ const db = getFirestore(app)
 const sampleData = {
   companies: [
     {
-      name: "Nexo Florería S.A. de C.V.",
+      name: "DELAR Foods S.A. de C.V.",
       rfc: "NEX850101XYZ",
       address: "Av. Insurgentes 123, CDMX",
       phone: "555-1234",
@@ -33,9 +33,9 @@ const sampleData = {
   ],
   products: [
     {
-      sku: "ROSA-ROJA-001",
-      name: "Rosa Roja Premium",
-      category: "Flores Cortadas",
+      sku: "CC-RANCH-3.4KG",
+      name: "Aderezo Ranch Galón 3.4 kg",
+      category: "Aderezos",
       stock: 150,
       price: 25.0,
       cost: 15.0,
@@ -44,9 +44,9 @@ const sampleData = {
       companyId: "default",
     },
     {
-      sku: "TULIP-MIX-002",
-      name: "Tulipanes Mix Colores",
-      category: "Flores Cortadas",
+      sku: "CC-BBQ-20KG",
+      name: "Salsa BBQ Porrón 20 kg",
+      category: "Salsas",
       stock: 80,
       price: 20.0,
       cost: 12.0,
@@ -55,9 +55,9 @@ const sampleData = {
       companyId: "default",
     },
     {
-      sku: "ORQUI-BLANCA-003",
-      name: "Orquídea Blanca",
-      category: "Plantas",
+      sku: "INUSA-CONSOME-4.5KG",
+      name: "Consomé de Pollo 4.5 kg",
+      category: "Consomés",
       stock: 25,
       price: 180.0,
       cost: 120.0,
@@ -92,13 +92,13 @@ const sampleData = {
   ],
   suppliers: [
     {
-      name: "Distribuidora Flores del Norte",
+      name: "Custom Culinary México",
       rfc: "DFN950303AB1",
-      email: "ventas@floresdelnorte.com",
+      email: "ventas@customculinary.mx",
       phone: "555-9876",
       address: "Boulevard Norte 789, Querétaro",
       rating: 4.5,
-      productsSupplied: "Rosas, Tulipanes, Lirios",
+      productsSupplied: "Salsas, aderezos, bases culinarias",
       totalPurchases: 125000,
       companyId: "default",
     },

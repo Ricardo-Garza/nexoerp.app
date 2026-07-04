@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { authService } from "@/lib/auth"
+import { getAuthMode } from "@/lib/config/auth-mode"
+import { DEMO_PASSWORD, DEMO_USERS } from "@/lib/config/demo-users"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -61,6 +63,18 @@ export default function LoginPage() {
             <CardTitle className="text-2xl font-bold">Ingresa a tu cuenta</CardTitle>
             <CardDescription className="text-base">Introduce tus credenciales de acceso</CardDescription>
           </div>
+          {getAuthMode() === "demo" && (
+            <div
+              data-testid="demo-mode-notice"
+              className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 p-3 text-sm text-amber-900 dark:text-amber-200"
+            >
+              <p className="font-semibold">Modo demostración (sin credenciales reales)</p>
+              <p className="mt-1">
+                Usa <code className="font-mono">{DEMO_USERS[0].email}</code> (o almacen@, calidad@, ventas@...) con
+                contraseña <code className="font-mono">{DEMO_PASSWORD}</code>.
+              </p>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-5">

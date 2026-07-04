@@ -436,7 +436,7 @@ export default function ClientsPageClient() {
           await createCustomerFs(buildCustomerPayload(processedValues))
           break
         case "prospects":
-          await createProspect(removeUndefined(processedValues))
+          await createProspect(removeUndefined(processedValues) as any)
           break
         case "quotations":
           await createQuotation(processedValues)
@@ -921,7 +921,7 @@ export default function ClientsPageClient() {
   return (
     <div className="space-y-6">
       {viewingClient ? (
-        <ClientDetail client={viewingClient} onBack={closeViewClient} onEdit={openEditClient} />
+        <ClientDetail client={viewingClient} onBack={closeViewClient} onEdit={openEditClient as any} />
       ) : (
         <>
       

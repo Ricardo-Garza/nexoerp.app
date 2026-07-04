@@ -31,7 +31,7 @@ export function ProductionOrderDialog({
   warehouses,
 }: ProductionOrderDialogProps) {
   const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     folio: "",
     productId: "",
     quantity: 1,

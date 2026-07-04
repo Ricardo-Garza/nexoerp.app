@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app"
-import { getAuth, type Auth } from "firebase/auth"
+import { getAuth as getAuthSdk, type Auth } from "firebase/auth"
 import { getFirestore, type Firestore } from "firebase/firestore"
 import { getStorage, type FirebaseStorage } from "firebase/storage"
 
@@ -16,19 +16,15 @@ const firebaseConfig = {
 const requiredKeys = ["apiKey", "authDomain", "projectId", "appId"]
 const missingKeys = requiredKeys.filter((key) => !firebaseConfig[key as keyof typeof firebaseConfig])
 
-if (missingKeys.length > 0 && typeof window !== "undefined") {
+// Configuración PARCIAL = error real de despliegue. Ausencia total = modo demo
+// esperado (ver lib/config/auth-mode.ts), no se reporta como error.
+if (missingKeys.length > 0 && missingKeys.length < requiredKeys.length && typeof window !== "undefined") {
   console.error(`[Firebase] Missing required environment variables: ${missingKeys.join(", ")}`)
 }
 
-let firebaseApp: FirebaseApp
-
-try {
-  firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
-} catch (error) {
-  console.error("[Firebase] Error initializing app:", error)
-  // Create a minimal app to prevent crashes
-  firebaseApp = initializeApp(firebaseConfig)
-}
+// Inicialización PEREZOSA: nada se conecta al importar el módulo. Permite
+// compilar y prerenderizar sin credenciales (ADR 0001 del porteo).
+let firebaseApp: FirebaseApp | undefined
 
 export function getFirebaseApp(): FirebaseApp {
   if (!firebaseApp) {
@@ -38,7 +34,7 @@ export function getFirebaseApp(): FirebaseApp {
 }
 
 export function getFirebaseAuth(): Auth {
-  return getAuth(getFirebaseApp())
+  return getAuthSdk(getFirebaseApp())
 }
 
 export function getFirebaseDb(): Firestore {
@@ -49,11 +45,7 @@ export function getFirebaseStorage(): FirebaseStorage {
   return getStorage(getFirebaseApp())
 }
 
-export { getFirebaseAuth as getAuth }
-
-export const app = getFirebaseApp()
-export const auth = getFirebaseAuth()
-export const db = getFirebaseDb()
-export const storage = getFirebaseStorage()
-
-export default app
+/** Alias legacy: módulos antiguos importan getAuth desde este módulo */
+export function getAuth(): Auth {
+  return getFirebaseAuth()
+}

@@ -10,6 +10,8 @@ import {
 } from "firebase/auth"
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore"
 import { getFirebaseAuth, getFirebaseDb } from "./firebase"
+import { getAuthMode } from "./config/auth-mode"
+import type { Role } from "./domain/rbac/roles"
 
 export type UserRole = "admin" | "user"
 
@@ -18,6 +20,8 @@ export interface User {
   email: string
   name: string
   role: UserRole
+  /** Rol granular del RBAC de dominio (modo demo / migración futura) */
+  domainRole?: Role
   createdAt?: Date
   companyId?: string
 }
@@ -80,6 +84,10 @@ async function getUserProfile(firebaseUser: FirebaseUser): Promise<User> {
 export const authService = {
   // Login with Firebase Auth
   login: async (email: string, password: string): Promise<AuthResponse> => {
+    if (getAuthMode() === "demo") {
+      const { demoAuthService } = await import("./auth-demo")
+      return demoAuthService.login(email, password)
+    }
     try {
       const auth = getFirebaseAuth()
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
@@ -164,6 +172,11 @@ export const authService = {
 
   // Logout
   logout: async (): Promise<void> => {
+    if (getAuthMode() === "demo") {
+      const { demoAuthService } = await import("./auth-demo")
+      demoAuthService.logout()
+      return
+    }
     try {
       const auth = getFirebaseAuth()
       await firebaseSignOut(auth)
@@ -202,6 +215,17 @@ export const authService = {
 
   // Subscribe to auth state changes
   onAuthStateChanged: (callback: (user: User | null) => void) => {
+    if (getAuthMode() === "demo") {
+      let unsubscribe: (() => void) | undefined
+      let cancelled = false
+      import("./auth-demo").then(({ demoAuthService }) => {
+        if (!cancelled) unsubscribe = demoAuthService.onAuthStateChanged(callback)
+      })
+      return () => {
+        cancelled = true
+        unsubscribe?.()
+      }
+    }
     const auth = getFirebaseAuth()
     return onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
@@ -220,6 +244,10 @@ export const authService = {
 
   // Get current user
   getCurrentUser: async (): Promise<User | null> => {
+    if (getAuthMode() === "demo") {
+      const { demoAuthService } = await import("./auth-demo")
+      return demoAuthService.getCurrentUser()
+    }
     const auth = getFirebaseAuth()
     const firebaseUser = auth.currentUser
     if (!firebaseUser) return null

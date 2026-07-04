@@ -20,7 +20,7 @@ import { Loader2, AlertCircle } from "lucide-react"
 import { COLLECTIONS } from "@/lib/firestore"
 import type { SalesOrder, Delivery, Product } from "@/lib/types"
 import { getNextFolio } from "@/lib/utils/folio-generator"
-import { serverTimestamp } from "firebase/firestore"
+import { serverTimestamp, collection, doc, where, type WithFieldValue } from "firebase/firestore"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { runTransaction } from "firebase/firestore"
 import { getFirebaseDb } from "@/lib/firebase"
@@ -51,13 +51,13 @@ export function GenerateDeliveryDialog({ salesOrder, open, onClose, onSuccess }:
       const db = getFirebaseDb()
 
       // Validate stock availability
-      const productLines = salesOrder.lines.filter((l) => l.type === "product" && l.productId)
+      const productLines = (salesOrder.lines ?? []).filter((l) => l.type === "product" && l.productId)
       const stockErrors: string[] = []
 
       for (const line of productLines) {
         const product = products.find((p) => p.id === line.productId)
-        if (product && product.stock < (line.quantity || 0)) {
-          stockErrors.push(`${product.name}: stock disponible ${product.stock}, requerido ${line.quantity}`)
+        if (product && (product.stock ?? 0) < (line.quantity || 0)) {
+          stockErrors.push(`${product.name}: stock disponible ${product.stock ?? 0}, requerido ${line.quantity}`)
         }
       }
 
@@ -70,11 +70,11 @@ export function GenerateDeliveryDialog({ salesOrder, open, onClose, onSuccess }:
       // Generate delivery and update inventory in a transaction
       await runTransaction(db, async (transaction) => {
         // Generate delivery number
-        const existingNumbers = existingDeliveries.map((d) => d.deliveryNumber)
+        const existingNumbers = existingDeliveries.map((d) => d.deliveryNumber).filter((n): n is string => Boolean(n))
         const deliveryNumber = getNextFolio(existingNumbers, "R")
 
         // Create delivery document
-        const delivery: Omit<Delivery, "id"> = {
+        const delivery: WithFieldValue<Omit<Delivery, "id">> = {
           companyId,
           deliveryNumber,
           salesOrderId: salesOrder.id,
@@ -93,13 +93,13 @@ export function GenerateDeliveryDialog({ salesOrder, open, onClose, onSuccess }:
         }
 
         // We can't use addItem in transaction, need to use set directly
-        const deliveryRef = db.collection(COLLECTIONS.deliveries).doc()
+        const deliveryRef = doc(collection(db, COLLECTIONS.deliveries))
         transaction.set(deliveryRef, delivery)
 
         // Update product stock
         for (const line of productLines) {
           if (line.productId) {
-            const productRef = db.collection(COLLECTIONS.products).doc(line.productId)
+            const productRef = doc(db, COLLECTIONS.products, line.productId)
             const productDoc = await transaction.get(productRef)
 
             if (productDoc.exists()) {
@@ -114,7 +114,7 @@ export function GenerateDeliveryDialog({ salesOrder, open, onClose, onSuccess }:
         }
 
         // Update sales order
-        const orderRef = db.collection(COLLECTIONS.salesOrders).doc(salesOrder.id)
+        const orderRef = doc(db, COLLECTIONS.salesOrders, salesOrder.id)
         const currentDeliveryIds = salesOrder.deliveryIds || []
         transaction.update(orderRef, {
           deliveryIds: [...currentDeliveryIds, deliveryRef.id],
@@ -123,7 +123,7 @@ export function GenerateDeliveryDialog({ salesOrder, open, onClose, onSuccess }:
         })
 
         // Log activity
-        const activityRef = db.collection(COLLECTIONS.salesOrderActivities).doc()
+        const activityRef = doc(collection(db, COLLECTIONS.salesOrderActivities))
         transaction.set(activityRef, {
           salesOrderId: salesOrder.id,
           companyId,

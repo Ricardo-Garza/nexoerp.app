@@ -12,7 +12,7 @@ import type { JournalEntry, JournalMovement } from "@/lib/types"
 interface NuevaPolizaDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSave: (entry: Omit<JournalEntry, "id" | "companyId" | "createdAt" | "updatedAt">) => Promise<void>
+  onSave: (entry: any) => Promise<void>
   ledgerAccounts: Array<{ id: string; codigo: string; nombre: string }>
 }
 
@@ -82,6 +82,7 @@ export function NuevaPolizaDialog({ open, onOpenChange, onSave, ledgerAccounts }
       const folio = `POL-${año}${mes}-${String(Math.floor(Math.random() * 9999)).padStart(4, "0")}`
 
       await onSave({
+        // DTO de póliza (Firestore schemaless)
         folio,
         tipo,
         fecha,

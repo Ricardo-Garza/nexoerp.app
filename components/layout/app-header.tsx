@@ -117,13 +117,13 @@ export function AppHeader() {
 
   const handleMarkRead = async (notification: NotificationItem) => {
     if (notification.read) return
-    await updateNotification(notification.id, { read: true, readAt: new Date().toISOString() } as NotificationItem)
+    await updateNotification(notification.id, { read: true, readAt: new Date().toISOString() } as any)
   }
 
   const handleMarkAllRead = async () => {
     const unreadItems = notifications.filter((item) => !item?.read)
     for (const item of unreadItems) {
-      await updateNotification(item.id, { read: true, readAt: new Date().toISOString() } as NotificationItem)
+      await updateNotification(item.id, { read: true, readAt: new Date().toISOString() } as any)
     }
   }
 

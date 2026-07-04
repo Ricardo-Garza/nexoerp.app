@@ -128,13 +128,21 @@ export function useSalesData(companyId: string, userId?: string) {
   }, [effectiveCompanyId, userId])
 
   const updateOrderStatus = useCallback(
-    async (orderId: string, status: SalesOrder["status"], userId?: string, userEmail?: string) => {
+    async (
+      orderId: string,
+      statusOrUpdates: SalesOrder["status"] | (Partial<SalesOrder> & { status: string }),
+      userId?: string,
+      userEmail?: string,
+    ) => {
+      // Acepta un status simple o un parche parcial (cancelación/devolución)
+      const updates = typeof statusOrUpdates === "string" ? { status: statusOrUpdates } : statusOrUpdates
+      const status = updates.status as SalesOrder["status"]
       try {
         const db = getFirebaseDb()
         const orderRef = doc(db, COLLECTIONS.salesOrders, orderId)
 
         await updateDoc(orderRef, {
-          status,
+          ...updates,
           updatedAt: serverTimestamp(),
         })
 
@@ -226,7 +234,7 @@ export function useSalesData(companyId: string, userId?: string) {
         console.log("[v0] Fulfilling sales order:", orderId, "from warehouse:", almacenId)
 
         // Validate stock availability for ALL items before creating any movements
-        for (const item of order.lines.filter((l) => l.type === "product")) {
+        for (const item of (order.lines ?? []).filter((l) => l.type === "product")) {
           if (!item.productId) continue
 
           const lotesDisponibles = selectLotsForFulfillment(almacenId, item.productId, item.quantity || 0)
@@ -249,8 +257,8 @@ export function useSalesData(companyId: string, userId?: string) {
           clienteId: order.customerId,
           clienteNombre: order.customerName,
           estado: "preparando",
-          items: order.lines
-            .filter((l) => l.type === "product")
+          items: (order.lines ?? [])
+            .filter((l: any) => l.type === "product")
             .map((item) => ({
               productoId: item.productId || "",
               sku: "",
@@ -267,7 +275,7 @@ export function useSalesData(companyId: string, userId?: string) {
 
         let lotesAsignados: any[] = [] // Declare the variable here
 
-        for (const item of order.lines.filter((l) => l.type === "product" && l.productId)) {
+        for (const item of (order.lines ?? []).filter((l) => l.type === "product" && l.productId)) {
           const lotsAssigned = selectLotsForFulfillment(almacenId, item.productId!, item.quantity || 0)
 
           console.log("[v0] Creating movements for", item.productName, "lots:", lotsAssigned.length)
@@ -361,7 +369,7 @@ export function useSalesData(companyId: string, userId?: string) {
     unpaidInvoices: invoices.filter((i) => i.paymentStatus === "unpaid" || i.paymentStatus === "partial").length,
     unpaidAmount: invoices
       .filter((i) => i.paymentStatus === "unpaid" || i.paymentStatus === "partial")
-      .reduce((sum, inv) => sum + (inv.total - inv.amountPaid), 0),
+      .reduce((sum, inv) => sum + (inv.total - (inv.amountPaid ?? 0)), 0),
   }
 
   return {

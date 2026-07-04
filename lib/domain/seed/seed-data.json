@@ -1,0 +1,1692 @@
+{
+  "generatedFrom": "project-context/delar-erp/data (2025 historical, requires validation)",
+  "brands": [
+    {
+      "code": "DELAR",
+      "name": "Delar Foods",
+      "brandType": "own_or_distributor"
+    },
+    {
+      "code": "CUSTOM",
+      "name": "Custom Culinary",
+      "brandType": "manufacturer_brand"
+    },
+    {
+      "code": "LAPOCIMA",
+      "name": "La Pócima",
+      "brandType": "manufacturer_brand"
+    },
+    {
+      "code": "CULINAIRE",
+      "name": "Culinaire / Ventura Foods",
+      "brandType": "manufacturer_brand"
+    },
+    {
+      "code": "INUSA",
+      "name": "INUSA",
+      "brandType": "manufacturer_brand"
+    },
+    {
+      "code": "INGREDION",
+      "name": "Ingredion",
+      "brandType": "manufacturer_brand"
+    },
+    {
+      "code": "DOCTORHOT",
+      "name": "Doctor Hot",
+      "brandType": "manufacturer_brand"
+    }
+  ],
+  "skus": [
+    {
+      "sku": "CC-RANCH-20KG",
+      "brandCode": "CUSTOM",
+      "family": "Ranch",
+      "name": "Aderezo Ranch 20 kg",
+      "category": "Aderezos",
+      "presentationType": "Porrón",
+      "netContent": "20",
+      "netUnit": "KG",
+      "unitsPerCase": 1,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-BBQ-20KG",
+      "brandCode": "CUSTOM",
+      "family": "BBQ",
+      "name": "Salsa BBQ 20 kg",
+      "category": "Salsas",
+      "presentationType": "Porrón",
+      "netContent": "20",
+      "netUnit": "KG",
+      "unitsPerCase": 1,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-MH-20KG",
+      "brandCode": "CUSTOM",
+      "family": "Mango Habanero",
+      "name": "Salsa para Alitas Mango Habanero 20 kg",
+      "category": "Salsas",
+      "presentationType": "Porrón",
+      "netContent": "20",
+      "netUnit": "KG",
+      "unitsPerCase": 1,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-ALITAS-20KG",
+      "brandCode": "CUSTOM",
+      "family": "Salsa para Alitas",
+      "name": "Salsa para Alitas 20 kg",
+      "category": "Salsas",
+      "presentationType": "Porrón",
+      "netContent": "20",
+      "netUnit": "KG",
+      "unitsPerCase": 1,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-RANCHHAB-3.4KG",
+      "brandCode": "CUSTOM",
+      "family": "Ranch Habanero",
+      "name": "Aderezo Ranch Habanero 3.4 kg",
+      "category": "Aderezos",
+      "presentationType": "Galón",
+      "netContent": "3.4",
+      "netUnit": "KG",
+      "unitsPerCase": 4,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-RANCHSRI-3.5KG",
+      "brandCode": "CUSTOM",
+      "family": "Ranch Sriracha",
+      "name": "Aderezo Ranch Sabor Sriracha 3.5 kg",
+      "category": "Aderezos",
+      "presentationType": "Galón",
+      "netContent": "3.5",
+      "netUnit": "KG",
+      "unitsPerCase": 4,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-BLUECHEESE-3.6KG",
+      "brandCode": "CUSTOM",
+      "family": "Blue Cheese",
+      "name": "Aderezo Blue Cheese 3.6 kg",
+      "category": "Aderezos",
+      "presentationType": "Galón",
+      "netContent": "3.6",
+      "netUnit": "KG",
+      "unitsPerCase": 4,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-RANCH-3.4KG",
+      "brandCode": "CUSTOM",
+      "family": "Ranch",
+      "name": "Aderezo Ranch 3.4 kg",
+      "category": "Aderezos",
+      "presentationType": "Galón",
+      "netContent": "3.4",
+      "netUnit": "KG",
+      "unitsPerCase": 4,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-JUGOSAZ-4KG",
+      "brandCode": "CUSTOM",
+      "family": "Jugo Sazonador",
+      "name": "Jugo Sazonador 4 kg",
+      "category": "Sazonadores",
+      "presentationType": "Galón",
+      "netContent": "4",
+      "netUnit": "KG",
+      "unitsPerCase": 4,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-ALITAS-3.75KG",
+      "brandCode": "CUSTOM",
+      "family": "Salsa para Alitas",
+      "name": "Salsa para Alitas 3.75 kg",
+      "category": "Salsas",
+      "presentationType": "Galón",
+      "netContent": "3.75",
+      "netUnit": "KG",
+      "unitsPerCase": 4,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-BBQ-4KG",
+      "brandCode": "CUSTOM",
+      "family": "BBQ",
+      "name": "Salsa BBQ 4 kg",
+      "category": "Salsas",
+      "presentationType": "Galón",
+      "netContent": "4",
+      "netUnit": "KG",
+      "unitsPerCase": 4,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-BPL-3.25KG",
+      "brandCode": "CUSTOM",
+      "family": "Blanca Piquín Limón",
+      "name": "Salsa Blanca Piquín Limón 3.25 kg",
+      "category": "Salsas",
+      "presentationType": "Galón",
+      "netContent": "3.25",
+      "netUnit": "KG",
+      "unitsPerCase": 4,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-TH-4.05KG",
+      "brandCode": "CUSTOM",
+      "family": "Tamarindo Habanero",
+      "name": "Salsa de Tamarindo Habanero 4.05 kg",
+      "category": "Salsas",
+      "presentationType": "Galón",
+      "netContent": "4.05",
+      "netUnit": "KG",
+      "unitsPerCase": 4,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-HOTBBQ-4.4KG",
+      "brandCode": "CUSTOM",
+      "family": "Hot BBQ",
+      "name": "Salsa Hot BBQ 4.4 kg",
+      "category": "Salsas",
+      "presentationType": "Galón",
+      "netContent": "4.4",
+      "netUnit": "KG",
+      "unitsPerCase": 4,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-LEMON-3.7KG",
+      "brandCode": "CUSTOM",
+      "family": "Lemon Pepper",
+      "name": "Salsa Lemon Pepper 3.7 kg",
+      "category": "Salsas",
+      "presentationType": "Galón",
+      "netContent": "3.7",
+      "netUnit": "KG",
+      "unitsPerCase": 4,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-MH-4.3KG",
+      "brandCode": "CUSTOM",
+      "family": "Mango Habanero",
+      "name": "Salsa para Alitas Mango Habanero 4.3 kg",
+      "category": "Salsas",
+      "presentationType": "Galón",
+      "netContent": "4.3",
+      "netUnit": "KG",
+      "unitsPerCase": 4,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-SMOKY-4KG",
+      "brandCode": "CUSTOM",
+      "family": "Smoky BBQ",
+      "name": "Salsa Smoky BBQ 4 kg",
+      "category": "Salsas",
+      "presentationType": "Galón",
+      "netContent": "4",
+      "netUnit": "KG",
+      "unitsPerCase": 4,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-INGLESA-3.9KG",
+      "brandCode": "CUSTOM",
+      "family": "Salsa Inglesa",
+      "name": "Salsa Tipo Inglesa 3.9 kg",
+      "category": "Salsas",
+      "presentationType": "Galón",
+      "netContent": "3.9",
+      "netUnit": "KG",
+      "unitsPerCase": 4,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-RANCH-POUCH2",
+      "brandCode": "CUSTOM",
+      "family": "Ranch",
+      "name": "Aderezo Ranch Pouch 2 kg",
+      "category": "Aderezos",
+      "presentationType": "Bolsa",
+      "netContent": "2",
+      "netUnit": "KG",
+      "unitsPerCase": 5,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-BBQ-POUCH2",
+      "brandCode": "CUSTOM",
+      "family": "BBQ",
+      "name": "Salsa BBQ Pouch 2 kg",
+      "category": "Salsas",
+      "presentationType": "Bolsa",
+      "netContent": "2",
+      "netUnit": "KG",
+      "unitsPerCase": 5,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-MH-POUCH2",
+      "brandCode": "CUSTOM",
+      "family": "Mango Habanero",
+      "name": "Salsa para Alitas Mango Habanero Pouch 2 kg",
+      "category": "Salsas",
+      "presentationType": "Bolsa",
+      "netContent": "2",
+      "netUnit": "KG",
+      "unitsPerCase": 5,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-ALITAS-POUCH2",
+      "brandCode": "CUSTOM",
+      "family": "Salsa para Alitas",
+      "name": "Salsa para Alitas Pouch 2 kg",
+      "category": "Salsas",
+      "presentationType": "Bolsa",
+      "netContent": "2",
+      "netUnit": "KG",
+      "unitsPerCase": 5,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-RANCH-460G",
+      "brandCode": "CUSTOM",
+      "family": "Ranch",
+      "name": "Aderezo Ranch 460 g",
+      "category": "Aderezos",
+      "presentationType": "Apachurrable",
+      "netContent": "460",
+      "netUnit": "G",
+      "unitsPerCase": 12,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-RANCHHAB-480G",
+      "brandCode": "CUSTOM",
+      "family": "Ranch Habanero",
+      "name": "Aderezo Ranch Habanero 480 g",
+      "category": "Aderezos",
+      "presentationType": "Apachurrable",
+      "netContent": "480",
+      "netUnit": "G",
+      "unitsPerCase": 12,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-RANCHSRI-460G",
+      "brandCode": "CUSTOM",
+      "family": "Ranch Sriracha",
+      "name": "Aderezo Ranch Sriracha 460 g",
+      "category": "Aderezos",
+      "presentationType": "Apachurrable",
+      "netContent": "460",
+      "netUnit": "G",
+      "unitsPerCase": 12,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-ALITAS-500G",
+      "brandCode": "CUSTOM",
+      "family": "Salsa para Alitas",
+      "name": "Salsa para Alitas 500 g",
+      "category": "Salsas",
+      "presentationType": "Apachurrable",
+      "netContent": "500",
+      "netUnit": "G",
+      "unitsPerCase": 12,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-BBQ-530G",
+      "brandCode": "CUSTOM",
+      "family": "BBQ",
+      "name": "Salsa BBQ 530 g",
+      "category": "Salsas",
+      "presentationType": "Apachurrable",
+      "netContent": "530",
+      "netUnit": "G",
+      "unitsPerCase": 12,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-BPL-445G",
+      "brandCode": "CUSTOM",
+      "family": "Blanca Piquín Limón",
+      "name": "Salsa Blanca Piquín Limón 445 g",
+      "category": "Salsas",
+      "presentationType": "Apachurrable",
+      "netContent": "445",
+      "netUnit": "G",
+      "unitsPerCase": 12,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-TH-560G",
+      "brandCode": "CUSTOM",
+      "family": "Tamarindo Habanero",
+      "name": "Salsa Tamarindo Habanero 560 g",
+      "category": "Salsas",
+      "presentationType": "Apachurrable",
+      "netContent": "560",
+      "netUnit": "G",
+      "unitsPerCase": 12,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-HOTBBQ-580G",
+      "brandCode": "CUSTOM",
+      "family": "Hot BBQ",
+      "name": "Salsa Hot BBQ 580 g",
+      "category": "Salsas",
+      "presentationType": "Apachurrable",
+      "netContent": "580",
+      "netUnit": "G",
+      "unitsPerCase": 12,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-LEMON-490G",
+      "brandCode": "CUSTOM",
+      "family": "Lemon Pepper",
+      "name": "Salsa Lemon Pepper 490 g",
+      "category": "Salsas",
+      "presentationType": "Apachurrable",
+      "netContent": "490",
+      "netUnit": "G",
+      "unitsPerCase": 12,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-MH-570G",
+      "brandCode": "CUSTOM",
+      "family": "Mango Habanero",
+      "name": "Salsa para Alitas Mango Habanero 570 g",
+      "category": "Salsas",
+      "presentationType": "Apachurrable",
+      "netContent": "570",
+      "netUnit": "G",
+      "unitsPerCase": 12,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-SMOKY-535G",
+      "brandCode": "CUSTOM",
+      "family": "Smoky BBQ",
+      "name": "Salsa Smoky BBQ 535 g",
+      "category": "Salsas",
+      "presentationType": "Apachurrable",
+      "netContent": "535",
+      "netUnit": "G",
+      "unitsPerCase": 12,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-MAYO-1008X8G",
+      "brandCode": "CUSTOM",
+      "family": "Mayonesa",
+      "name": "Aderezo Mayonesa 1008 sobres de 8 g",
+      "category": "Aderezos",
+      "presentationType": "Sobres",
+      "netContent": "8",
+      "netUnit": "G",
+      "unitsPerCase": 1008,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-MAYO-204X8G",
+      "brandCode": "CUSTOM",
+      "family": "Mayonesa",
+      "name": "Aderezo Mayonesa 204 sobres de 8 g",
+      "category": "Aderezos",
+      "presentationType": "Sobres",
+      "netContent": "8",
+      "netUnit": "G",
+      "unitsPerCase": 204,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-RANCHHAB-204X8G",
+      "brandCode": "CUSTOM",
+      "family": "Ranch Habanero",
+      "name": "Aderezo Ranch Habanero 204 sobres de 8 g",
+      "category": "Aderezos",
+      "presentationType": "Sobres",
+      "netContent": "8",
+      "netUnit": "G",
+      "unitsPerCase": 204,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-CHILESECO-1000X1G",
+      "brandCode": "CUSTOM",
+      "family": "Chile Seco",
+      "name": "Chile Seco 1000 sobres de 1 g",
+      "category": "Condimentos",
+      "presentationType": "Sobres",
+      "netContent": "1",
+      "netUnit": "G",
+      "unitsPerCase": 1000,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-NEGRA-204X8G",
+      "brandCode": "CUSTOM",
+      "family": "Negra Michelada",
+      "name": "Sazonador Negra Michelada 204 sobres de 8 g",
+      "category": "Condimentos",
+      "presentationType": "Sobres",
+      "netContent": "8",
+      "netUnit": "G",
+      "unitsPerCase": 204,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-MOSTAZA-1260X5.5G",
+      "brandCode": "CUSTOM",
+      "family": "Mostaza",
+      "name": "Salsa de Mostaza 1260 sobres de 5.5 g",
+      "category": "Salsas",
+      "presentationType": "Sobres",
+      "netContent": "5.5",
+      "netUnit": "G",
+      "unitsPerCase": 1260,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-MOSTAZA-204X5.5G",
+      "brandCode": "CUSTOM",
+      "family": "Mostaza",
+      "name": "Salsa de Mostaza 204 sobres de 5.5 g",
+      "category": "Salsas",
+      "presentationType": "Sobres",
+      "netContent": "5.5",
+      "netUnit": "G",
+      "unitsPerCase": 204,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-JALAPENO-1008X8G",
+      "brandCode": "CUSTOM",
+      "family": "Jalapeño",
+      "name": "Salsa Jalapeño 1008 sobres de 8 g",
+      "category": "Salsas",
+      "presentationType": "Sobres",
+      "netContent": "8",
+      "netUnit": "G",
+      "unitsPerCase": 1008,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-JALAPENO-204X8G",
+      "brandCode": "CUSTOM",
+      "family": "Jalapeño",
+      "name": "Salsa Jalapeño 204 sobres de 8 g",
+      "category": "Salsas",
+      "presentationType": "Sobres",
+      "netContent": "8",
+      "netUnit": "G",
+      "unitsPerCase": 204,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-MH-204X8G",
+      "brandCode": "CUSTOM",
+      "family": "Mango Habanero",
+      "name": "Salsa Mango Habanero 204 sobres de 8 g",
+      "category": "Salsas",
+      "presentationType": "Sobres",
+      "netContent": "8",
+      "netUnit": "G",
+      "unitsPerCase": 204,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-ALITAS-204X8G",
+      "brandCode": "CUSTOM",
+      "family": "Salsa para Alitas",
+      "name": "Salsa para Alitas 204 sobres de 8 g",
+      "category": "Salsas",
+      "presentationType": "Sobres",
+      "netContent": "8",
+      "netUnit": "G",
+      "unitsPerCase": 204,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-CATSUP-1008X8G",
+      "brandCode": "CUSTOM",
+      "family": "Catsup",
+      "name": "Salsa tipo Catsup 1008 sobres de 8 g",
+      "category": "Salsas",
+      "presentationType": "Sobres",
+      "netContent": "8",
+      "netUnit": "G",
+      "unitsPerCase": 1008,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-CATSUP-204X8G",
+      "brandCode": "CUSTOM",
+      "family": "Catsup",
+      "name": "Salsa tipo Catsup 204 sobres de 8 g",
+      "category": "Salsas",
+      "presentationType": "Sobres",
+      "netContent": "8",
+      "netUnit": "G",
+      "unitsPerCase": 204,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-PIMIENTALIMON-780G",
+      "brandCode": "CUSTOM",
+      "family": "Pimienta Limón",
+      "name": "Sazonador Pimienta Limón 780 g",
+      "category": "Condimentos",
+      "presentationType": "Bote",
+      "netContent": "780",
+      "netUnit": "G",
+      "unitsPerCase": 6,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-CONSOME-25KG",
+      "brandCode": "CUSTOM",
+      "family": "Consomé de Pollo",
+      "name": "Consomé de Pollo 25 kg",
+      "category": "Condimentos",
+      "presentationType": "Saco",
+      "netContent": "25",
+      "netUnit": "KG",
+      "unitsPerCase": 1,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-EMPANIZADOR-SACO",
+      "brandCode": "CUSTOM",
+      "family": "Empanizador Extra Crujiente",
+      "name": "Empanizador Extra Crujiente Saco",
+      "category": "Condimentos",
+      "presentationType": "Saco",
+      "netContent": "",
+      "netUnit": "KG",
+      "unitsPerCase": 1,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-MARINADOR-25KG",
+      "brandCode": "CUSTOM",
+      "family": "Marinador Pollo",
+      "name": "Marinador Pollo 25 kg",
+      "category": "Condimentos",
+      "presentationType": "Saco",
+      "netContent": "25",
+      "netUnit": "KG",
+      "unitsPerCase": 1,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CC-MH-2.3KG",
+      "brandCode": "CUSTOM",
+      "family": "Mango Habanero",
+      "name": "Salsa para Alitas Mango Habanero 2.3 kg",
+      "category": "Salsas",
+      "presentationType": "Medio Galón",
+      "netContent": "2.3",
+      "netUnit": "KG",
+      "unitsPerCase": 6,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "LP-CHIPOTLE-3.65KG",
+      "brandCode": "LAPOCIMA",
+      "family": "Chipotle",
+      "name": "Aderezo Chipotle 3.65 kg",
+      "category": "Aderezos",
+      "presentationType": "Galón",
+      "netContent": "3.65",
+      "netUnit": "KG",
+      "unitsPerCase": 2,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "LP-ALITASHOT-18KG",
+      "brandCode": "LAPOCIMA",
+      "family": "Hot Alitas",
+      "name": "Salsa Alitas Hot Cubeta 18 kg",
+      "category": "Salsas",
+      "presentationType": "Cubeta",
+      "netContent": "18",
+      "netUnit": "KG",
+      "unitsPerCase": 1,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_conflict_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "CUL-RANCH-3.78L",
+      "brandCode": "CULINAIRE",
+      "family": "Ranch",
+      "name": "Aderezo Ranch Culinaire 3.78 L",
+      "category": "Aderezos",
+      "presentationType": "Galón",
+      "netContent": "3.78",
+      "netUnit": "L",
+      "unitsPerCase": 4,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "INUSA-BUFALO-GAL",
+      "brandCode": "INUSA",
+      "family": "Búfalo Mantequilla",
+      "name": "Salsa Búfalo Mantequilla Galón",
+      "category": "Salsas",
+      "presentationType": "Galón",
+      "netContent": "",
+      "netUnit": "L",
+      "unitsPerCase": 4,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "INUSA-BUFALO-18KG",
+      "brandCode": "INUSA",
+      "family": "Búfalo Mantequilla",
+      "name": "Salsa Búfalo Mantequilla Cubeta 18 kg",
+      "category": "Salsas",
+      "presentationType": "Cubeta",
+      "netContent": "18",
+      "netUnit": "KG",
+      "unitsPerCase": 1,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "historical_requires_validation",
+      "source": "provided_price_list_2025"
+    },
+    {
+      "sku": "ING-CORNSTARCH-25KG",
+      "brandCode": "INGREDION",
+      "family": "Almidón de Maíz",
+      "name": "Fécula / Almidón de Maíz 25 kg",
+      "category": "Materias primas",
+      "presentationType": "Bulto",
+      "netContent": "25",
+      "netUnit": "KG",
+      "unitsPerCase": 1,
+      "ean": null,
+      "dun": null,
+      "trackLot": true,
+      "expiryRequired": true,
+      "dataStatus": "price_pending_validation",
+      "source": "provided_price_list_2025"
+    }
+  ],
+  "priceLists": [
+    {
+      "code": "RETAIL-2025-01-27",
+      "name": "Menudeo histórico",
+      "channel": "retail",
+      "currency": "MXN",
+      "validFrom": "2025-01-27",
+      "status": "historical_requires_validation",
+      "sourceNote": "provided_price_list_2025"
+    },
+    {
+      "code": "WHOLESALE-2025-01-27",
+      "name": "Mayoreo histórico",
+      "channel": "wholesale",
+      "currency": "MXN",
+      "validFrom": "2025-01-27",
+      "status": "historical_requires_validation",
+      "sourceNote": "Historical list: purchases over MXN 40,000 in one payment; validate current policy"
+    }
+  ],
+  "priceEntries": [
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-RANCH-20KG",
+      "unitPrice": "1233.74"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-RANCH-20KG",
+      "unitPrice": "1201.56"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-BBQ-20KG",
+      "unitPrice": "766.59"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-BBQ-20KG",
+      "unitPrice": "746.59"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-MH-20KG",
+      "unitPrice": "1231.65"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-MH-20KG",
+      "unitPrice": "1199.52"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-ALITAS-20KG",
+      "unitPrice": "934.41"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-ALITAS-20KG",
+      "unitPrice": "910.03"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-RANCHHAB-3.4KG",
+      "unitPrice": "319.09"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-RANCHHAB-3.4KG",
+      "unitPrice": "310.77"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-RANCHSRI-3.5KG",
+      "unitPrice": "530.29"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-RANCHSRI-3.5KG",
+      "unitPrice": "516.46"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-BLUECHEESE-3.6KG",
+      "unitPrice": "280.15"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-BLUECHEESE-3.6KG",
+      "unitPrice": "272.84"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-RANCH-3.4KG",
+      "unitPrice": "243.97"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-RANCH-3.4KG",
+      "unitPrice": "237.61"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-JUGOSAZ-4KG",
+      "unitPrice": "361.05"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-JUGOSAZ-4KG",
+      "unitPrice": "351.63"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-ALITAS-3.75KG",
+      "unitPrice": "202.69"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-ALITAS-3.75KG",
+      "unitPrice": "197.41"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-BBQ-4KG",
+      "unitPrice": "203.96"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-BBQ-4KG",
+      "unitPrice": "198.64"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-BPL-3.25KG",
+      "unitPrice": "415.03"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-BPL-3.25KG",
+      "unitPrice": "404.2"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-TH-4.05KG",
+      "unitPrice": "406.18"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-TH-4.05KG",
+      "unitPrice": "395.58"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-HOTBBQ-4.4KG",
+      "unitPrice": "263.29"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-HOTBBQ-4.4KG",
+      "unitPrice": "256.42"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-LEMON-3.7KG",
+      "unitPrice": "326.77"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-LEMON-3.7KG",
+      "unitPrice": "318.24"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-MH-4.3KG",
+      "unitPrice": "307.66"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-MH-4.3KG",
+      "unitPrice": "299.63"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-SMOKY-4KG",
+      "unitPrice": "253.37"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-SMOKY-4KG",
+      "unitPrice": "246.76"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-INGLESA-3.9KG",
+      "unitPrice": "254.69"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-INGLESA-3.9KG",
+      "unitPrice": "248.04"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-RANCH-POUCH2",
+      "unitPrice": "127.14"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-RANCH-POUCH2",
+      "unitPrice": "123.82"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-BBQ-POUCH2",
+      "unitPrice": "87.57"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-BBQ-POUCH2",
+      "unitPrice": "85.28"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-MH-POUCH2",
+      "unitPrice": "125.78"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-MH-POUCH2",
+      "unitPrice": "122.49"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-ALITAS-POUCH2",
+      "unitPrice": "96.79"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-ALITAS-POUCH2",
+      "unitPrice": "94.27"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-RANCH-460G",
+      "unitPrice": "48.1"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-RANCH-460G",
+      "unitPrice": "46.84"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-RANCHHAB-480G",
+      "unitPrice": "61.09"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-RANCHHAB-480G",
+      "unitPrice": "59.5"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-RANCHSRI-460G",
+      "unitPrice": "79.09"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-RANCHSRI-460G",
+      "unitPrice": "77.03"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-ALITAS-500G",
+      "unitPrice": "35.09"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-ALITAS-500G",
+      "unitPrice": "34.18"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-BBQ-530G",
+      "unitPrice": "31.71"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-BBQ-530G",
+      "unitPrice": "30.88"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-BPL-445G",
+      "unitPrice": "58.72"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-BPL-445G",
+      "unitPrice": "57.19"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-TH-560G",
+      "unitPrice": "71.48"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-TH-560G",
+      "unitPrice": "69.62"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-HOTBBQ-580G",
+      "unitPrice": "43.26"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-HOTBBQ-580G",
+      "unitPrice": "42.14"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-LEMON-490G",
+      "unitPrice": "51.69"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-LEMON-490G",
+      "unitPrice": "50.34"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-MH-570G",
+      "unitPrice": "51.69"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-MH-570G",
+      "unitPrice": "50.34"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-SMOKY-535G",
+      "unitPrice": "54.22"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-SMOKY-535G",
+      "unitPrice": "52.81"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-MAYO-1008X8G",
+      "unitPrice": "568.68"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-MAYO-1008X8G",
+      "unitPrice": "553.84"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-MAYO-204X8G",
+      "unitPrice": "124.64"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-MAYO-204X8G",
+      "unitPrice": "121.39"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-RANCHHAB-204X8G",
+      "unitPrice": "195.58"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-RANCHHAB-204X8G",
+      "unitPrice": "190.48"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-CHILESECO-1000X1G",
+      "unitPrice": "306.45"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-CHILESECO-1000X1G",
+      "unitPrice": "298.46"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-NEGRA-204X8G",
+      "unitPrice": "195.58"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-NEGRA-204X8G",
+      "unitPrice": "190.48"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-MOSTAZA-1260X5.5G",
+      "unitPrice": "427.56"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-MOSTAZA-1260X5.5G",
+      "unitPrice": "416.4"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-MOSTAZA-204X5.5G",
+      "unitPrice": "92.16"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-MOSTAZA-204X5.5G",
+      "unitPrice": "89.76"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-JALAPENO-1008X8G",
+      "unitPrice": "356.32"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-JALAPENO-1008X8G",
+      "unitPrice": "347.02"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-JALAPENO-204X8G",
+      "unitPrice": "81.04"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-JALAPENO-204X8G",
+      "unitPrice": "78.93"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-MH-204X8G",
+      "unitPrice": "230.08"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-MH-204X8G",
+      "unitPrice": "224.08"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-ALITAS-204X8G",
+      "unitPrice": "230.08"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-ALITAS-204X8G",
+      "unitPrice": "224.08"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-CATSUP-1008X8G",
+      "unitPrice": "410.72"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-CATSUP-1008X8G",
+      "unitPrice": "400.01"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-CATSUP-204X8G",
+      "unitPrice": "94.78"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-CATSUP-204X8G",
+      "unitPrice": "92.31"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-PIMIENTALIMON-780G",
+      "unitPrice": "152.98"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-PIMIENTALIMON-780G",
+      "unitPrice": "148.99"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-CONSOME-25KG",
+      "unitPrice": "1257.81"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-CONSOME-25KG",
+      "unitPrice": "1225.0"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-EMPANIZADOR-SACO",
+      "unitPrice": "637.1"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-EMPANIZADOR-SACO",
+      "unitPrice": "620.48"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-MARINADOR-25KG",
+      "unitPrice": "1593.97"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-MARINADOR-25KG",
+      "unitPrice": "1552.39"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CC-MH-2.3KG",
+      "unitPrice": "169.39"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CC-MH-2.3KG",
+      "unitPrice": "164.97"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "LP-CHIPOTLE-3.65KG",
+      "unitPrice": "273.7"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "LP-CHIPOTLE-3.65KG",
+      "unitPrice": "266.56"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "LP-ALITASHOT-18KG",
+      "unitPrice": "621.0"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "LP-ALITASHOT-18KG",
+      "unitPrice": "604.8"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "CUL-RANCH-3.78L",
+      "unitPrice": "238.63"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "CUL-RANCH-3.78L",
+      "unitPrice": "232.4"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "INUSA-BUFALO-GAL",
+      "unitPrice": "155.25"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "INUSA-BUFALO-GAL",
+      "unitPrice": "151.2"
+    },
+    {
+      "priceListCode": "RETAIL-2025-01-27",
+      "sku": "INUSA-BUFALO-18KG",
+      "unitPrice": "663.55"
+    },
+    {
+      "priceListCode": "WHOLESALE-2025-01-27",
+      "sku": "INUSA-BUFALO-18KG",
+      "unitPrice": "646.24"
+    }
+  ],
+  "commercialRules": {
+    "timezone": "America/Monterrey",
+    "base_currency": "MXN",
+    "business_hours": {
+      "days": [
+        "MO",
+        "TU",
+        "WE",
+        "TH",
+        "FR"
+      ],
+      "open": "09:00",
+      "close": "17:00"
+    },
+    "pickup": {
+      "address": "Clavel 2499, Col. Moderna",
+      "requires_advance_order": true
+    },
+    "local_delivery": {
+      "start": "10:00",
+      "end": "16:00",
+      "free_delivery_minimum_mxn": 800,
+      "advance_business_days": 1,
+      "zones": [
+        "Monterrey",
+        "Guadalupe",
+        "San Nicolás",
+        "San Pedro",
+        "Apodaca hasta Paseo La Fe"
+      ]
+    },
+    "wholesale_reference": {
+      "minimum_order_amount_mxn": 40000,
+      "single_payment": true,
+      "status": "historical_requires_validation"
+    },
+    "contact": {
+      "whatsapp": "8181119397",
+      "status": "provided_business_contact"
+    }
+  },
+  "dataQualityIssues": [
+    {
+      "id": "DQ-001",
+      "domain": "Prices",
+      "entity": "All price lists",
+      "issue": "Price lists are dated 2025-01-27 and are not presumed current.",
+      "requiredAction": "Block production activation until approved list with effective dates is imported.",
+      "severity": "high"
+    },
+    {
+      "id": "DQ-002",
+      "domain": "La Pócima Hot Alitas",
+      "entity": "18 kg bucket",
+      "issue": "Marketplace text and price-list screenshot show different prices.",
+      "requiredAction": "Preserve both sources; require commercial approval.",
+      "severity": "high"
+    },
+    {
+      "id": "DQ-003",
+      "domain": "Packaging",
+      "entity": "Hot BBQ 4.4 kg",
+      "issue": "Pieces per case differ or are unclear between catalog material and price list.",
+      "requiredAction": "Validate against current master carton/label.",
+      "severity": "medium"
+    },
+    {
+      "id": "DQ-004",
+      "domain": "EAN/DUN",
+      "entity": "Multiple SKUs",
+      "issue": "Some codes visible in catalog are absent or may be transcription-prone.",
+      "requiredAction": "Import from manufacturer spreadsheet or barcode scan; add uniqueness checks.",
+      "severity": "high"
+    },
+    {
+      "id": "DQ-005",
+      "domain": "Naming",
+      "entity": "Búfalo vs Salsa para Alitas",
+      "issue": "Names are used interchangeably across sources.",
+      "requiredAction": "Create canonical family and searchable aliases, without merging brands/SKUs blindly.",
+      "severity": "medium"
+    },
+    {
+      "id": "DQ-006",
+      "domain": "Units",
+      "entity": "Galón",
+      "issue": "Commercial gallon presentations are labeled in kg or L; gallon cannot be treated as a universal physical conversion.",
+      "requiredAction": "Model as packaging with explicit net content, not a fixed UOM conversion.",
+      "severity": "high"
+    },
+    {
+      "id": "DQ-007",
+      "domain": "Manufacturing",
+      "entity": "Own condiments",
+      "issue": "No formulas, yields or quality specs were supplied.",
+      "requiredAction": "Build module and templates; do not fabricate recipes.",
+      "severity": "high"
+    }
+  ]
+}

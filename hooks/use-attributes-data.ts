@@ -95,7 +95,7 @@ export function useAttributesData() {
         valores: data.valores || [],
         orden: data.orden ?? 0,
         productosConAtributo: data.productosConAtributo ?? 0,
-      } as ProductAttribute)
+      } as unknown as ProductAttribute)
     },
     [createAttributeBase, companyId, userId],
   )
@@ -112,7 +112,7 @@ export function useAttributesData() {
         activo: data.activo ?? true,
         orden: data.orden ?? 0,
         atributoIds: data.atributoIds || [],
-      } as ProductCategory)
+      } as unknown as ProductCategory)
     },
     [createCategoryBase, companyId, userId],
   )
@@ -128,7 +128,7 @@ export function useAttributesData() {
         updatedAt: now,
         valoresSeleccionados: data.valoresSeleccionados || [],
         generarVariantes: data.generarVariantes ?? true,
-      } as ProductAttributeAssignment)
+      } as unknown as ProductAttributeAssignment)
     },
     [createAssignmentBase, companyId, userId],
   )
@@ -145,7 +145,7 @@ export function useAttributesData() {
         activo: data.activo ?? true,
         stock: data.stock ?? 0,
         imagenes: data.imagenes || [],
-      } as ProductVariant)
+      } as unknown as ProductVariant)
     },
     [createVariantBase, companyId, userId],
   )

@@ -112,6 +112,13 @@ export const COLLECTIONS = {
   biDashboards: "biDashboards",
   biReports: "biReports",
   biExports: "biExports",
+  // Colecciones de banca (módulo portado del donante)
+  bankAccounts: "bankAccounts",
+  bankTransactions: "bankTransactions",
+  checks: "checks",
+  bankTransfers: "bankTransfers",
+  bankStatements: "bankStatements",
+  reconciliationItems: "reconciliationItems",
 } as const
 
 export type CollectionName = (typeof COLLECTIONS)[keyof typeof COLLECTIONS]
@@ -186,7 +193,7 @@ export async function addItem<T extends DocumentData>(collectionName: Collection
 
     return {
       id: docRef.id,
-      ...item,
+      ...(item as any),
       userId: currentUser.uid,
     } as T
   } catch (error) {
@@ -216,7 +223,7 @@ export async function updateItem<T extends DocumentData>(
     if (updatedDoc.exists()) {
       return {
         id: updatedDoc.id,
-        ...updatedDoc.data(),
+        ...(updatedDoc.data() as any),
       } as T
     }
     return null

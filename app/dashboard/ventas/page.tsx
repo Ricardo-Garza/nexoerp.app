@@ -72,7 +72,7 @@ export default function VentasPage() {
   const getStatusBadge = (status: SalesOrder["status"] | any) => {
     const statusValue = normalizeOrderStatus(status)
     
-    const variants = {
+    const variants : Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
       draft: { label: "Borrador", variant: "secondary" as const },
       quotation: { label: "Cotización", variant: "outline" as const },
       confirmed: { label: "Confirmada", variant: "default" as const },

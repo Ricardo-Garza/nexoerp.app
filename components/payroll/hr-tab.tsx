@@ -24,7 +24,7 @@ export function HRTab({ candidates, loading, onAddCandidate }: HRTabProps) {
   const filteredCandidates = candidates.filter(
     (cand) =>
       cand.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cand.puesto.toLowerCase().includes(searchTerm.toLowerCase()),
+      (cand.puesto ?? '').toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   const handleSaveCandidate = async (candidateData: any) => {

@@ -191,7 +191,7 @@ export function CalendarPage() {
     }
 
     if (editingEventId) {
-      await update(editingEventId, payload)
+      await update(editingEventId, payload as any)
     } else {
       await create({
         ...payload,

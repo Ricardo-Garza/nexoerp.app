@@ -22,8 +22,8 @@ export function ReportDialog({ report, onClose, onSave }: ReportDialogProps) {
     name: report?.name || "",
     queryId: report?.queryId || "",
     format: report?.format || "pdf",
-    frequency: report?.schedule.frequency || "daily",
-    recipients: report?.recipients.join(", ") || "",
+    frequency: report?.schedule?.frequency || "daily",
+    recipients: (report?.recipients ?? []).join(", ") || "",
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,7 +43,7 @@ export function ReportDialog({ report, onClose, onSave }: ReportDialogProps) {
         queryId: formData.queryId || "default-query",
         format: formData.format as "pdf" | "excel" | "csv",
         schedule: {
-          frequency: formData.frequency as "daily" | "weekly" | "monthly",
+          frequency: formData.frequency as "daily" | "weekly" | "monthly" as "daily" | "weekly" | "monthly",
           nextRun: null,
         },
         recipients: recipientsArray,
@@ -76,7 +76,7 @@ export function ReportDialog({ report, onClose, onSave }: ReportDialogProps) {
               <Label htmlFor="frequency">Frecuencia *</Label>
               <Select
                 value={formData.frequency}
-                onValueChange={(value) => setFormData({ ...formData, frequency: value })}
+                onValueChange={(value) => setFormData({ ...formData, frequency: value as "daily" | "weekly" | "monthly" })}
               >
                 <SelectTrigger>
                   <SelectValue />
