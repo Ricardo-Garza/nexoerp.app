@@ -35,7 +35,7 @@ export function ClientFormDialog({ open, onOpenChange, client }: ClientFormDialo
     telefono: "",
     direccion: "",
     ciudad: "",
-    estado: "",
+    entidadFederativa: "",
     codigoPostal: "",
     limiteCredito: "0",
     diasCredito: "30",
@@ -54,6 +54,7 @@ export function ClientFormDialog({ open, onOpenChange, client }: ClientFormDialo
         telefono: client.telefono || "",
         direccion: client.direccion || "",
         ciudad: client.ciudad || "",
+        entidadFederativa: client.entidadFederativa || "",
         estado: client.estado || "activo",
         codigoPostal: client.codigoPostal || "",
         limiteCredito: String(client.limiteCredito || 0),
@@ -70,6 +71,7 @@ export function ClientFormDialog({ open, onOpenChange, client }: ClientFormDialo
         telefono: "",
         direccion: "",
         ciudad: "",
+        entidadFederativa: "",
         estado: "activo",
         codigoPostal: "",
         limiteCredito: "0",
@@ -204,8 +206,8 @@ export function ClientFormDialog({ open, onOpenChange, client }: ClientFormDialo
                 <Label htmlFor="estadoDir">Estado</Label>
                 <Input
                   id="estadoDir"
-                  value={formData.estado}
-                  onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
+                  value={formData.entidadFederativa}
+                  onChange={(e) => setFormData({ ...formData, entidadFederativa: e.target.value })}
                 />
               </div>
 

@@ -2,11 +2,18 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import { onAuthStateChanged, type User as FirebaseUser } from "firebase/auth"
-import { auth, db } from "@/lib/firebase"
+import { getFirebaseAuth, getFirebaseDb } from "@/lib/firebase"
 import { doc, getDoc } from "firebase/firestore"
 import { authService } from "@/lib/auth"
+import { getAuthMode } from "@/lib/config/auth-mode"
 
-interface AuthUser extends FirebaseUser {
+// Partial<FirebaseUser>: en modo demo el usuario no es un FirebaseUser real;
+// los consumidores solo leen campos planos (uid, email, role, companyId)
+interface AuthUser extends Partial<FirebaseUser> {
+  uid: string
+  email: string | null
+  displayName?: string | null
+  name?: string | null
   companyId?: string
   role?: "admin" | "user"
 }
@@ -35,6 +42,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    if (getAuthMode() === "demo") {
+      // Modo demo (sin credenciales): authService entrega usuarios sintéticos
+      const unsubscribe = authService.onAuthStateChanged((demoUser) => {
+        if (demoUser) {
+          setUser({
+            uid: demoUser.uid,
+            email: demoUser.email,
+            displayName: demoUser.name,
+            name: demoUser.name,
+            companyId: demoUser.companyId ?? "org-delar",
+            role: demoUser.role,
+          })
+          setCompanyId(demoUser.companyId ?? "org-delar")
+        } else {
+          setUser(null)
+          setCompanyId(null)
+        }
+        setLoading(false)
+      })
+      return () => unsubscribe()
+    }
+
+    const auth = getFirebaseAuth()
+    const db = getFirebaseDb()
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         console.log("[v0] [Auth] User authenticated:", firebaseUser.uid)
@@ -75,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setUser({
           ...firebaseUser,
+          name: firebaseUser.displayName,
           companyId: userCompanyId,
           role: userRole,
         })

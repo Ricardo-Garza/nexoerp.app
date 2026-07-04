@@ -73,7 +73,7 @@ export default function OrdenesVentaPage() {
 
   const getStatusBadge = (status: SalesOrder["status"]) => {
     const statusValue = normalizeOrderStatus(status)
-    const variants = {
+    const variants : Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
       draft: { label: "Borrador", variant: "secondary" as const },
       quotation: { label: "Cotización", variant: "outline" as const },
       confirmed: { label: "Confirmada", variant: "default" as const },
@@ -119,7 +119,7 @@ export default function OrdenesVentaPage() {
       }
 
       // Use the sales data hook to update
-      await updateOrderStatus(selectedOrder.id!, updateData)
+      await updateOrderStatus(selectedOrder.id!, updateData as any)
 
       setShowCancelReturnDialog(false)
       setSelectedOrder(null)

@@ -163,8 +163,8 @@ export function TicketDetailDialog({ open, onOpenChange, ticket, onUpdate }: Tic
           updatedAt: Timestamp.now(),
         }
 
-        const movementId = await addItem(COLLECTIONS.stockMovements, movement)
-        movementIds.push(movementId)
+        const createdMovement = await addItem(COLLECTIONS.stockMovements, movement)
+        movementIds.push(createdMovement.id)
       }
 
       await onUpdate(ticket.id, {
@@ -318,7 +318,7 @@ export function TicketDetailDialog({ open, onOpenChange, ticket, onUpdate }: Tic
                         <SelectContent>
                           {salesOrders?.map((order) => (
                             <SelectItem key={order.id} value={order.id}>
-                              {order.folio} - {order.clienteNombre}
+                              {order.folio} - {order.customerName}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -468,7 +468,7 @@ export function TicketDetailDialog({ open, onOpenChange, ticket, onUpdate }: Tic
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="estado">Estado del Ticket</Label>
-                <Select value={estado} onValueChange={setEstado}>
+                <Select value={estado} onValueChange={(v) => setEstado(v as typeof estado)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

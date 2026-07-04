@@ -6,6 +6,11 @@ import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
 import {
   LayoutDashboard,
+  BookOpen,
+  Tags,
+  Boxes,
+  Building2,
+  Settings,
   Users,
   Package,
   Warehouse,
@@ -16,8 +21,6 @@ import {
   UserCog,
   BarChart3,
   ShoppingCart,
-  ShoppingBag,
-  MapPin,
   Smartphone,
   ShoppingBasket,
   Store,
@@ -35,8 +38,12 @@ const sections = [
       { name: "Facturacion", href: "/dashboard/facturacion", icon: FileText },
       { name: "Proveedores", href: "/dashboard/suppliers", icon: Package },
       { name: "Inventario", href: "/dashboard/inventory", icon: Package },
+      { name: "Catalogo", href: "/dashboard/catalogo", icon: BookOpen },
+      { name: "Listas de Precios", href: "/dashboard/listas-precios", icon: Tags },
+      { name: "Inventario por Lote", href: "/dashboard/inventario-lotes", icon: Boxes },
       { name: "Almacen", href: "/dashboard/warehouse", icon: Warehouse },
       { name: "Punto de Venta", href: "/dashboard/punto-venta", icon: Store },
+      { name: "Bancos / Tesoreria", href: "/dashboard/banking", icon: Building2 },
     ],
   },
   {
@@ -44,15 +51,15 @@ const sections = [
     items: [
       { name: "Produccion", href: "/dashboard/production", icon: Cog },
       { name: "Mantenimiento", href: "/dashboard/maintenance", icon: Wrench },
-      { name: "Servicio", href: "/dashboard/service", icon: Headphones },
-      { name: "Field Services", href: "/dashboard/field-services", icon: MapPin },
+      { name: "Servicio / Soporte", href: "/dashboard/service", icon: Headphones },
     ],
   },
   {
     title: "ADMINISTRACION",
     items: [
-      { name: "Nomina / RRHH", href: "/dashboard/payroll", icon: UserCog },
       { name: "Contabilidad", href: "/dashboard/accounting", icon: Calculator },
+      { name: "Nomina / RRHH", href: "/dashboard/payroll", icon: UserCog },
+      { name: "Configuracion", href: "/dashboard/configuracion", icon: Settings },
     ],
   },
   {
@@ -64,7 +71,6 @@ const sections = [
     items: [
       { name: "ERP Web / Movil", href: "/dashboard/web-mobile", icon: Smartphone },
       { name: "E-Commerce", href: "/dashboard/ecommerce", icon: ShoppingCart },
-      { name: "E-Procurement", href: "/dashboard/eprocurement", icon: ShoppingBag },
     ],
   },
 ]
@@ -84,7 +90,7 @@ export function AppSidebar() {
   }
 
   return (
-    <aside className="app-sidebar w-72 border-r border-border bg-card flex flex-col overflow-y-auto">
+    <aside className="app-sidebar w-72 shrink-0 border-r border-border bg-card flex flex-col overflow-y-auto">
       <div className="app-sidebar-surface p-6 border-b border-border sticky top-0 bg-card z-10">
         <Link href="/dashboard" className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">

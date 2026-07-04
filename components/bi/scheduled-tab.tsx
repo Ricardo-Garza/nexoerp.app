@@ -1,4 +1,5 @@
 "use client"
+import { asDate } from "@/lib/utils/dates"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -80,17 +81,17 @@ export function ScheduledTab({ reports, loading, onAddReport, onUpdateReport, on
               {reports.map((report) => (
                 <TableRow key={report.id}>
                   <TableCell className="font-medium">{report.name}</TableCell>
-                  <TableCell className="capitalize">{report.schedule.frequency}</TableCell>
+                  <TableCell className="capitalize">{report.schedule?.frequency}</TableCell>
                   <TableCell className="uppercase">{report.format}</TableCell>
-                  <TableCell>{report.recipients.length} destinatarios</TableCell>
+                  <TableCell>{report.recipients ?? [].length} destinatarios</TableCell>
                   <TableCell>
                     <Badge variant={report.status === "active" ? "default" : "secondary"}>
                       {report.status === "active" ? "Activo" : "Pausado"}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {report.schedule.nextRun
-                      ? format(report.schedule.nextRun.toDate(), "dd MMM yyyy HH:mm", { locale: es })
+                    {report.schedule?.nextRun
+                      ? format(asDate(report.schedule?.nextRun), "dd MMM yyyy HH:mm", { locale: es })
                       : "-"}
                   </TableCell>
                   <TableCell className="text-right">

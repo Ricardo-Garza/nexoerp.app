@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useCallback } from "react"
+import { asDate } from "@/lib/utils/dates"
 import { useFirestore } from "./use-firestore"
 import { COLLECTIONS } from "@/lib/firestore"
 import type { LedgerAccount, JournalEntry, Budget } from "@/lib/types"
@@ -59,7 +60,7 @@ export function useAccountingData() {
     return safeEntries
       .filter((entry) => {
         if (entry.estado !== "autorizada") return false
-        const entryDate = entry.fecha instanceof Date ? entry.fecha : new Date(entry.fecha)
+        const entryDate = entry.fecha instanceof Date ? entry.fecha : asDate(entry.fecha)
         return entryDate.getMonth() === thisMonth && entryDate.getFullYear() === thisYear
       })
       .filter((entry) => entry.tipo === "Ingresos")
@@ -76,7 +77,7 @@ export function useAccountingData() {
     return safeEntries
       .filter((entry) => {
         if (entry.estado !== "autorizada") return false
-        const entryDate = entry.fecha instanceof Date ? entry.fecha : new Date(entry.fecha)
+        const entryDate = entry.fecha instanceof Date ? entry.fecha : asDate(entry.fecha)
         return entryDate.getMonth() === thisMonth && entryDate.getFullYear() === thisYear
       })
       .filter((entry) => entry.tipo === "Egresos")
@@ -92,7 +93,7 @@ export function useAccountingData() {
     const thisYear = now.getFullYear()
 
     return safeEntries.filter((entry) => {
-      const entryDate = entry.fecha instanceof Date ? entry.fecha : new Date(entry.fecha)
+      const entryDate = entry.fecha instanceof Date ? entry.fecha : asDate(entry.fecha)
       return entryDate.getMonth() === thisMonth && entryDate.getFullYear() === thisYear
     }).length
   }, [safeEntries])

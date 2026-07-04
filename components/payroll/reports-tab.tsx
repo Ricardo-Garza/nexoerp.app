@@ -1,6 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { asDate } from "@/lib/utils/dates"
 import { Button } from "@/components/ui/button"
 import { Download, TrendingUp, Users, Calendar } from "lucide-react"
 import type { Employee, PayrollPeriod, Incident } from "@/lib/types"
@@ -90,7 +91,7 @@ export function ReportsTab({ employees, periods, incidents, loading }: ReportsTa
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Fecha de pago:</span>
-                <span className="text-sm font-medium">{new Date(lastPeriod.fechaPago).toLocaleDateString()}</span>
+                <span className="text-sm font-medium">{asDate(lastPeriod.fechaPago).toLocaleDateString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Total nómina:</span>

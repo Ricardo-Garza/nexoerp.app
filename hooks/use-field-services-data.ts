@@ -15,7 +15,7 @@ import type {
   ProductoRetirado,
 } from "@/lib/types"
 import { orderBy, addDoc, collection, Timestamp } from "firebase/firestore"
-import { db } from "@/lib/firebase"
+import { getFirebaseDb } from "@/lib/firebase"
 
 export function useFieldServicesData() {
   const { user } = useAuth()
@@ -214,7 +214,7 @@ export function useFieldServicesData() {
           updatedAt: Timestamp.now() as any,
         }
 
-        const movementRef = await addDoc(collection(db, COLLECTIONS.stockMovements), movementData)
+        const movementRef = await addDoc(collection(getFirebaseDb(), COLLECTIONS.stockMovements), movementData)
         refaccion.movimientoId = movementRef.id
       }
     }
@@ -254,7 +254,7 @@ export function useFieldServicesData() {
           movementData.referencia = `Ticket ${service.serviceTicketFolio} - Servicio ${service.folio}`
         }
 
-        await addDoc(collection(db, COLLECTIONS.stockMovements), movementData)
+        await addDoc(collection(getFirebaseDb(), COLLECTIONS.stockMovements), movementData)
       }
     }
 
@@ -267,7 +267,7 @@ export function useFieldServicesData() {
       duracionMinutos,
       estado: "completado",
       evidencias: data.evidencias || service.evidencias || [],
-      firmaCliente: data.firmaCliente || null,
+      firmaCliente: data.firmaCliente || undefined,
       refacciones: data.refacciones || [],
       productosRetirados: data.productosRetirados || [],
       costoRefacciones,
@@ -311,7 +311,7 @@ export function useFieldServicesData() {
       updatedAt: Timestamp.now() as any,
     }
 
-    await addDoc(collection(db, COLLECTIONS.technicianLocations), locationData)
+    await addDoc(collection(getFirebaseDb(), COLLECTIONS.technicianLocations), locationData)
   }
 
   // Calculate KPIs with safe defaults

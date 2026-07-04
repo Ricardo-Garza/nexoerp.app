@@ -80,7 +80,7 @@ export function ConceptsTab({ concepts, loading, onAddConcept }: ConceptsTabProp
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <p className="font-semibold">{concept.nombre}</p>
-                      <Badge variant={concept.tipo === "percepcion" ? "default" : "secondary"}>{concept.tipo}</Badge>
+                      <Badge variant={(concept.tipo as string) === "percepcion" ? "default" : "secondary"}>{concept.tipo}</Badge>
                       {concept.activo && <Badge variant="outline">Activo</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">{concept.clave}</p>

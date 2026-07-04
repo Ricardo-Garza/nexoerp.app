@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { asDate } from "@/lib/utils/dates"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -152,8 +153,8 @@ export function IncidentsTab({ incidents, employees, loading, onAddIncident, onA
                         <Badge variant="outline">{incident.tipo}</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">
-                        {new Date(incident.fechaInicio).toLocaleDateString()} -{" "}
-                        {new Date(incident.fechaFin).toLocaleDateString()}
+                        {asDate(incident.fechaInicio).toLocaleDateString()} -{" "}
+                        {asDate(incident.fechaFin).toLocaleDateString()}
                       </p>
                       {incident.motivo && <p className="text-xs text-muted-foreground mt-1">{incident.motivo}</p>}
                     </div>

@@ -1,0 +1,58 @@
+﻿sku,brand_code,family,product_name,category,presentation_type,net_content,net_unit,units_per_case,ean,dun,retail_price_mxn,wholesale_price_mxn,price_effective_from,data_status,source,track_lot,expiry_required
+CC-RANCH-20KG,CUSTOM,Ranch,Aderezo Ranch 20 kg,Aderezos,Porrón,20,KG,1,,,1233.74,1201.56,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-BBQ-20KG,CUSTOM,BBQ,Salsa BBQ 20 kg,Salsas,Porrón,20,KG,1,,,766.59,746.59,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-MH-20KG,CUSTOM,Mango Habanero,Salsa para Alitas Mango Habanero 20 kg,Salsas,Porrón,20,KG,1,,,1231.65,1199.52,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-ALITAS-20KG,CUSTOM,Salsa para Alitas,Salsa para Alitas 20 kg,Salsas,Porrón,20,KG,1,,,934.41,910.03,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-RANCHHAB-3.4KG,CUSTOM,Ranch Habanero,Aderezo Ranch Habanero 3.4 kg,Aderezos,Galón,3.4,KG,4,,,319.09,310.77,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-RANCHSRI-3.5KG,CUSTOM,Ranch Sriracha,Aderezo Ranch Sabor Sriracha 3.5 kg,Aderezos,Galón,3.5,KG,4,,,530.29,516.46,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-BLUECHEESE-3.6KG,CUSTOM,Blue Cheese,Aderezo Blue Cheese 3.6 kg,Aderezos,Galón,3.6,KG,4,,,280.15,272.84,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-RANCH-3.4KG,CUSTOM,Ranch,Aderezo Ranch 3.4 kg,Aderezos,Galón,3.4,KG,4,,,243.97,237.61,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-JUGOSAZ-4KG,CUSTOM,Jugo Sazonador,Jugo Sazonador 4 kg,Sazonadores,Galón,4,KG,4,,,361.05,351.63,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-ALITAS-3.75KG,CUSTOM,Salsa para Alitas,Salsa para Alitas 3.75 kg,Salsas,Galón,3.75,KG,4,,,202.69,197.41,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-BBQ-4KG,CUSTOM,BBQ,Salsa BBQ 4 kg,Salsas,Galón,4,KG,4,,,203.96,198.64,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-BPL-3.25KG,CUSTOM,Blanca Piquín Limón,Salsa Blanca Piquín Limón 3.25 kg,Salsas,Galón,3.25,KG,4,,,415.03,404.2,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-TH-4.05KG,CUSTOM,Tamarindo Habanero,Salsa de Tamarindo Habanero 4.05 kg,Salsas,Galón,4.05,KG,4,,,406.18,395.58,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-HOTBBQ-4.4KG,CUSTOM,Hot BBQ,Salsa Hot BBQ 4.4 kg,Salsas,Galón,4.4,KG,4,,,263.29,256.42,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-LEMON-3.7KG,CUSTOM,Lemon Pepper,Salsa Lemon Pepper 3.7 kg,Salsas,Galón,3.7,KG,4,,,326.77,318.24,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-MH-4.3KG,CUSTOM,Mango Habanero,Salsa para Alitas Mango Habanero 4.3 kg,Salsas,Galón,4.3,KG,4,,,307.66,299.63,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-SMOKY-4KG,CUSTOM,Smoky BBQ,Salsa Smoky BBQ 4 kg,Salsas,Galón,4,KG,4,,,253.37,246.76,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-INGLESA-3.9KG,CUSTOM,Salsa Inglesa,Salsa Tipo Inglesa 3.9 kg,Salsas,Galón,3.9,KG,4,,,254.69,248.04,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-RANCH-POUCH2,CUSTOM,Ranch,Aderezo Ranch Pouch 2 kg,Aderezos,Bolsa,2,KG,5,,,127.14,123.82,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-BBQ-POUCH2,CUSTOM,BBQ,Salsa BBQ Pouch 2 kg,Salsas,Bolsa,2,KG,5,,,87.57,85.28,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-MH-POUCH2,CUSTOM,Mango Habanero,Salsa para Alitas Mango Habanero Pouch 2 kg,Salsas,Bolsa,2,KG,5,,,125.78,122.49,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-ALITAS-POUCH2,CUSTOM,Salsa para Alitas,Salsa para Alitas Pouch 2 kg,Salsas,Bolsa,2,KG,5,,,96.79,94.27,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-RANCH-460G,CUSTOM,Ranch,Aderezo Ranch 460 g,Aderezos,Apachurrable,460,G,12,,,48.1,46.84,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-RANCHHAB-480G,CUSTOM,Ranch Habanero,Aderezo Ranch Habanero 480 g,Aderezos,Apachurrable,480,G,12,,,61.09,59.5,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-RANCHSRI-460G,CUSTOM,Ranch Sriracha,Aderezo Ranch Sriracha 460 g,Aderezos,Apachurrable,460,G,12,,,79.09,77.03,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-ALITAS-500G,CUSTOM,Salsa para Alitas,Salsa para Alitas 500 g,Salsas,Apachurrable,500,G,12,,,35.09,34.18,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-BBQ-530G,CUSTOM,BBQ,Salsa BBQ 530 g,Salsas,Apachurrable,530,G,12,,,31.71,30.88,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-BPL-445G,CUSTOM,Blanca Piquín Limón,Salsa Blanca Piquín Limón 445 g,Salsas,Apachurrable,445,G,12,,,58.72,57.19,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-TH-560G,CUSTOM,Tamarindo Habanero,Salsa Tamarindo Habanero 560 g,Salsas,Apachurrable,560,G,12,,,71.48,69.62,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-HOTBBQ-580G,CUSTOM,Hot BBQ,Salsa Hot BBQ 580 g,Salsas,Apachurrable,580,G,12,,,43.26,42.14,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-LEMON-490G,CUSTOM,Lemon Pepper,Salsa Lemon Pepper 490 g,Salsas,Apachurrable,490,G,12,,,51.69,50.34,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-MH-570G,CUSTOM,Mango Habanero,Salsa para Alitas Mango Habanero 570 g,Salsas,Apachurrable,570,G,12,,,51.69,50.34,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-SMOKY-535G,CUSTOM,Smoky BBQ,Salsa Smoky BBQ 535 g,Salsas,Apachurrable,535,G,12,,,54.22,52.81,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-MAYO-1008X8G,CUSTOM,Mayonesa,Aderezo Mayonesa 1008 sobres de 8 g,Aderezos,Sobres,8,G,1008,,,568.68,553.84,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-MAYO-204X8G,CUSTOM,Mayonesa,Aderezo Mayonesa 204 sobres de 8 g,Aderezos,Sobres,8,G,204,,,124.64,121.39,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-RANCHHAB-204X8G,CUSTOM,Ranch Habanero,Aderezo Ranch Habanero 204 sobres de 8 g,Aderezos,Sobres,8,G,204,,,195.58,190.48,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-CHILESECO-1000X1G,CUSTOM,Chile Seco,Chile Seco 1000 sobres de 1 g,Condimentos,Sobres,1,G,1000,,,306.45,298.46,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-NEGRA-204X8G,CUSTOM,Negra Michelada,Sazonador Negra Michelada 204 sobres de 8 g,Condimentos,Sobres,8,G,204,,,195.58,190.48,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-MOSTAZA-1260X5.5G,CUSTOM,Mostaza,Salsa de Mostaza 1260 sobres de 5.5 g,Salsas,Sobres,5.5,G,1260,,,427.56,416.4,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-MOSTAZA-204X5.5G,CUSTOM,Mostaza,Salsa de Mostaza 204 sobres de 5.5 g,Salsas,Sobres,5.5,G,204,,,92.16,89.76,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-JALAPENO-1008X8G,CUSTOM,Jalapeño,Salsa Jalapeño 1008 sobres de 8 g,Salsas,Sobres,8,G,1008,,,356.32,347.02,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-JALAPENO-204X8G,CUSTOM,Jalapeño,Salsa Jalapeño 204 sobres de 8 g,Salsas,Sobres,8,G,204,,,81.04,78.93,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-MH-204X8G,CUSTOM,Mango Habanero,Salsa Mango Habanero 204 sobres de 8 g,Salsas,Sobres,8,G,204,,,230.08,224.08,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-ALITAS-204X8G,CUSTOM,Salsa para Alitas,Salsa para Alitas 204 sobres de 8 g,Salsas,Sobres,8,G,204,,,230.08,224.08,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-CATSUP-1008X8G,CUSTOM,Catsup,Salsa tipo Catsup 1008 sobres de 8 g,Salsas,Sobres,8,G,1008,,,410.72,400.01,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-CATSUP-204X8G,CUSTOM,Catsup,Salsa tipo Catsup 204 sobres de 8 g,Salsas,Sobres,8,G,204,,,94.78,92.31,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-PIMIENTALIMON-780G,CUSTOM,Pimienta Limón,Sazonador Pimienta Limón 780 g,Condimentos,Bote,780,G,6,,,152.98,148.99,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-CONSOME-25KG,CUSTOM,Consomé de Pollo,Consomé de Pollo 25 kg,Condimentos,Saco,25,KG,1,,,1257.81,1225.0,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-EMPANIZADOR-SACO,CUSTOM,Empanizador Extra Crujiente,Empanizador Extra Crujiente Saco,Condimentos,Saco,,KG,1,,,637.1,620.48,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-MARINADOR-25KG,CUSTOM,Marinador Pollo,Marinador Pollo 25 kg,Condimentos,Saco,25,KG,1,,,1593.97,1552.39,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+CC-MH-2.3KG,CUSTOM,Mango Habanero,Salsa para Alitas Mango Habanero 2.3 kg,Salsas,Medio Galón,2.3,KG,6,,,169.39,164.97,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+LP-CHIPOTLE-3.65KG,LAPOCIMA,Chipotle,Aderezo Chipotle 3.65 kg,Aderezos,Galón,3.65,KG,2,,,273.7,266.56,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+LP-ALITASHOT-18KG,LAPOCIMA,Hot Alitas,Salsa Alitas Hot Cubeta 18 kg,Salsas,Cubeta,18,KG,1,,,621.0,604.8,2025-01-27,historical_conflict_requires_validation,provided_price_list_2025,true,true
+CUL-RANCH-3.78L,CULINAIRE,Ranch,Aderezo Ranch Culinaire 3.78 L,Aderezos,Galón,3.78,L,4,,,238.63,232.4,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+INUSA-BUFALO-GAL,INUSA,Búfalo Mantequilla,Salsa Búfalo Mantequilla Galón,Salsas,Galón,,L,4,,,155.25,151.2,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+INUSA-BUFALO-18KG,INUSA,Búfalo Mantequilla,Salsa Búfalo Mantequilla Cubeta 18 kg,Salsas,Cubeta,18,KG,1,,,663.55,646.24,2025-01-27,historical_requires_validation,provided_price_list_2025,true,true
+ING-CORNSTARCH-25KG,INGREDION,Almidón de Maíz,Fécula / Almidón de Maíz 25 kg,Materias primas,Bulto,25,KG,1,,,,,2025-01-27,price_pending_validation,provided_price_list_2025,true,true

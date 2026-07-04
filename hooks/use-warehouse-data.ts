@@ -343,7 +343,7 @@ export function useWarehouseData() {
         updatedAt: new Date().toISOString(),
       }
 
-      return await updateTransferBase(transferId, sanitized)
+      return await updateTransferBase(transferId, sanitized as any)
     },
     [transfers, createMovement, updateTransferBase],
   )
@@ -395,7 +395,7 @@ export function useWarehouseData() {
         updatedAt: new Date().toISOString(),
       }
 
-      return await updatePhysicalCountBase(countId, sanitized)
+      return await updatePhysicalCountBase(countId, sanitized as any)
     },
     [physicalCounts, inventoryStock, createMovement, updatePhysicalCountBase],
   )

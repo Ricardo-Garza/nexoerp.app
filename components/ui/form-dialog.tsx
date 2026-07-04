@@ -32,6 +32,9 @@ type FormDialogProps = {
   description?: string
   fields: Field[]
   initialValues?: Record<string, any>
+  /** Alias legacy: varias páginas v0 pasan initialData/defaultValues */
+  initialData?: Record<string, any>
+  defaultValues?: Record<string, any>
   onSubmit: (values: Record<string, any>) => void | Promise<void>
   submitLabel?: string
 }

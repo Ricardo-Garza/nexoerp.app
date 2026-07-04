@@ -190,11 +190,16 @@ export default function AccountingPage() {
       <NuevaPolizaDialog
         open={nuevaPolizaOpen}
         onOpenChange={setNuevaPolizaOpen}
-        onSave={addEntry}
+        onSave={async (entry) => {
+          await addEntry(entry)
+        }}
         ledgerAccounts={ledgerAccounts.filter((acc) => acc.acumulaSaldo)}
       />
 
-      <NuevaCuentaDialog open={nuevaCuentaOpen} onOpenChange={setNuevaCuentaOpen} onSave={addAccount} />
+      <NuevaCuentaDialog open={nuevaCuentaOpen} onOpenChange={setNuevaCuentaOpen} onSave={async (account) => {
+          await addAccount(account)
+        }}
+      />
     </div>
   )
 }

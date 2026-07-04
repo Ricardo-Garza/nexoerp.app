@@ -447,7 +447,7 @@ export default function EProcurementPage() {
             updateRequisition(editingRequisition.id, data)
           } else {
             addRequisition({
-              ...data,
+              ...(data as any),
               id: `REQ-${String(requisitions.length + 1).padStart(3, "0")}`,
               date: new Date().toISOString().split("T")[0],
               status: "pending",

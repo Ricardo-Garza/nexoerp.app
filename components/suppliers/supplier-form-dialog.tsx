@@ -138,7 +138,7 @@ export function SupplierFormDialog({ open, onOpenChange, supplier }: SupplierFor
       }
 
       if (supplier) {
-        await updateSupplier(supplier.id, supplierData)
+        await updateSupplier(supplier.id, supplierData as any)
       } else {
         await createSupplier(supplierData)
       }

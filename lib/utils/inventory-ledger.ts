@@ -1,4 +1,5 @@
 import type { StockMovement, InventoryStock } from "@/lib/types"
+import { asDate } from "@/lib/utils/dates"
 import { Timestamp } from "firebase/firestore"
 
 /**
@@ -129,8 +130,8 @@ export function selectLotsFIFO(
       return dateA.getTime() - dateB.getTime()
     }
     // No expiry, sort by creation date (FIFO)
-    const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toDate() : new Date(a.createdAt as string)
-    const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toDate() : new Date(b.createdAt as string)
+    const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toDate() : asDate(a.createdAt)
+    const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toDate() : asDate(b.createdAt)
     return dateA.getTime() - dateB.getTime()
   })
 
@@ -143,7 +144,7 @@ export function selectLotsFIFO(
 
     const toTake = Math.min(stock.cantidadDisponible, remaining)
     selected.push({
-      lote: stock.lote,
+      lote: stock.lote ?? null,
       cantidad: toTake,
       costoUnitario: stock.costoPromedio,
       fechaCaducidad: stock.fechaCaducidad

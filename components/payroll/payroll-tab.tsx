@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { asDate } from "@/lib/utils/dates"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -105,11 +106,11 @@ export function PayrollTab({ periods, employees, loading, onAddPeriod, onProcess
                       <Badge variant={period.estado === "pagada" ? "default" : "secondary"}>{period.estado}</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
-                      {new Date(period.fechaInicio).toLocaleDateString()} -{" "}
-                      {new Date(period.fechaFin).toLocaleDateString()}
+                      {asDate(period.fechaInicio).toLocaleDateString()} -{" "}
+                      {asDate(period.fechaFin).toLocaleDateString()}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Fecha de pago: {new Date(period.fechaPago).toLocaleDateString()}
+                      Fecha de pago: {asDate(period.fechaPago).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="text-right">

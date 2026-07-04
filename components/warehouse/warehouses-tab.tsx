@@ -22,11 +22,11 @@ import type { Warehouse } from "@/lib/types"
 export function WarehousesTab({ warehouseData }: { warehouseData: any }) {
   const { warehouses, almacenesEstadisticas, createWarehouse, updateWarehouse, removeWarehouse, loading } =
     warehouseData
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState<any>("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingWarehouse, setEditingWarehouse] = useState<Warehouse | null>(null)
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     codigo: "",
     nombre: "",
     ubicacion: "",

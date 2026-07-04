@@ -19,7 +19,7 @@ interface ConceptDialogProps {
 }
 
 export function ConceptDialog({ open, onOpenChange, onSave, concept }: ConceptDialogProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     clave: "",
     nombre: "",
     tipo: "percepcion" as "percepcion" | "deduccion",

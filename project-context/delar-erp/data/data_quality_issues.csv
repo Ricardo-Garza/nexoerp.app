@@ -1,0 +1,8 @@
+﻿issue_id,domain,entity,issue,required_action,severity
+DQ-001,Prices,All price lists,Price lists are dated 2025-01-27 and are not presumed current.,Block production activation until approved list with effective dates is imported.,high
+DQ-002,La Pócima Hot Alitas,18 kg bucket,Marketplace text and price-list screenshot show different prices.,Preserve both sources; require commercial approval.,high
+DQ-003,Packaging,Hot BBQ 4.4 kg,Pieces per case differ or are unclear between catalog material and price list.,Validate against current master carton/label.,medium
+DQ-004,EAN/DUN,Multiple SKUs,Some codes visible in catalog are absent or may be transcription-prone.,Import from manufacturer spreadsheet or barcode scan; add uniqueness checks.,high
+DQ-005,Naming,Búfalo vs Salsa para Alitas,Names are used interchangeably across sources.,"Create canonical family and searchable aliases, without merging brands/SKUs blindly.",medium
+DQ-006,Units,Galón,Commercial gallon presentations are labeled in kg or L; gallon cannot be treated as a universal physical conversion.,"Model as packaging with explicit net content, not a fixed UOM conversion.",high
+DQ-007,Manufacturing,Own condiments,"No formulas, yields or quality specs were supplied.",Build module and templates; do not fabricate recipes.,high

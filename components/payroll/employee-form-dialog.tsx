@@ -18,7 +18,7 @@ interface EmployeeFormDialogProps {
 }
 
 export function EmployeeFormDialog({ open, onOpenChange, onSave, employee }: EmployeeFormDialogProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     numeroEmpleado: "",
     nombre: "",
     apellidoPaterno: "",

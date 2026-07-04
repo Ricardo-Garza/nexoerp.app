@@ -54,7 +54,7 @@ export function QueryDialog({ query, onClose, onSave }: QueryDialogProps) {
         description: formData.description.trim(),
         dataSource: formData.dataSource,
         fields: fieldsArray,
-        filters: query?.filters || {},
+        filters: query?.filters || [],
         aggregations: query?.aggregations || [],
       })
     } finally {

@@ -436,17 +436,17 @@ export function SupplierProductDialog({
         companyId,
       }
 
-      const createdProduct = await createInventoryProduct(newProductData)
+      const createdProduct = await createInventoryProduct(newProductData as any)
       const newProductId = createdProduct?.id
 
       if (!newProductId) {
         throw new Error("No se pudo crear el producto en inventario.")
       }
 
-      const newProduct: Product = {
+      const newProduct = {
         id: newProductId,
         ...newProductData,
-      } as Product
+      } as unknown as Product
 
       handleSelectProduct(newProduct)
       setProductSearch("")

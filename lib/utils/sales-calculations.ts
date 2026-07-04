@@ -76,7 +76,7 @@ export function calculateOrderTotals(lines: SalesOrderLine[]): {
 /**
  * Format currency
  */
-export function formatCurrency(amount: number, currency: "MXN" | "USD" = "MXN"): string {
+export function formatCurrency(amount: number, currency: string = "MXN"): string {
   return new Intl.NumberFormat("es-MX", {
     style: "currency",
     currency,

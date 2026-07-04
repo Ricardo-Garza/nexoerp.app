@@ -21,7 +21,7 @@ import { Loader2, AlertCircle } from "lucide-react"
 import { COLLECTIONS, addItem, updateItem } from "@/lib/firestore"
 import type { SalesOrder, Invoice } from "@/lib/types"
 import { getNextFolio } from "@/lib/utils/folio-generator"
-import { serverTimestamp } from "firebase/firestore"
+import { serverTimestamp, type WithFieldValue} from "firebase/firestore"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface GenerateInvoiceDialogProps {
@@ -52,7 +52,7 @@ export function GenerateInvoiceDialog({ salesOrder, open, onClose, onSuccess }: 
 
     try {
       // Generate invoice number
-      const existingNumbers = existingInvoices.map((i) => i.invoiceNumber)
+      const existingNumbers = existingInvoices.map((i) => i.invoiceNumber).filter((n): n is string => Boolean(n))
       const invoiceNumber = getNextFolio(existingNumbers, "F")
 
       // Calculate due date based on payment terms
@@ -63,7 +63,7 @@ export function GenerateInvoiceDialog({ salesOrder, open, onClose, onSuccess }: 
       }
 
       // Create invoice
-      const invoice: Omit<Invoice, "id"> = {
+      const invoice: WithFieldValue<Omit<Invoice, "id">> = {
         companyId,
         invoiceNumber,
         salesOrderId: salesOrder.id,
@@ -84,7 +84,7 @@ export function GenerateInvoiceDialog({ salesOrder, open, onClose, onSuccess }: 
         formaPago: salesOrder.paymentMethod || "",
         lines: salesOrder.lines,
         subtotal: salesOrder.subtotal,
-        taxTotal: salesOrder.taxTotal,
+        taxTotal: (salesOrder.taxTotal ?? 0),
         discountTotal: salesOrder.discountTotal,
         total: salesOrder.total,
         currency: salesOrder.currency,
@@ -94,7 +94,7 @@ export function GenerateInvoiceDialog({ salesOrder, open, onClose, onSuccess }: 
         updatedAt: serverTimestamp(),
       }
 
-      const created = await addItem(COLLECTIONS.salesInvoices, invoice)
+      const created = await addItem(COLLECTIONS.salesInvoices, invoice as Omit<Invoice, 'id'>)
 
       await addItem(COLLECTIONS.cfdi, {
         tipo: "factura",
@@ -104,7 +104,7 @@ export function GenerateInvoiceDialog({ salesOrder, open, onClose, onSuccess }: 
         vendedor: user?.email || "",
         salesOrderId: salesOrder.id,
         subtotal: salesOrder.subtotal,
-        iva: salesOrder.taxTotal,
+        iva: (salesOrder.taxTotal ?? 0),
         total: salesOrder.total,
         facturacionTipo: "parcial",
         montoFacturado: salesOrder.total,
@@ -229,7 +229,7 @@ export function GenerateInvoiceDialog({ salesOrder, open, onClose, onSuccess }: 
             </div>
             <div className="flex justify-between text-sm">
               <span>IVA:</span>
-              <span className="font-medium">${salesOrder.taxTotal.toFixed(2)}</span>
+              <span className="font-medium">${(salesOrder.taxTotal ?? 0).toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-bold">
               <span>Total:</span>

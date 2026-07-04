@@ -357,7 +357,7 @@ export function GoodsReceiptDialog({
                 </div>
                 {formData.certificaciones && formData.certificaciones.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {formData.certificaciones.map((cert, index) => (
+                    {formData.certificaciones.map((cert: any, index: any) => (
                       <Badge key={index} variant="secondary" className="gap-1">
                         {cert}
                         <button type="button" onClick={() => removeCertification(index)} className="ml-1">
@@ -518,7 +518,7 @@ export function GoodsReceiptDialog({
               {formData.documentosAdjuntos && formData.documentosAdjuntos.length > 0 && (
                 <div className="space-y-2">
                   <h3 className="font-medium">Documentos Adjuntos</h3>
-                  {formData.documentosAdjuntos.map((doc, index) => (
+                  {formData.documentosAdjuntos.map((doc: any, index: any) => (
                     <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex-1">
                         <p className="font-medium">{doc.nombre}</p>

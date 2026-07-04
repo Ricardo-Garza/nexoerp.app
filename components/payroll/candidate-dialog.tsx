@@ -18,7 +18,7 @@ interface CandidateDialogProps {
 }
 
 export function CandidateDialog({ open, onOpenChange, onSave, candidate }: CandidateDialogProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     nombre: "",
     email: "",
     telefono: "",

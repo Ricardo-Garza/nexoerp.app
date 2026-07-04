@@ -200,26 +200,26 @@ export default function BusinessIntelligencePage() {
             <QueriesTab
               queries={queries}
               loading={loading}
-              onAddQuery={addQuery}
-              onUpdateQuery={updateQuery}
-              onDeleteQuery={deleteQuery}
-              getDataSource={getDataSource}
+              onAddQuery={async (q) => { await addQuery(q) }}
+              onUpdateQuery={async (id, q) => { await updateQuery(id, q) }}
+              onDeleteQuery={async (id) => { await deleteQuery(id) }}
+              getDataSource={async (c: string) => getDataSource(c)}
             />
           )}
 
-          {activeTab === "assistant" && <AssistantTab onAddQuery={addQuery} onAddDashboard={addDashboard} />}
+          {activeTab === "assistant" && <AssistantTab onAddQuery={async (q) => { await addQuery(q) }} onAddDashboard={async (d) => { await addDashboard(d) }} />}
 
           {activeTab === "maps" && (
-            <MapsTab queries={queries} getDataSource={getDataSource} onCreateExport={createExport} />
+            <MapsTab queries={queries} getDataSource={async (c: string) => getDataSource(c)} onCreateExport={async (e: any) => { await createExport(e) }} />
           )}
 
           {activeTab === "scheduled" && (
             <ScheduledTab
               reports={reports}
               loading={loading}
-              onAddReport={addReport}
-              onUpdateReport={updateReport}
-              onDeleteReport={deleteReport}
+              onAddReport={async (r) => { await addReport(r) }}
+              onUpdateReport={async (id, r) => { await updateReport(id, r) }}
+              onDeleteReport={async (id) => { await deleteReport(id) }}
             />
           )}
         </CardContent>

@@ -20,6 +20,17 @@ import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 
 type ClientDetailData = {
+  // Campos fiscales/contacto opcionales mostrados en el detalle
+  razonSocial?: string
+  regimenFiscal?: string
+  usoCfdi?: string
+  codigoPostal?: string
+  correosFacturacion?: string
+  telefonos?: string
+  direccionFiscal?: string
+  historialCambiosFiscales?: string
+  city?: string
+  state?: string
   id?: string
   name?: string
   rfc?: string

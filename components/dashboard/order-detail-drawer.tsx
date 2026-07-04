@@ -19,7 +19,7 @@ interface OrderDetailDrawerProps {
   onOpenChange: (open: boolean) => void
 }
 
-const statusConfig = {
+const statusConfig : Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   draft: { label: "Borrador", variant: "secondary" as const },
   quotation: { label: "Cotización", variant: "secondary" as const },
   confirmed: { label: "Confirmada", variant: "default" as const },
@@ -192,7 +192,7 @@ export function OrderDetailDrawer({ orderId, open, onOpenChange }: OrderDetailDr
                             <span>
                               {line.quantity || 0} × {formatCurrency(line.unitPrice)}
                             </span>
-                            {line.discount > 0 && (
+                            {(line.discount ?? 0) > 0 && (
                               <span className="text-destructive">-{formatCurrency(line.discount)}</span>
                             )}
                           </div>
@@ -219,7 +219,7 @@ export function OrderDetailDrawer({ orderId, open, onOpenChange }: OrderDetailDr
                       <span className="text-muted-foreground">Subtotal</span>
                       <span className="font-medium">{formatCurrency(order.subtotal)}</span>
                     </div>
-                    {order.discountTotal > 0 && (
+                    {(order.discountTotal ?? 0) > 0 && (
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-muted-foreground">Descuento</span>
                         <span className="font-medium text-destructive">-{formatCurrency(order.discountTotal)}</span>
