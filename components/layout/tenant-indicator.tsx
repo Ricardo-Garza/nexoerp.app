@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Shield, Building2, ChevronDown, LogOut } from "lucide-react"
+import { Shield, Building2, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -18,9 +18,7 @@ import { listTenants } from "@/lib/platform/tenant-store"
 import type { Tenant } from "@/lib/platform/types"
 
 /**
- * Indicador de universo activo + acceso al Control Plane, visible en el header.
- * Para admins de plataforma permite cambiar de empresa (impersonación de soporte)
- * y regresar rápido al panel Nexo.
+ * Indicador de empresa activa y acceso a Administración Nexo para usuarios internos.
  */
 export function TenantIndicator() {
   const { isPlatformAdmin, activeTenantId, setActiveTenant, impersonating } = usePlatform()
@@ -30,10 +28,9 @@ export function TenantIndicator() {
     listTenants().then(setTenants)
   }, [])
 
-  const active = tenants.find((t) => t.id === activeTenantId)
+  const active = tenants.find((tenant) => tenant.id === activeTenantId)
 
   if (!isPlatformAdmin) {
-    // Usuario normal: solo muestra su empresa
     return active ? (
       <Badge variant="outline" className="gap-1.5">
         <Building2 className="w-3.5 h-3.5" />
@@ -59,28 +56,28 @@ export function TenantIndicator() {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-64">
           <DropdownMenuLabel className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-primary" /> Nexo Control Plane
+            <Shield className="w-4 h-4 text-primary" /> Administración Nexo
           </DropdownMenuLabel>
           <DropdownMenuItem asChild>
             <Link href="/admin">Ir al panel de administración</Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuLabel className="text-xs text-muted-foreground">Cambiar de universo</DropdownMenuLabel>
-          {tenants.map((t) => (
+          <DropdownMenuLabel className="text-xs text-muted-foreground">Cambiar de empresa</DropdownMenuLabel>
+          {tenants.map((tenant) => (
             <DropdownMenuItem
-              key={t.id}
-              onClick={() => setActiveTenant(t.id)}
-              data-testid={`switch-${t.id}`}
+              key={tenant.id}
+              onClick={() => setActiveTenant(tenant.id)}
+              data-testid={`switch-${tenant.id}`}
               className="gap-2"
             >
               <span
                 className="w-5 h-5 rounded flex items-center justify-center text-white text-[10px] font-bold shrink-0"
-                style={{ background: t.branding.primaryColor }}
+                style={{ background: tenant.branding.primaryColor }}
               >
-                {t.name.slice(0, 2).toUpperCase()}
+                {tenant.name.slice(0, 2).toUpperCase()}
               </span>
-              <span className="truncate">{t.name}</span>
-              {t.id === activeTenantId && <span className="ml-auto text-xs text-primary">activo</span>}
+              <span className="truncate">{tenant.name}</span>
+              {tenant.id === activeTenantId && <span className="ml-auto text-xs text-primary">activo</span>}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>

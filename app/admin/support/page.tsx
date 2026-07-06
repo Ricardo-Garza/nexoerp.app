@@ -14,31 +14,44 @@ const priorityVariant: Record<string, "default" | "secondary" | "destructive" | 
   urgent: "destructive",
 }
 
+const priorityLabel: Record<string, string> = {
+  low: "Baja",
+  medium: "Media",
+  high: "Alta",
+  urgent: "Urgente",
+}
+
+const statusLabel: Record<string, string> = {
+  open: "Abierto",
+  in_progress: "En seguimiento",
+  resolved: "Resuelto",
+}
+
 export default function SupportPage() {
   const [tickets, setTickets] = useState<SupportTicket[]>([])
   const [tenants, setTenants] = useState<Record<string, Tenant>>({})
 
   useEffect(() => {
     listSupportTickets(100).then(setTickets)
-    listTenants().then((ts) => setTenants(Object.fromEntries(ts.map((t) => [t.id, t]))))
+    listTenants().then((loadedTenants) => setTenants(Object.fromEntries(loadedTenants.map((tenant) => [tenant.id, tenant]))))
   }, [])
 
   const columns: ProColumn<SupportTicket>[] = [
-    { key: "at", header: "Fecha", accessor: (t) => t.at, cell: (t) => new Date(t.at).toLocaleString("es-MX") },
-    { key: "tenant", header: "Empresa", accessor: (t) => tenants[t.tenantId]?.name ?? t.tenantId },
-    { key: "subject", header: "Asunto", accessor: (t) => t.subject },
-    { key: "module", header: "Módulo", accessor: (t) => t.module },
+    { key: "at", header: "Fecha", accessor: (ticket) => ticket.at, cell: (ticket) => new Date(ticket.at).toLocaleString("es-MX") },
+    { key: "tenant", header: "Empresa", accessor: (ticket) => tenants[ticket.tenantId]?.name ?? ticket.tenantId },
+    { key: "subject", header: "Asunto", accessor: (ticket) => ticket.subject },
+    { key: "module", header: "Módulo", accessor: (ticket) => ticket.module },
     {
       key: "priority",
       header: "Prioridad",
-      accessor: (t) => t.priority,
-      cell: (t) => <Badge variant={priorityVariant[t.priority]}>{t.priority}</Badge>,
+      accessor: (ticket) => priorityLabel[ticket.priority] ?? ticket.priority,
+      cell: (ticket) => <Badge variant={priorityVariant[ticket.priority]}>{priorityLabel[ticket.priority] ?? ticket.priority}</Badge>,
     },
     {
       key: "status",
       header: "Estado",
-      accessor: (t) => t.status,
-      cell: (t) => <Badge variant={t.status === "resolved" ? "default" : "secondary"}>{t.status}</Badge>,
+      accessor: (ticket) => statusLabel[ticket.status] ?? ticket.status,
+      cell: (ticket) => <Badge variant={ticket.status === "resolved" ? "default" : "secondary"}>{statusLabel[ticket.status] ?? ticket.status}</Badge>,
     },
   ]
 
@@ -47,20 +60,20 @@ export default function SupportPage() {
       <div>
         <h1 className="text-3xl font-bold">Soporte</h1>
         <p className="text-muted-foreground mt-1">
-          Tickets levantados por las empresas hacia Nexo (desde el módulo Servicio / Soporte).
+          Tickets levantados por las empresas hacia Nexo desde el módulo Servicio / Soporte.
         </p>
       </div>
       <Card>
         <CardHeader>
           <CardTitle>Tickets ({tickets.length})</CardTitle>
-          <CardDescription>Los tenants los crean desde su ERP; aquí les das seguimiento.</CardDescription>
+          <CardDescription>Las empresas crean estos tickets desde su ERP; aquí les das seguimiento.</CardDescription>
         </CardHeader>
         <CardContent>
           <DataTablePro
             tableId="admin-support"
             columns={columns}
             rows={tickets}
-            getRowId={(t) => t.id}
+            getRowId={(ticket) => ticket.id}
             emptyMessage="Sin tickets. Las empresas los crean desde su módulo de Servicio / Soporte."
           />
         </CardContent>

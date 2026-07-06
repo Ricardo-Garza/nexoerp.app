@@ -1,7 +1,6 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { useSalesData } from "@/hooks/use-sales-data"
 import { useAuth } from "@/hooks/use-auth"
 import type { SalesOrder } from "@/lib/types"
@@ -14,7 +13,6 @@ interface ProductSales {
   name: string
   sales: number
   revenue: number
-  trend: "up" | "down"
 }
 
 export function TopProducts() {
@@ -47,7 +45,7 @@ export function TopProducts() {
           })
         }
       } catch (err) {
-        console.error("[v0] Error processing order in top products:", err)
+        console.error("[TopProducts] Error processing order:", err)
       }
     })
 
@@ -55,7 +53,6 @@ export function TopProducts() {
       name,
       sales: data.sales || 0,
       revenue: data.revenue || 0,
-      trend: "up" as const,
     }))
 
     productsArray.sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
@@ -66,13 +63,13 @@ export function TopProducts() {
   return (
     <Card className="border-white/10 bg-white/10 text-white shadow-[0_20px_45px_rgba(15,23,42,0.35)]">
       <CardHeader className="border-b border-white/10 pb-4">
-        <CardTitle className="text-white">Productos Mas Vendidos</CardTitle>
+        <CardTitle className="text-white">Productos más vendidos</CardTitle>
       </CardHeader>
       <CardContent className="pt-2">
         {loading ? (
           <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Skeleton key={i} className="h-12 w-full" />
+            {[1, 2, 3, 4, 5].map((index) => (
+              <Skeleton key={index} className="h-12 w-full" />
             ))}
           </div>
         ) : topProducts.length === 0 ? (
@@ -80,7 +77,7 @@ export function TopProducts() {
             <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center mb-4">
               <Package className="w-8 h-8 text-white/70" />
             </div>
-            <p className="text-sm text-white/70">Aun no hay ventas registradas</p>
+            <p className="text-sm text-white/70">Aún no hay ventas registradas</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -97,9 +94,6 @@ export function TopProducts() {
                   <p className="font-semibold text-sm text-white">
                     ${(product.revenue || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                   </p>
-                  <Badge variant="outline" className="mt-1 border-white/20 text-white/80">
-                    {product.trend === "up" ? "?" : "?"}
-                  </Badge>
                 </div>
               </div>
             ))}

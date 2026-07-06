@@ -1,5 +1,6 @@
 import type { Tenant } from "./types"
 import { ALL_MODULE_IDS, DEFAULT_TENANT_MODULES } from "./modules"
+import { DEFAULT_ERP_PREFERENCES } from "./preferences"
 
 const now = "2026-07-06T00:00:00.000Z"
 
@@ -15,7 +16,13 @@ export const SEED_TENANTS: Tenant[] = [
     slug: "delar",
     status: "active",
     version: "1.0.0",
-    branding: { logoText: "DELAR Foods", primaryColor: "#e11d2a", theme: "dark" },
+    branding: {
+      logoText: "DELAR Foods",
+      logoUrl: "/Logo Nexo ERP.svg",
+      compactLogoUrl: "/favicon.ico",
+      primaryColor: "#e11d2a",
+      theme: "dark",
+    },
     modules: ALL_MODULE_IDS,
     fiscal: {
       legalName: "DELAR Foods S.A. de C.V.",
@@ -32,6 +39,22 @@ export const SEED_TENANTS: Tenant[] = [
       modules: ["clientes", "contactos", "prospectos", "oportunidades", "actividades"],
     },
     ai: { enabled: false, provider: "none", model: "", monthlyBudgetUsd: 0, hasServerKey: false },
+    ui: {
+      preferences: { ...DEFAULT_ERP_PREFERENCES, theme: "dark", tableDensity: "compact" },
+      visibleModules: ALL_MODULE_IDS,
+      menuMode: "standard",
+      tableDensity: "compact",
+      moduleColumns: {},
+      sharedViewVariants: {},
+    },
+    documents: {
+      logoUrl: "/Logo Nexo ERP.svg",
+      accentColor: "#e11d2a",
+      footerText: "Documento generado por Nexo ERP",
+      showFiscalAddress: true,
+      defaultExportFormat: "xlsx",
+      printFormat: "letter",
+    },
     seededAt: now,
     createdAt: now,
     updatedAt: now,
@@ -42,7 +65,13 @@ export const SEED_TENANTS: Tenant[] = [
     slug: "demo",
     status: "trial",
     version: "0.1.0",
-    branding: { logoText: "Demo", primaryColor: "#2563eb", theme: "system" },
+    branding: {
+      logoText: "Demo",
+      logoUrl: "/Logo Nexo ERP.svg",
+      compactLogoUrl: "/favicon.ico",
+      primaryColor: "#2563eb",
+      theme: "system",
+    },
     modules: DEFAULT_TENANT_MODULES,
     fiscal: {
       legalName: "Empresa Demostración",
@@ -59,6 +88,22 @@ export const SEED_TENANTS: Tenant[] = [
       modules: ["clientes", "contactos"],
     },
     ai: { enabled: false, provider: "none", model: "", monthlyBudgetUsd: 0, hasServerKey: false },
+    ui: {
+      preferences: { ...DEFAULT_ERP_PREFERENCES, theme: "system", tableDensity: "medium" },
+      visibleModules: DEFAULT_TENANT_MODULES,
+      menuMode: "standard",
+      tableDensity: "medium",
+      moduleColumns: {},
+      sharedViewVariants: {},
+    },
+    documents: {
+      logoUrl: "/Logo Nexo ERP.svg",
+      accentColor: "#2563eb",
+      footerText: "Documento demo generado por Nexo ERP",
+      showFiscalAddress: true,
+      defaultExportFormat: "xlsx",
+      printFormat: "letter",
+    },
     seededAt: now,
     createdAt: now,
     updatedAt: now,

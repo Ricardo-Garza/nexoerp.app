@@ -1,37 +1,52 @@
-# Integración CRM Momentum — sandbox
+# Integracion CRM Momentum
 
-Fuente analizada: repositorio real `Hainrixz/auto-crm` (clonado y leído este ciclo; Next.js 16 + Drizzle + SQLite; app pública `https://crm-momentum.vercel.app/`).
+## Estado actual
 
-## Modelo real verificado (src/db/schema.ts)
+CRM Momentum esta configurado como integracion por tenant con URL base `https://crm-momentum.vercel.app`. El repo contiene:
 
-- `contacts`: name, email, phone, company, source, temperature (cold/warm/hot), score, notes.
-- `pipeline_stages`: name, order, color, isWon/isLost.
-- `deals`: title, value, stageId, contactId, expectedClose, probability, notes.
-- `activities`: type, description, contactId, dealId?, scheduledAt, completedAt.
-- API REST verificada: `GET/POST /api/contacts`, `PATCH /api/contacts/[id]`, `GET /api/deals`, `POST /api/activities`, `/api/pipeline`, `/api/webhook`.
+- `lib/integrations/crm/types.ts`;
+- `lib/integrations/crm/mock-adapter.ts`;
+- `lib/integrations/crm/http-adapter.ts`;
+- `lib/integrations/crm/sync.ts`;
+- `lib/integrations/crm/entity-mapping.ts`;
+- pantalla `/dashboard/crm`;
+- embed `/dashboard/crm/embed`;
+- configuracion en `/admin/tenants/:tenantId`.
 
-## Arquitectura implementada (puertos/adaptadores)
+## Lo que funciona
 
-```
-lib/integrations/crm/
-  types.ts         → tipos espejo del esquema real + ExternalIdMapping + CrmOutboxEvent
-  port.ts          → CrmSyncPort (health, listContacts, createContact, updateContact, listDeals, recordActivity)
-  mock-adapter.ts  → MockMomentumAdapter (sandbox default, datos sintéticos)
-  http-adapter.ts  → HttpMomentumAdapter (endpoints reales; activo solo con MOMENTUM_BASE_URL)
-  sync.ts          → pull contactos→borradores de cliente con dedupe (email→tel→nombre),
-                     idempotencia por ID externo, outbox con reintentos y dead-letter
-```
+- Activacion por tenant.
+- Modo sandbox.
+- Sync mock visible.
+- Historial local de sync.
+- Apertura embebida y regreso a Nexo.
 
-## Garantías (probadas en tests/unit/crm-sync.test.ts)
+## Lo que no debe fingirse
 
-- Pull idempotente: contactos ya mapeados no se recrean (mapeo por `externalId`).
-- Deduplicación por clave normalizada; conflictos quedan para revisión humana, sin auto-merge.
-- Outbox: un evento `sent` no se reenvía; fallas reintentan hasta `maxAttempts` y pasan a `dead_letter` con el último error.
-- Contrato HTTP: URLs y códigos de error verificados con fetch simulado.
+- No hay evidencia de sync production probado contra `auto-crm`.
+- No hay webhooks productivos.
+- No hay resolucion de conflictos real.
+- No hay secreto/API key server-side para CRM.
 
-## Activación real (pendiente de aprobación)
+## Modelo objetivo
 
-1. Configurar `MOMENTUM_BASE_URL` (server-side) hacia la instancia aprobada.
-2. `resolveCrmAdapter()` cambia a HTTP automáticamente.
-3. Ejecutar primero contra un entorno de staging del CRM; nunca contra datos reales sin aprobación del propietario.
-4. Pendientes para producción: webhooks firmados de entrada, replay, fuente-de-verdad configurable por entidad, UI de conflictos.
+- Fuente maestra por entidad: Nexo o CRM.
+- Mapeo de IDs externo/interno.
+- Idempotency key por sync.
+- Prevencion de duplicados por correo/RFC/telefono/externalId.
+- Conflictos con diff y decision humana.
+- Reintentos con backoff.
+- Logs por tenant.
+- Sandbox sin datos reales.
+
+## Entidades
+
+- clientes;
+- contactos;
+- prospectos;
+- oportunidades;
+- actividades;
+- cotizaciones;
+- pedidos;
+- estatus comerciales.
+

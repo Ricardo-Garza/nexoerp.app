@@ -15,37 +15,37 @@ export default async function InventarioLotesPage() {
   const user = await getSessionUser()
   const mutationsEnabled = getAuthMode() === "demo" && user !== null
 
-  const lotRows: LotRowView[] = rows.map((r) => ({
-    lotId: r.lot.id,
-    lotCode: r.lot.lotCode,
-    skuCode: r.skuCode,
-    skuName: r.skuName,
-    warehouseName: r.warehouse?.name ?? "—",
-    locationName: r.location ? `${r.location.code} · ${r.location.name}` : "—",
-    expiryDate: r.lot.expiryDate,
-    expiresInDays: r.expiresInDays,
-    qualityStatus: r.lot.qualityStatus,
-    available: r.available,
-    usable: r.usable,
+  const lotRows: LotRowView[] = rows.map((row) => ({
+    lotId: row.lot.id,
+    lotCode: row.lot.lotCode,
+    skuCode: row.skuCode,
+    skuName: row.skuName,
+    warehouseName: row.warehouse?.name ?? "-",
+    locationName: row.location ? `${row.location.code} · ${row.location.name}` : "-",
+    expiryDate: row.lot.expiryDate,
+    expiresInDays: row.expiresInDays,
+    qualityStatus: row.lot.qualityStatus,
+    available: row.available,
+    usable: row.usable,
   }))
 
   const skuOptions = [...store.skus.values()]
-    .filter((s) => s.active)
+    .filter((sku) => sku.active)
     .sort((a, b) => (a.sku < b.sku ? -1 : 1))
-    .map((s) => ({ sku: s.sku, name: s.name, expiryRequired: s.expiryRequired }))
+    .map((sku) => ({ sku: sku.sku, name: sku.name, expiryRequired: sku.expiryRequired }))
 
-  const locationOptions = [...store.locations.values()].map((l) => {
-    const wh = store.warehouses.get(l.warehouseId)
-    return { id: l.id, label: `${wh?.code ?? ""} / ${l.code} — ${l.name}` }
+  const locationOptions = [...store.locations.values()].map((location) => {
+    const warehouse = store.warehouses.get(location.warehouseId)
+    return { id: location.id, label: `${warehouse?.code ?? ""} / ${location.code} - ${location.name}` }
   })
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-balance">Inventario por Lote</h1>
+        <h1 className="text-3xl font-bold text-balance">Inventario por lote</h1>
         <p className="text-muted-foreground mt-2">
-          Existencias derivadas del ledger de movimientos (append-only). FEFO sugiere el lote con caducidad más
-          próxima; lotes vencidos, en cuarentena, rechazados o bloqueados no son asignables.
+          Existencias derivadas del historial de movimientos. FEFO sugiere el lote con caducidad más próxima; los lotes
+          vencidos, en cuarentena, rechazados o bloqueados no son asignables.
         </p>
       </div>
 
@@ -68,7 +68,7 @@ export default async function InventarioLotesPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Lotes por vencer (≤60 días)</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Lotes por vencer (60 días o menos)</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold font-mono">{kpis.expiringSoonLots}</p>

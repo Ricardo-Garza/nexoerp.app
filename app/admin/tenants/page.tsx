@@ -22,7 +22,15 @@ import { useAuth } from "@/contexts/auth-context"
 import { usePlatform } from "@/contexts/platform-context"
 import { listTenants, saveTenant, makeTenantId, appendAudit } from "@/lib/platform/tenant-store"
 import { DEFAULT_TENANT_MODULES } from "@/lib/platform/modules"
+import { DEFAULT_ERP_PREFERENCES } from "@/lib/platform/preferences"
 import type { Tenant } from "@/lib/platform/types"
+
+const statusLabel: Record<Tenant["status"], string> = {
+  active: "Activa",
+  trial: "Prueba",
+  suspended: "Suspendida",
+  prospect: "Prospecto",
+}
 
 export default function TenantsPage() {
   const router = useRouter()
@@ -38,7 +46,7 @@ export default function TenantsPage() {
     setTenants(await listTenants())
   }
   useEffect(() => {
-    refresh()
+    listTenants().then(setTenants)
   }, [])
 
   async function createTenant() {
@@ -46,17 +54,40 @@ export default function TenantsPage() {
     setCreating(true)
     const id = makeTenantId(name)
     const nowIso = new Date().toISOString()
+    const trimmedName = name.trim()
     const tenant: Tenant = {
       id,
-      name: name.trim(),
+      name: trimmedName,
       slug: id.replace(/^org-/, ""),
       status: "trial",
       version: "0.1.0",
-      branding: { logoText: name.trim(), primaryColor: "#2563eb", theme: "system" },
+      branding: {
+        logoText: trimmedName,
+        logoUrl: "/Logo Nexo ERP.svg",
+        compactLogoUrl: "/nexo-icon.svg",
+        primaryColor: "#06b6d4",
+        theme: "dark",
+      },
       modules: DEFAULT_TENANT_MODULES,
-      fiscal: { legalName: name.trim(), rfc: rfc.trim() || "XAXX010101000", regime: "601", address: "", pac: "mock" },
+      fiscal: { legalName: trimmedName, rfc: rfc.trim() || "XAXX010101000", regime: "601", address: "", pac: "mock" },
       crm: { enabled: false, baseUrl: "https://crm-momentum.vercel.app", mode: "sandbox", masterSource: "nexo", modules: [] },
       ai: { enabled: false, provider: "none", model: "", monthlyBudgetUsd: 0, hasServerKey: false },
+      ui: {
+        preferences: DEFAULT_ERP_PREFERENCES,
+        visibleModules: DEFAULT_TENANT_MODULES,
+        menuMode: DEFAULT_ERP_PREFERENCES.menuMode,
+        tableDensity: DEFAULT_ERP_PREFERENCES.tableDensity,
+        moduleColumns: {},
+        sharedViewVariants: {},
+      },
+      documents: {
+        logoUrl: "/Logo Nexo ERP.svg",
+        accentColor: "#06b6d4",
+        footerText: "Documento generado por Nexo ERP",
+        showFiscalAddress: true,
+        defaultExportFormat: "csv",
+        printFormat: DEFAULT_ERP_PREFERENCES.printFormat,
+      },
       seededAt: null,
       createdAt: nowIso,
       updatedAt: nowIso,
@@ -65,9 +96,9 @@ export default function TenantsPage() {
     await appendAudit({
       tenantId: id,
       actorEmail: user?.email ?? "operaciones@nexo.com",
-      actorRole: "platform_admin",
+      actorRole: "Administrador Nexo",
       action: "tenant.create",
-      entityType: "Tenant",
+      entityType: "Empresa",
       entityId: id,
       summary: `Empresa "${tenant.name}" creada`,
       after: { name: tenant.name, rfc: tenant.fiscal.rfc },
@@ -108,10 +139,10 @@ export default function TenantsPage() {
     {
       key: "status",
       header: "Estado",
-      accessor: (t) => t.status,
+      accessor: (t) => statusLabel[t.status],
       cell: (t) => (
         <Badge variant={t.status === "active" ? "default" : t.status === "suspended" ? "destructive" : "secondary"}>
-          {t.status}
+          {statusLabel[t.status]}
         </Badge>
       ),
     },
@@ -122,10 +153,10 @@ export default function TenantsPage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Building2 className="w-7 h-7 text-primary" /> Empresas / Universos
+            <Building2 className="w-7 h-7 text-primary" /> Empresas
           </h1>
           <p className="text-muted-foreground mt-1">
-            Cada empresa es un universo aislado con su propio branding, módulos, datos y auditoría.
+            Cada empresa es un universo aislado con su propia marca, módulos, datos y auditoría.
           </p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
@@ -136,9 +167,9 @@ export default function TenantsPage() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Crear nuevo universo empresarial</DialogTitle>
+              <DialogTitle>Crear nueva empresa</DialogTitle>
               <DialogDescription>
-                Se crea aislado, con los módulos por defecto. Podrás configurar branding, fiscal y CRM después.
+                Se crea aislada, con módulos por defecto. Después podrás configurar diseño, fiscal, CRM, documentos e IA.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-2">
@@ -172,7 +203,7 @@ export default function TenantsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Todas las empresas</CardTitle>
-          <CardDescription>Entra a cualquier universo como soporte y regresa al panel cuando quieras.</CardDescription>
+          <CardDescription>Entra a cualquier empresa como soporte y regresa al panel cuando quieras.</CardDescription>
         </CardHeader>
         <CardContent>
           <DataTablePro

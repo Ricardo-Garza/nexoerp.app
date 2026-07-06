@@ -17,6 +17,7 @@ import Link from "next/link"
 import { useFirestore } from "@/hooks/use-firestore"
 import { COLLECTIONS } from "@/lib/firestore"
 import { TenantIndicator } from "@/components/layout/tenant-indicator"
+import { UserPreferenceSelects } from "@/components/layout/user-preference-selects"
 
 type NotificationItem = {
   id: string
@@ -135,6 +136,7 @@ export function AppHeader() {
       </div>
       <div className="flex items-center gap-2 ml-auto">
         <TenantIndicator />
+        <UserPreferenceSelects className="hidden xl:flex" />
         <Button variant="ghost" size="icon" className="relative" asChild>
           <Link href="/dashboard/calendar">
             <Calendar className="w-5 h-5" />

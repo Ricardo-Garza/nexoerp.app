@@ -12,6 +12,12 @@ const maturityVariant: Record<string, "default" | "secondary" | "outline"> = {
   planned: "outline",
 }
 
+const maturityLabel: Record<string, string> = {
+  stable: "Listo",
+  beta: "En prueba",
+  planned: "Planeado",
+}
+
 export default function ModulesPage() {
   const columns: ProColumn<ModuleDefinition>[] = [
     { key: "name", header: "Módulo", accessor: (m) => m.name, cell: (m) => <span className="font-medium">{m.name}</span> },
@@ -19,9 +25,9 @@ export default function ModulesPage() {
     { key: "group", header: "Grupo", accessor: (m) => m.group },
     {
       key: "maturity",
-      header: "Madurez",
-      accessor: (m) => m.maturity,
-      cell: (m) => <Badge variant={maturityVariant[m.maturity]}>{m.maturity}</Badge>,
+      header: "Estado operativo",
+      accessor: (m) => maturityLabel[m.maturity] ?? m.maturity,
+      cell: (m) => <Badge variant={maturityVariant[m.maturity]}>{maturityLabel[m.maturity] ?? m.maturity}</Badge>,
     },
     { key: "href", header: "Ruta", accessor: (m) => m.href },
   ]
@@ -31,14 +37,14 @@ export default function ModulesPage() {
       <div>
         <h1 className="text-3xl font-bold">Catálogo de módulos</h1>
         <p className="text-muted-foreground mt-1">
-          Módulos disponibles en la plataforma. Se activan por empresa desde el detalle de cada tenant.
+          Módulos disponibles en la plataforma. Se activan por empresa desde el detalle de cada empresa.
         </p>
       </div>
       <Card>
         <CardHeader>
           <CardTitle>Módulos ({MODULE_CATALOG.length})</CardTitle>
           <CardDescription>
-            "stable" opera end-to-end; "beta" funciona con alcance limitado; "planned" se muestra deshabilitado.
+            Listo opera de punta a punta; En prueba funciona con alcance limitado; Planeado se muestra deshabilitado.
           </CardDescription>
         </CardHeader>
         <CardContent>

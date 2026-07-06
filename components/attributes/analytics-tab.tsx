@@ -271,7 +271,7 @@ export function AnalyticsTab() {
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Basado en movimientos registrados en el ledger de inventario
+                  Basado en movimientos registrados en el historial de movimientos de inventario
                 </p>
               </div>
             </CardContent>

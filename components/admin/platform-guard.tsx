@@ -10,9 +10,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
 /**
- * Protege el Nexo Control Plane: solo admins/soporte de plataforma
- * (p. ej. operaciones@nexo.com) pueden entrar. Los demás usuarios ven un aviso
- * claro en lugar de una pantalla en blanco (§6: cero pantallas falsas).
+ * Protege Administración Nexo: solo usuarios internos autorizados pueden entrar.
  */
 export function PlatformGuard({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth()
@@ -42,8 +40,8 @@ export function PlatformGuard({ children }: { children: ReactNode }) {
           </div>
           <h1 className="text-2xl font-bold">Acceso restringido</h1>
           <p className="text-muted-foreground">
-            El Nexo Control Plane (Admin Ultra) es exclusivo del administrador operativo de Nexo. Tu cuenta{" "}
-            <span className="font-medium">{user.email}</span> no tiene el rol de plataforma.
+            Administración Nexo es exclusiva para usuarios internos autorizados. Tu cuenta{" "}
+            <span className="font-medium">{user.email}</span> no tiene permiso para esta sección.
           </p>
           <Button asChild>
             <Link href="/dashboard">Volver al sistema</Link>

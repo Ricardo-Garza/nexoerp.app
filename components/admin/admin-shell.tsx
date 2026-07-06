@@ -15,12 +15,13 @@ import {
   Rocket,
   Sparkles,
   ArrowLeft,
-  Shield,
 } from "lucide-react"
+import { NexoLogo } from "@/components/brand/nexo-logo"
+import { UserPreferenceSelects } from "@/components/layout/user-preference-selects"
 
 const NAV = [
   { name: "Panel", href: "/admin", icon: LayoutGrid },
-  { name: "Empresas / Tenants", href: "/admin/tenants", icon: Building2 },
+  { name: "Empresas", href: "/admin/tenants", icon: Building2 },
   { name: "Módulos", href: "/admin/modules", icon: Boxes },
   { name: "Integraciones", href: "/admin/integrations", icon: Plug },
   { name: "Auditoría global", href: "/admin/audit", icon: ScrollText },
@@ -42,13 +43,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <aside className="w-64 shrink-0 border-r border-border bg-card flex flex-col">
         <div className="p-5 border-b border-border">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="font-bold leading-none">Nexo Control Plane</h1>
-              <p className="text-xs text-muted-foreground mt-1">Admin Ultra</p>
-            </div>
+            <NexoLogo label="Administración Nexo" />
           </div>
         </div>
         <nav className="flex-1 p-3 space-y-1">
@@ -80,6 +75,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <p className="text-xs font-medium text-muted-foreground">Sesión</p>
             <p className="text-sm font-semibold mt-0.5 truncate">{user?.email}</p>
           </div>
+          <UserPreferenceSelects compact />
         </div>
       </aside>
       <main className="flex-1 min-w-0 p-6 lg:p-8 overflow-x-hidden">{children}</main>
