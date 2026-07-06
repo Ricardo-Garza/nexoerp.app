@@ -136,4 +136,27 @@ describe("enterprise table logic", () => {
       ),
     ).toBe("NEXO_CLIENTES_DELAR_FOODS_2026-07-06.csv");
   });
+
+  it("filters numeric ranges and date ranges for column filters", () => {
+    const result = applyEnterpriseTableState(
+      rows,
+      columns,
+      createDefaultTableState(columns, {
+        columnFilters: {
+          amount: { operator: "between", value: [1000, 10000] },
+          createdAt: {
+            operator: "dateRange",
+            value: ["2026-07-01", "2026-07-31"],
+          },
+        },
+      }),
+    );
+
+    expect(result.rows.map((row) => row.id)).toEqual(["1", "3"]);
+    expect(result.totals.amount).toBe(11000);
+    expect(result.activeFilterLabels).toEqual([
+      "Importe: 1000 - 10000",
+      "Fecha: 2026-07-01 - 2026-07-31",
+    ]);
+  });
 });
