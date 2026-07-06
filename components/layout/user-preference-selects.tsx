@@ -1,78 +1,61 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { Languages, MonitorCog, Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useEffect, useState } from "react"
+import { Languages, MonitorCog, Moon, Sun } from "lucide-react"
+import { useTheme } from "next-themes"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/select"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-import {
-  normalizeLocale,
-  type ErpLanguage,
-  type ErpTheme,
-} from "@/lib/platform/preferences";
+} from "@/components/ui/tooltip"
+import { normalizeLocale, type ErpLanguage, type ErpTheme } from "@/lib/platform/preferences"
+import { cn } from "@/lib/utils"
 
-const USER_LANGUAGE_KEY = "nexo_user_language";
+const USER_LANGUAGE_KEY = "nexo_user_language"
 
 interface UserPreferenceSelectsProps {
-  compact?: boolean;
-  className?: string;
+  compact?: boolean
+  className?: string
 }
 
-export function UserPreferenceSelects({
-  compact = false,
-  className,
-}: UserPreferenceSelectsProps) {
-  const { theme, setTheme } = useTheme();
-  const [language, setLanguage] = useState<ErpLanguage>("es");
+export function UserPreferenceSelects({ compact = false, className }: UserPreferenceSelectsProps) {
+  const { theme, setTheme } = useTheme()
+  const [language, setLanguage] = useState<ErpLanguage>("es")
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem(USER_LANGUAGE_KEY);
-    setLanguage(normalizeLocale(stored ?? navigator.language));
-  }, []);
+    if (typeof window === "undefined") return
+    const stored = window.localStorage.getItem(USER_LANGUAGE_KEY)
+    setLanguage(normalizeLocale(stored ?? navigator.language))
+  }, [])
 
   function changeLanguage(value: ErpLanguage) {
-    setLanguage(value);
-    if (typeof window !== "undefined")
-      window.localStorage.setItem(USER_LANGUAGE_KEY, value);
-    document.documentElement.lang = value;
+    setLanguage(value)
+    if (typeof window !== "undefined") window.localStorage.setItem(USER_LANGUAGE_KEY, value)
+    document.documentElement.lang = value
   }
 
-  const themeValue = (theme ?? "dark") as ErpTheme;
+  const themeValue = (theme ?? "dark") as ErpTheme
 
   return (
     <TooltipProvider>
-      <div
-        className={cn(
-          "flex items-center gap-2",
-          compact && "flex-col items-stretch",
-          className,
-        )}
-      >
+      <div className={cn("flex items-center gap-3", compact && "flex-col items-stretch", className)}>
         <Tooltip>
           <TooltipTrigger asChild>
             <div>
-              <Select
-                value={language}
-                onValueChange={(value) => changeLanguage(value as ErpLanguage)}
-              >
+              <Select value={language} onValueChange={(value) => changeLanguage(value as ErpLanguage)}>
                 <SelectTrigger
-                  className={cn("h-9", compact ? "w-full" : "w-[118px]")}
+                  className={cn("h-10", compact ? "w-full" : "w-[142px]")}
                   data-testid="language-select"
                 >
-                  <Languages className="mr-2 h-4 w-4" />
+                  <Languages className="mr-2 h-4 w-4 shrink-0" />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -82,28 +65,23 @@ export function UserPreferenceSelects({
               </Select>
             </div>
           </TooltipTrigger>
-          <TooltipContent>
-            Idioma de la interfaz. Inglés queda preparado por módulo.
-          </TooltipContent>
+          <TooltipContent>Idioma de la interfaz. Inglés queda preparado por módulo.</TooltipContent>
         </Tooltip>
 
         <Tooltip>
           <TooltipTrigger asChild>
             <div>
-              <Select
-                value={themeValue}
-                onValueChange={(value) => setTheme(value)}
-              >
+              <Select value={themeValue} onValueChange={(value) => setTheme(value)}>
                 <SelectTrigger
-                  className={cn("h-9", compact ? "w-full" : "w-[126px]")}
+                  className={cn("h-10", compact ? "w-full" : "w-[142px]")}
                   data-testid="theme-select"
                 >
                   {themeValue === "light" ? (
-                    <Sun className="mr-2 h-4 w-4" />
+                    <Sun className="mr-2 h-4 w-4 shrink-0" />
                   ) : themeValue === "system" ? (
-                    <MonitorCog className="mr-2 h-4 w-4" />
+                    <MonitorCog className="mr-2 h-4 w-4 shrink-0" />
                   ) : (
-                    <Moon className="mr-2 h-4 w-4" />
+                    <Moon className="mr-2 h-4 w-4 shrink-0" />
                   )}
                   <SelectValue />
                 </SelectTrigger>
@@ -115,11 +93,9 @@ export function UserPreferenceSelects({
               </Select>
             </div>
           </TooltipTrigger>
-          <TooltipContent>
-            Tema visual guardado para este usuario.
-          </TooltipContent>
+          <TooltipContent>Tema visual guardado para este usuario.</TooltipContent>
         </Tooltip>
       </div>
     </TooltipProvider>
-  );
+  )
 }

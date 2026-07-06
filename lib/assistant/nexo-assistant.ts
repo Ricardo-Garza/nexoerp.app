@@ -19,7 +19,16 @@ export interface AssistantReply {
   suggestions: AssistantSuggestion[]
 }
 
-type ScreenKey = "dashboard" | "sales" | "invoicing" | "inventory" | "clients" | "priceLists" | "admin" | "default"
+type ScreenKey =
+  | "dashboard"
+  | "sales"
+  | "invoicing"
+  | "inventory"
+  | "inventoryLots"
+  | "clients"
+  | "priceLists"
+  | "admin"
+  | "default"
 
 const SCREEN_HELP: Record<ScreenKey, string> = {
   dashboard:
@@ -30,10 +39,12 @@ const SCREEN_HELP: Record<ScreenKey, string> = {
     "Estás en Facturación. Puedes revisar facturas pendientes, registrar pagos, abrir documentos, imprimir y exportar facturas.",
   inventory:
     "Estás en Inventario. Puedes buscar productos, ver lotes, caducidades, movimientos, ajustar existencias y transferir entre almacenes.",
+  inventoryLots:
+    "Estás en Inventario por Lote. Puedes buscar lote, revisar vencimientos, validar disponibilidad, exportar inventario y ver últimos movimientos.",
   clients:
     "Estás en Clientes. Puedes buscar clientes, revisar saldo, últimas ventas, facturas pendientes, contactos y abrir su actividad comercial.",
   priceLists:
-    "Estás en Listas de Precios. Puedes buscar productos, ordenar por precio, filtrar por marca/familia, comparar menudeo contra mayoreo, exportar la lista o abrir el detalle de un producto.",
+    "Estás en Listas de Precios. Puedes buscar productos, ordenar por precio, filtrar por marca o familia, comparar menudeo contra mayoreo, exportar la lista o abrir el detalle de un producto.",
   admin:
     "Estás en Empresas. Aquí puedes revisar las empresas configuradas, entrar a una empresa, cambiar módulos o ajustar su configuración.",
   default: "Estás en Nexo ERP. Puedo ayudarte a navegar, buscar registros, importar datos o explicar la pantalla actual.",
@@ -47,7 +58,7 @@ const SCREEN_ACTIONS: Record<ScreenKey, AssistantSuggestion[]> = {
     { label: "Ver facturas pendientes", href: "/dashboard/facturacion" },
     { label: "Ver cobranza", href: "/dashboard/banking" },
     { label: "Importar datos", href: "/dashboard/import", permission: "import" },
-    { label: "Exportar reporte", href: "/dashboard/reports", permission: "export" },
+    { label: "Exportar indicadores", href: "/dashboard/reports", permission: "export" },
   ],
   sales: [
     { label: "Nueva venta", href: "/dashboard/ventas/ordenes/new" },
@@ -60,6 +71,7 @@ const SCREEN_ACTIONS: Record<ScreenKey, AssistantSuggestion[]> = {
     { label: "Exportar ventas", href: "/dashboard/ventas/ordenes", permission: "export" },
   ],
   invoicing: [
+    { label: "Buscar factura", href: "/dashboard/facturacion" },
     { label: "Nueva factura", href: "/dashboard/facturacion" },
     { label: "Facturas pendientes", href: "/dashboard/facturacion" },
     { label: "Registrar pago", href: "/dashboard/banking" },
@@ -76,6 +88,13 @@ const SCREEN_ACTIONS: Record<ScreenKey, AssistantSuggestion[]> = {
     { label: "Importar inventario", href: "/dashboard/import", permission: "import" },
     { label: "Exportar inventario", href: "/dashboard/inventory", permission: "export" },
   ],
+  inventoryLots: [
+    { label: "Buscar lote", href: "/dashboard/inventario-lotes" },
+    { label: "Ver vencimientos", href: "/dashboard/inventario-lotes" },
+    { label: "Ver productos disponibles", href: "/dashboard/inventario-lotes" },
+    { label: "Ver últimos movimientos", href: "/dashboard/inventario-lotes" },
+    { label: "Exportar inventario", href: "/dashboard/inventario-lotes", permission: "export" },
+  ],
   clients: [
     { label: "Buscar cliente", href: "/dashboard/clients" },
     { label: "Nuevo cliente", href: "/dashboard/clients" },
@@ -89,6 +108,7 @@ const SCREEN_ACTIONS: Record<ScreenKey, AssistantSuggestion[]> = {
     { label: "Buscar producto", href: "/dashboard/listas-precios" },
     { label: "Comparar menudeo y mayoreo", href: "/dashboard/listas-precios" },
     { label: "Filtrar por marca", href: "/dashboard/listas-precios" },
+    { label: "Ver vigencias", href: "/dashboard/listas-precios" },
     { label: "Exportar lista", href: "/dashboard/listas-precios", permission: "export" },
   ],
   admin: [
@@ -129,17 +149,36 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
   if (isHelpIntent(query)) return { text: screenHelp(screen, context), suggestions: allowedActions(screen, context) }
   if (isImportIntent(query)) return permissionReply(context.canImport, "Centro de Importación", "/dashboard/import", "import")
   if (isExportIntent(query)) return permissionReply(context.canExport, "Exportar información", context.pathname, "export")
+
   if (/factura|cobrar|pago|pendiente|saldo/.test(query)) {
-    return { text: "Te llevo a la vista donde puedes revisar facturas, saldos y pagos pendientes.", suggestions: allowedActions("invoicing", context) }
+    return {
+      text: "Te llevo a la vista donde puedes revisar facturas, saldos y pagos pendientes.",
+      suggestions: allowedActions("invoicing", context),
+    }
   }
-  if (/inventario|lote|caduc|movimiento|almacen|producto/.test(query)) {
-    return { text: "Estas opciones te ayudan a revisar inventario, lotes, caducidades y movimientos.", suggestions: allowedActions("inventory", context) }
+  if (/lote|caduc|movimiento/.test(query)) {
+    return {
+      text: "Estas opciones te ayudan a revisar lotes, vencimientos, disponibilidad y últimos movimientos.",
+      suggestions: allowedActions("inventoryLots", context),
+    }
+  }
+  if (/inventario|almacen|producto/.test(query)) {
+    return {
+      text: "Estas opciones te ayudan a revisar inventario, productos, caducidades y movimientos.",
+      suggestions: allowedActions("inventory", context),
+    }
   }
   if (/venta|pedido|remision|margen|disponibilidad/.test(query)) {
-    return { text: "Estas acciones te ayudan a operar ventas, pedidos, disponibilidad y documentos relacionados.", suggestions: allowedActions("sales", context) }
+    return {
+      text: "Estas acciones te ayudan a operar ventas, pedidos, disponibilidad y documentos relacionados.",
+      suggestions: allowedActions("sales", context),
+    }
   }
   if (/cliente|contacto|crm/.test(query)) {
-    return { text: "Estas acciones te ayudan a buscar clientes, revisar saldos y dar seguimiento comercial.", suggestions: allowedActions("clients", context) }
+    return {
+      text: "Estas acciones te ayudan a buscar clientes, revisar saldos y dar seguimiento comercial.",
+      suggestions: allowedActions("clients", context),
+    }
   }
 
   return {
@@ -150,15 +189,10 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
 
 function resolveScreen(pathname: string): ScreenKey {
   if (pathname.startsWith("/admin")) return "admin"
+  if (pathname.startsWith("/dashboard/inventario-lotes")) return "inventoryLots"
   if (pathname.startsWith("/dashboard/ventas") || pathname.startsWith("/dashboard/sales")) return "sales"
   if (pathname.startsWith("/dashboard/facturacion")) return "invoicing"
-  if (
-    pathname.startsWith("/dashboard/inventory") ||
-    pathname.startsWith("/dashboard/inventario-lotes") ||
-    pathname.startsWith("/dashboard/warehouse")
-  ) {
-    return "inventory"
-  }
+  if (pathname.startsWith("/dashboard/inventory") || pathname.startsWith("/dashboard/warehouse")) return "inventory"
   if (pathname.startsWith("/dashboard/clients") || pathname.startsWith("/dashboard/crm")) return "clients"
   if (pathname.startsWith("/dashboard/listas-precios")) return "priceLists"
   if (pathname === "/dashboard") return "dashboard"
