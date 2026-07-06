@@ -31,8 +31,54 @@ service cloud.firestore {
       return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
     }
 
+    // --- Nexo Control Plane / multi-tenant --------------------------------
+    // Administrador de plataforma: operaciones@nexo.com (por email del token) o
+    // custom claim platformAdmin. Puede administrar toda la plataforma.
+    function isPlatformAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email == "operaciones@nexo.com" ||
+        request.auth.token.platformAdmin == true
+      );
+    }
+
+    // El tenant del usuario se resuelve por su perfil (companyId/tenantId).
+    function userTenantId() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId;
+    }
+
+    // Pertenece al tenant si su perfil apunta a él, o es admin de plataforma.
+    function belongsToTenant(tenantId) {
+      return isPlatformAdmin() || (isAuthenticated() && userTenantId() == tenantId);
+    }
+
     match /{document=**} {
       allow read, write: if false;
+    }
+
+    // Índice de tenants y metadatos de plataforma: lectura para autenticados
+    // (para poblar el selector), escritura solo para admin de plataforma.
+    match /tenants/{tenantId} {
+      allow read: if belongsToTenant(tenantId) || isAuthenticated();
+      allow create, update, delete: if isPlatformAdmin();
+
+      // Datos aislados por tenant: solo miembros del tenant o admin de plataforma.
+      // NINGÚN usuario de otro tenant puede leerlos (aislamiento real §5).
+      match /{sub=**} {
+        allow read: if belongsToTenant(tenantId);
+        allow create, update, delete: if belongsToTenant(tenantId);
+      }
+    }
+
+    // Soporte de plataforma: crear ticket cualquier autenticado; gestionar solo plataforma.
+    match /platform_support/{ticketId} {
+      allow create: if isAuthenticated();
+      allow read, update, delete: if isPlatformAdmin();
+    }
+
+    // Colecciones exclusivas de plataforma (releases, blueprints, índice global).
+    match /platform_meta/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isPlatformAdmin();
     }
 
     // Companies

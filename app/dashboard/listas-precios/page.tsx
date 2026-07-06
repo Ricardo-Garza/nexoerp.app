@@ -1,7 +1,7 @@
-import { AlertTriangle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { DismissibleNotice } from "@/components/ui/dismissible-notice"
 import { dec } from "@/lib/domain/shared/decimal"
 import { getCommercialConfig, getPriceListViews } from "@/lib/server/queries"
 
@@ -20,20 +20,12 @@ export default async function ListasPreciosPage() {
         </p>
       </div>
 
-      <div
-        className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 p-4"
-        data-testid="historical-warning"
-      >
-        <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" aria-hidden />
-        <div className="text-sm text-amber-900 dark:text-amber-200">
-          <p className="font-semibold">Listas históricas del 27-ene-2025 — no son precios vigentes.</p>
-          <p className="mt-1">
-            Requieren validación y aprobación comercial antes de activarse (issue DQ-001). La regla de Mayoreo es
-            configurable: compra mínima {dec.formatMoney(config.wholesaleMinimumOrderMxn)} en una sola exhibición
-            (estado: {config.wholesaleRuleStatus === "historical_requires_validation" ? "histórica, por validar" : "aprobada"}).
-          </p>
-        </div>
-      </div>
+      <DismissibleNotice id="precios-historicos" tone="amber" testId="historical-warning">
+        <span className="font-medium text-foreground">Listas del 27-ene-2025 marcadas como históricas.</span> Requieren
+        validación comercial antes de activarse. Regla de Mayoreo: mínimo{" "}
+        {dec.formatMoney(config.wholesaleMinimumOrderMxn)} en una sola exhibición. Puedes cerrar este aviso; la gestión
+        vive en Configuración → Datos maestros.
+      </DismissibleNotice>
 
       {views.map(({ list, rows }) => (
         <Card key={list.id}>

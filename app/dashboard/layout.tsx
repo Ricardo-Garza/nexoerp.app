@@ -3,6 +3,7 @@ import { Suspense } from "react"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { AppHeader } from "@/components/layout/app-header"
 import { AuthGuard } from "@/components/auth/auth-guard"
+import { FloatingAssistant } from "@/components/assistant/floating-assistant"
 
 export default function DashboardLayout({
   children,
@@ -19,6 +20,7 @@ export default function DashboardLayout({
             <Suspense fallback={null}>{children}</Suspense>
           </main>
         </div>
+        <FloatingAssistant />
       </div>
     </AuthGuard>
   )

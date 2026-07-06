@@ -14,6 +14,9 @@ export interface DemoUser {
 export const DEMO_PASSWORD = "demo"
 
 export const DEMO_USERS: DemoUser[] = [
+  // Super administrador operativo de Nexo (Control Plane / Admin Ultra).
+  // En producción es una cuenta Firebase real; aquí es su equivalente demo para E2E.
+  { email: "operaciones@nexo.com", name: "Operaciones Nexo", role: "super_admin" },
   { email: "admin@delarfoods.mx", name: "Administración DELAR", role: "org_admin" },
   { email: "direccion@delarfoods.mx", name: "Dirección", role: "director" },
   { email: "ventas@delarfoods.mx", name: "Ventas", role: "sales_rep" },

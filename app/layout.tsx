@@ -2,7 +2,9 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { Toaster } from "sonner"
 import { AuthProvider } from "@/contexts/auth-context"
+import { PlatformProvider } from "@/contexts/platform-context"
 import { ThemeProvider } from "@/components/theme-provider"
 import { companyConfig } from "@/lib/config/company"
 import "./globals.css"
@@ -28,7 +30,10 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning>
       <body className="crm-shell font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <PlatformProvider>{children}</PlatformProvider>
+          </AuthProvider>
+          <Toaster richColors position="top-right" />
         </ThemeProvider>
         <Analytics />
       </body>

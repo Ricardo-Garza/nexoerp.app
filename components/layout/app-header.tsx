@@ -16,6 +16,7 @@ import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { useFirestore } from "@/hooks/use-firestore"
 import { COLLECTIONS } from "@/lib/firestore"
+import { TenantIndicator } from "@/components/layout/tenant-indicator"
 
 type NotificationItem = {
   id: string
@@ -133,6 +134,7 @@ export function AppHeader() {
         <h2 className="text-lg font-semibold">{headerTitle}</h2>
       </div>
       <div className="flex items-center gap-2 ml-auto">
+        <TenantIndicator />
         <Button variant="ghost" size="icon" className="relative" asChild>
           <Link href="/dashboard/calendar">
             <Calendar className="w-5 h-5" />
