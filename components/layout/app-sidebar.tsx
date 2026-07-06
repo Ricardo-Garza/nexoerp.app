@@ -26,7 +26,11 @@ import {
   Store,
   CalendarDays,
   FileText,
+  Upload,
+  MessageSquare,
+  Shield,
 } from "lucide-react"
+import { usePlatform } from "@/contexts/platform-context"
 
 const sections = [
   {
@@ -57,6 +61,7 @@ const sections = [
   {
     title: "ADMINISTRACION",
     items: [
+      { name: "Centro de Importacion", href: "/dashboard/import", icon: Upload },
       { name: "Contabilidad", href: "/dashboard/accounting", icon: Calculator },
       { name: "Nomina / RRHH", href: "/dashboard/payroll", icon: UserCog },
       { name: "Configuracion", href: "/dashboard/configuracion", icon: Settings },
@@ -69,6 +74,7 @@ const sections = [
   {
     title: "EXPANSION",
     items: [
+      { name: "CRM Momentum", href: "/dashboard/crm", icon: MessageSquare },
       { name: "ERP Web / Movil", href: "/dashboard/web-mobile", icon: Smartphone },
       { name: "E-Commerce", href: "/dashboard/ecommerce", icon: ShoppingCart },
     ],
@@ -78,6 +84,7 @@ const sections = [
 export function AppSidebar() {
   const pathname = usePathname()
   const { user } = useAuth()
+  const { isPlatformAdmin } = usePlatform()
 
   const isRouteActive = (href: string) => {
     if (href === "/dashboard") {
@@ -104,6 +111,24 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 p-4 space-y-6">
+        {isPlatformAdmin && (
+          <div className="space-y-1">
+            <p className="text-xs font-semibold text-muted-foreground px-3 mb-2">NEXO PLATAFORMA</p>
+            <Link
+              href="/admin"
+              data-testid="sidebar-control-plane"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+                pathname.startsWith("/admin")
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "bg-primary/10 text-primary hover:bg-primary/20",
+              )}
+            >
+              <Shield className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate">Nexo Control Plane</span>
+            </Link>
+          </div>
+        )}
         {sections.map((section) => {
           const items = section.title === "ADMINISTRACION"
             ? section.items.concat(

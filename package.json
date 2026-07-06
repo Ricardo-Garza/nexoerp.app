@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "seed:generate": "node scripts/generate-domain-seed.mjs"
+    "seed:generate": "node scripts/generate-domain-seed.mjs",
+    "seed:firebase": "node scripts/seed-firebase.mjs"
   },
   "dependencies": {
     "@fullcalendar/daygrid": "^6.1.20",

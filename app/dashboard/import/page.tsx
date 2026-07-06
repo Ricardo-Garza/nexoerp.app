@@ -1,0 +1,60 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { ImportWizard } from "@/components/import/import-wizard"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Upload } from "lucide-react"
+import { usePlatform } from "@/contexts/platform-context"
+import { listImportRuns } from "@/lib/platform/tenant-store"
+import type { ImportRun } from "@/lib/platform/types"
+
+export default function ImportCenterPage() {
+  const { activeTenantId } = usePlatform()
+  const [recent, setRecent] = useState<ImportRun[]>([])
+
+  useEffect(() => {
+    listImportRuns(activeTenantId, 5).then(setRecent)
+  }, [activeTenantId])
+
+  return (
+    <div className="space-y-6 max-w-5xl">
+      <div>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <Upload className="w-7 h-7 text-primary" /> Centro de Importación
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          Carga masiva de datos con plantillas, mapeo automático, validación, dry-run y auditoría. Pensado para usarse
+          sin conocimientos técnicos.
+        </p>
+      </div>
+
+      <ImportWizard />
+
+      {recent.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Importaciones recientes</CardTitle>
+            <CardDescription>Últimas cargas de este universo.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {recent.map((r) => (
+              <div key={r.id} className="flex items-center justify-between rounded-lg border p-3 text-sm">
+                <div>
+                  <p className="font-medium capitalize">{r.entity}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(r.at).toLocaleString("es-MX")} · {r.fileName}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">{r.createdRows} creados</Badge>
+                  {r.errorRows > 0 && <Badge variant="destructive">{r.errorRows} errores</Badge>}
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  )
+}
