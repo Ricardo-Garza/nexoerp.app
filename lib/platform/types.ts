@@ -6,6 +6,8 @@
  * Ver docs/FIREBASE_DATA_MODEL.md y docs/NEXO_CONTROL_PLANE.md.
  */
 
+import type { ErpPreferences, ErpTableDensity } from "./preferences"
+
 /** Identificador de cada módulo del ERP que puede activarse por tenant. */
 export type ModuleId =
   | "dashboard"
@@ -45,8 +47,28 @@ export type TenantStatus = "active" | "trial" | "suspended" | "prospect"
 
 export interface TenantBranding {
   logoText: string
+  logoUrl?: string
+  compactLogoUrl?: string
   primaryColor: string
   theme: "light" | "dark" | "system"
+}
+
+export interface TenantDocumentAppearance {
+  logoUrl?: string
+  accentColor: string
+  footerText: string
+  showFiscalAddress: boolean
+  defaultExportFormat: "csv" | "xlsx"
+  printFormat: "letter" | "a4" | "ticket"
+}
+
+export interface TenantUiConfig {
+  preferences: ErpPreferences
+  visibleModules: ModuleId[]
+  menuMode: "standard" | "compact"
+  tableDensity: ErpTableDensity
+  moduleColumns: Record<string, string[]>
+  sharedViewVariants: Record<string, string[]>
 }
 
 export interface TenantFiscal {
@@ -88,6 +110,8 @@ export interface Tenant {
   fiscal: TenantFiscal
   crm: TenantCrmConfig
   ai: TenantAiConfig
+  ui?: TenantUiConfig
+  documents?: TenantDocumentAppearance
   /** Metadatos operativos */
   seededAt: string | null
   createdAt: string

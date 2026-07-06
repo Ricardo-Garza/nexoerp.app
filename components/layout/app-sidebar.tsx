@@ -31,6 +31,7 @@ import {
   Shield,
 } from "lucide-react"
 import { usePlatform } from "@/contexts/platform-context"
+import { NexoLogo } from "@/components/brand/nexo-logo"
 
 const sections = [
   {
@@ -100,13 +101,7 @@ export function AppSidebar() {
     <aside className="app-sidebar w-72 shrink-0 border-r border-border bg-card flex flex-col overflow-y-auto">
       <div className="app-sidebar-surface p-6 border-b border-border sticky top-0 bg-card z-10">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
-            <LayoutDashboard className="w-6 h-6 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="font-bold text-xl leading-none">Nexo ERP</h1>
-            <p className="text-xs text-muted-foreground mt-1.5">Sistema de Gestion</p>
-          </div>
+          <NexoLogo label="Nexo ERP" />
         </Link>
       </div>
 
@@ -125,7 +120,7 @@ export function AppSidebar() {
               )}
             >
               <Shield className="w-4 h-4 flex-shrink-0" />
-              <span className="truncate">Nexo Control Plane</span>
+              <span className="truncate">Administración Nexo</span>
             </Link>
           </div>
         )}

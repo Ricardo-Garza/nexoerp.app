@@ -20,6 +20,19 @@ import { MODULE_CATALOG } from "@/lib/platform/modules"
 import { RecordAuditSheet } from "@/components/audit/record-audit-sheet"
 import type { Tenant, ModuleId, AuditRecord } from "@/lib/platform/types"
 
+const moduleStateLabel = {
+  stable: "Listo",
+  beta: "En prueba",
+  planned: "Planeado",
+} as const
+
+const tenantStatusLabel: Record<Tenant["status"], string> = {
+  active: "Activa",
+  trial: "Prueba",
+  suspended: "Suspendida",
+  prospect: "Prospecto",
+}
+
 export default function TenantDetailPage() {
   const params = useParams<{ tenantId: string }>()
   const router = useRouter()
@@ -53,9 +66,9 @@ export default function TenantDetailPage() {
     await appendAudit({
       tenantId: tenant.id,
       actorEmail: user?.email ?? "operaciones@nexo.com",
-      actorRole: "platform_admin",
+      actorRole: "Administrador Nexo",
       action,
-      entityType: "Tenant",
+      entityType: "Empresa",
       entityId: tenant.id,
       summary,
       after: { name: tenant.name, modules: tenant.modules.length },
@@ -93,14 +106,14 @@ export default function TenantDetailPage() {
               {tenant.name.slice(0, 2).toUpperCase()}
             </span>
             {tenant.name}
-            <Badge variant={tenant.status === "active" ? "default" : "secondary"}>{tenant.status}</Badge>
+            <Badge variant={tenant.status === "active" ? "default" : "secondary"}>{tenantStatusLabel[tenant.status]}</Badge>
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            ID: <code className="text-xs">{tenant.id}</code> · v{tenant.version}
+            Cuenta de empresa: <code className="text-xs">{tenant.id}</code> · v{tenant.version}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <RecordAuditSheet entityId={tenant.id} entityType="Tenant" />
+          <RecordAuditSheet entityId={tenant.id} entityType="Empresa" />
           <Button onClick={enterTenant} data-testid="enter-tenant-detail">
             <LogIn className="w-4 h-4 mr-1" /> Entrar como soporte
           </Button>
@@ -116,35 +129,34 @@ export default function TenantDetailPage() {
           <TabsTrigger value="audit">Auditoría</TabsTrigger>
         </TabsList>
 
-        {/* MÓDULOS */}
         <TabsContent value="modules" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Módulos activos</CardTitle>
               <CardDescription>
-                Activa o desactiva módulos por empresa. Los módulos "planned" aún no operan y se muestran deshabilitados
+                Activa o desactiva módulos por empresa. Los módulos planeados aún no operan y se muestran deshabilitados
                 en el ERP.
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-2 sm:grid-cols-2">
-              {MODULE_CATALOG.map((m) => (
-                <div key={m.id} className="flex items-center justify-between rounded-lg border p-3">
+              {MODULE_CATALOG.map((module) => (
+                <div key={module.id} className="flex items-center justify-between rounded-lg border p-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium text-sm truncate">{m.name}</p>
-                      {m.maturity !== "stable" && (
+                      <p className="font-medium text-sm truncate">{module.name}</p>
+                      {module.maturity !== "stable" && (
                         <Badge variant="outline" className="text-[10px]">
-                          {m.maturity}
+                          {moduleStateLabel[module.maturity]}
                         </Badge>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground truncate">{m.description}</p>
+                    <p className="text-xs text-muted-foreground truncate">{module.description}</p>
                   </div>
                   <Switch
-                    checked={tenant.modules.includes(m.id)}
-                    onCheckedChange={() => toggleModule(m.id)}
-                    disabled={m.maturity === "planned"}
-                    aria-label={`Módulo ${m.name}`}
+                    checked={tenant.modules.includes(module.id)}
+                    onCheckedChange={() => toggleModule(module.id)}
+                    disabled={module.maturity === "planned"}
+                    aria-label={`Módulo ${module.name}`}
                   />
                 </div>
               ))}
@@ -155,7 +167,6 @@ export default function TenantDetailPage() {
           </Button>
         </TabsContent>
 
-        {/* BRANDING */}
         <TabsContent value="branding" className="space-y-4">
           <Card>
             <CardHeader>
@@ -190,7 +201,7 @@ export default function TenantDetailPage() {
                 <Label>Tema</Label>
                 <Select
                   value={tenant.branding.theme}
-                  onValueChange={(v) => patch({ branding: { ...tenant.branding, theme: v as Tenant["branding"]["theme"] } })}
+                  onValueChange={(value) => patch({ branding: { ...tenant.branding, theme: value as Tenant["branding"]["theme"] } })}
                 >
                   <SelectTrigger className="w-48">
                     <SelectValue />
@@ -204,18 +215,17 @@ export default function TenantDetailPage() {
               </div>
             </CardContent>
           </Card>
-          <Button onClick={() => persist("tenant.branding.update", "Branding actualizado")} disabled={saving}>
+          <Button onClick={() => persist("tenant.branding.update", "Diseño actualizado")} disabled={saving}>
             <Save className="w-4 h-4 mr-1" /> Guardar diseño
           </Button>
         </TabsContent>
 
-        {/* FISCAL */}
         <TabsContent value="fiscal" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Datos fiscales</CardTitle>
               <CardDescription>
-                Timbrado en modo <Badge variant="outline">MockPacAdapter</Badge> hasta contratar un PAC. No se presenta
+                Timbrado en modo <Badge variant="outline">Simulado</Badge> hasta contratar un PAC. No se presenta
                 timbrado real hasta configurarlo.
               </CardDescription>
             </CardHeader>
@@ -254,22 +264,21 @@ export default function TenantDetailPage() {
           </Button>
         </TabsContent>
 
-        {/* CRM */}
         <TabsContent value="crm" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>CRM Momentum</CardTitle>
-              <CardDescription>Integración por tenant. La sincronización real vive en el módulo CRM del ERP.</CardDescription>
+              <CardDescription>Integración por empresa. La sincronización real vive en el módulo CRM del ERP.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between rounded-lg border p-3">
                 <div>
                   <p className="font-medium text-sm">CRM habilitado</p>
-                  <p className="text-xs text-muted-foreground">Muestra el módulo CRM en el menú del tenant</p>
+                  <p className="text-xs text-muted-foreground">Muestra el módulo CRM en el menú de la empresa</p>
                 </div>
                 <Switch
                   checked={tenant.crm.enabled}
-                  onCheckedChange={(v) => patch({ crm: { ...tenant.crm, enabled: v } })}
+                  onCheckedChange={(value) => patch({ crm: { ...tenant.crm, enabled: value } })}
                   aria-label="CRM habilitado"
                 />
               </div>
@@ -280,12 +289,12 @@ export default function TenantDetailPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Modo</Label>
-                  <Select value={tenant.crm.mode} onValueChange={(v) => patch({ crm: { ...tenant.crm, mode: v as "sandbox" | "production" } })}>
+                  <Select value={tenant.crm.mode} onValueChange={(value) => patch({ crm: { ...tenant.crm, mode: value as "sandbox" | "production" } })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="sandbox">Sandbox</SelectItem>
+                      <SelectItem value="sandbox">Modo de prueba</SelectItem>
                       <SelectItem value="production">Producción</SelectItem>
                     </SelectContent>
                   </Select>
@@ -294,7 +303,7 @@ export default function TenantDetailPage() {
                   <Label>Fuente maestra</Label>
                   <Select
                     value={tenant.crm.masterSource}
-                    onValueChange={(v) => patch({ crm: { ...tenant.crm, masterSource: v as "nexo" | "crm" } })}
+                    onValueChange={(value) => patch({ crm: { ...tenant.crm, masterSource: value as "nexo" | "crm" } })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -313,11 +322,10 @@ export default function TenantDetailPage() {
           </Button>
         </TabsContent>
 
-        {/* AUDITORÍA */}
         <TabsContent value="audit" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Auditoría del tenant</CardTitle>
+              <CardTitle>Auditoría de la empresa</CardTitle>
               <CardDescription>Últimos cambios administrativos sobre esta empresa.</CardDescription>
             </CardHeader>
             <CardContent>
@@ -325,15 +333,15 @@ export default function TenantDetailPage() {
                 <p className="text-sm text-muted-foreground py-6 text-center">Sin eventos todavía.</p>
               ) : (
                 <div className="space-y-2">
-                  {audit.map((a) => (
-                    <div key={a.id} className="flex items-start gap-3 rounded-lg border p-3 text-sm">
+                  {audit.map((entry) => (
+                    <div key={entry.id} className="flex items-start gap-3 rounded-lg border p-3 text-sm">
                       <Badge variant="outline" className="shrink-0 text-[10px]">
-                        {a.action}
+                        {entry.action}
                       </Badge>
                       <div className="min-w-0">
-                        <p>{a.summary}</p>
+                        <p>{entry.summary}</p>
                         <p className="text-xs text-muted-foreground">
-                          {new Date(a.at).toLocaleString("es-MX")} · {a.actorEmail}
+                          {new Date(entry.at).toLocaleString("es-MX")} · {entry.actorEmail}
                         </p>
                       </div>
                     </div>

@@ -21,9 +21,9 @@ export default function AiConfigPage() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    listTenants().then((ts) => {
-      setTenants(ts)
-      if (ts[0]) setSelectedId(ts[0].id)
+    listTenants().then((loadedTenants) => {
+      setTenants(loadedTenants)
+      if (loadedTenants[0]) setSelectedId(loadedTenants[0].id)
     })
   }, [])
 
@@ -40,9 +40,9 @@ export default function AiConfigPage() {
     await appendAudit({
       tenantId: tenant.id,
       actorEmail: user?.email ?? "operaciones@nexo.com",
-      actorRole: "platform_admin",
+      actorRole: "Administrador Nexo",
       action: "tenant.ai.update",
-      entityType: "Tenant",
+      entityType: "Empresa",
       entityId: tenant.id,
       summary: `IA ${tenant.ai.enabled ? "activada" : "desactivada"} (${tenant.ai.provider})`,
       source: "ui",
@@ -55,11 +55,11 @@ export default function AiConfigPage() {
     <div className="space-y-6 max-w-3xl">
       <div>
         <h1 className="text-3xl font-bold flex items-center gap-2">
-          <Sparkles className="w-7 h-7 text-primary" /> IA por cliente (BYOK)
+          <Sparkles className="w-7 h-7 text-primary" /> IA con clave del cliente
         </h1>
         <p className="text-muted-foreground mt-1">
-          Cada empresa trae su propia API key. Las claves se guardan server-side con máscara y auditoría, nunca en el
-          frontend ni en el repositorio.
+          Cada empresa puede traer su propia clave de IA. Las claves se guardan protegidas en servidor y nunca se
+          muestran en el frontend ni se guardan en el repositorio.
         </p>
       </div>
 
@@ -83,16 +83,16 @@ export default function AiConfigPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>Configuración de IA — {tenant.name}</span>
+              <span>Configuración de IA - {tenant.name}</span>
               <Badge variant={tenant.ai.enabled ? "default" : "outline"}>{tenant.ai.enabled ? "Activa" : "Inactiva"}</Badge>
             </CardTitle>
-            <CardDescription>Kill switch, proveedor, modelo y presupuesto mensual.</CardDescription>
+            <CardDescription>Apagado de emergencia, proveedor, modelo y presupuesto mensual.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div>
                 <p className="font-medium text-sm">Habilitar IA</p>
-                <p className="text-xs text-muted-foreground">Kill switch por empresa</p>
+                <p className="text-xs text-muted-foreground">Apagado de emergencia por empresa</p>
               </div>
               <Switch checked={tenant.ai.enabled} onCheckedChange={(v) => patchAi({ enabled: v })} aria-label="Habilitar IA" />
             </div>
@@ -128,13 +128,13 @@ export default function AiConfigPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>API key (server-side)</Label>
+                <Label>Clave de IA del cliente</Label>
                 <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                  {tenant.ai.hasServerKey ? "•••• configurada en secret manager" : "No configurada"}
+                  {tenant.ai.hasServerKey ? "Configurada en almacén seguro" : "No configurada"}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Se configura por variable de entorno / secret manager, fuera del repositorio.
+                  Se configura mediante variable de entorno o almacén seguro, fuera del repositorio.
                 </p>
               </div>
             </div>

@@ -28,6 +28,17 @@ interface SyncLogEntry {
   status: "ok" | "error"
 }
 
+const modeLabel = {
+  sandbox: "Modo de prueba",
+  production: "Producción",
+} as const
+
+const directionLabel: Record<string, string> = {
+  pull: "Importar desde CRM",
+  push: "Enviar a CRM",
+  bidirectional: "Ambas direcciones",
+}
+
 export default function CrmPage() {
   const router = useRouter()
   const { activeTenantId } = usePlatform()
@@ -38,15 +49,16 @@ export default function CrmPage() {
 
   useEffect(() => {
     getTenant(activeTenantId).then(setTenant)
-    const raw = typeof window !== "undefined" ? window.localStorage.getItem(`nexo_crm_log_${activeTenantId}`) : null
-    if (raw) setLog(JSON.parse(raw))
+    Promise.resolve().then(() => {
+      const raw = typeof window !== "undefined" ? window.localStorage.getItem(`nexo_crm_log_${activeTenantId}`) : null
+      if (raw) setLog(JSON.parse(raw))
+    })
     new MockMomentumAdapter().health().then(setHealth)
   }, [activeTenantId])
 
-  async function runSandboxSync() {
+  async function runTestSync() {
     setSyncing(true)
     try {
-      // Sincronización sandbox real contra el adaptador mock (contrato del CRM real)
       const adapter = new MockMomentumAdapter([
         { name: "Restaurante El Fogón", email: "compras@elfogon.mx", company: "El Fogón SA", temperature: "hot", score: 85 },
         { name: "Abarrotes La Moderna", email: "pedidos@lamoderna.mx", company: "La Moderna", temperature: "warm", score: 60 },
@@ -65,11 +77,11 @@ export default function CrmPage() {
       setLog(next)
       if (typeof window !== "undefined")
         window.localStorage.setItem(`nexo_crm_log_${activeTenantId}`, JSON.stringify(next))
-      toast.success(`Sincronización sandbox: ${summary.pulled} contactos`, {
+      toast.success(`Sincronización de prueba: ${summary.pulled} contactos`, {
         description: `${summary.created} creados, ${summary.deduplicated} duplicados`,
       })
     } catch {
-      toast.error("Error en la sincronización sandbox")
+      toast.error("Error en la sincronización de prueba")
     } finally {
       setSyncing(false)
     }
@@ -77,6 +89,7 @@ export default function CrmPage() {
 
   const crmUrl = tenant?.crm.baseUrl ?? "https://crm-momentum.vercel.app"
   const enabled = tenant?.crm.enabled ?? false
+  const currentMode = tenant?.crm.mode ?? "sandbox"
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -86,7 +99,7 @@ export default function CrmPage() {
             <MessageSquare className="w-7 h-7 text-primary" /> CRM Momentum
           </h1>
           <p className="text-muted-foreground mt-1">
-            Integración del CRM por empresa. {enabled ? "Habilitado" : "Deshabilitado"} para este universo.
+            Integración del CRM por empresa. {enabled ? "Habilitado" : "Deshabilitado"} para esta empresa.
           </p>
         </div>
         <div className="flex gap-2">
@@ -105,7 +118,7 @@ export default function CrmPage() {
         <Card className="border-amber-500/40 bg-amber-500/5">
           <CardContent className="py-4 flex items-center justify-between flex-wrap gap-3">
             <p className="text-sm">
-              El CRM está deshabilitado para esta empresa. Actívalo desde el Control Plane para operar la sincronización.
+              El CRM está deshabilitado para esta empresa. Actívalo desde Administración Nexo para operar la sincronización.
             </p>
             <Button size="sm" variant="outline" onClick={() => router.push(`/admin/tenants/${activeTenantId}`)}>
               <Settings className="w-4 h-4 mr-1" /> Configurar CRM
@@ -122,7 +135,7 @@ export default function CrmPage() {
           <CardContent>
             <div className="flex items-center gap-2">
               <span className={`w-2.5 h-2.5 rounded-full ${health?.ok ? "bg-emerald-500" : "bg-muted"}`} />
-              <span className="font-medium">{health?.ok ? "Conectado (sandbox)" : "Verificando..."}</span>
+              <span className="font-medium">{health?.ok ? "Conectado en modo de prueba" : "Verificando..."}</span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">{health?.detail}</p>
           </CardContent>
@@ -132,10 +145,8 @@ export default function CrmPage() {
             <CardTitle className="text-sm text-muted-foreground font-medium">Modo</CardTitle>
           </CardHeader>
           <CardContent>
-            <Badge variant={tenant?.crm.mode === "production" ? "default" : "secondary"}>
-              {tenant?.crm.mode ?? "sandbox"}
-            </Badge>
-            <p className="text-xs text-muted-foreground mt-1">Fuente maestra: {tenant?.crm.masterSource ?? "nexo"}</p>
+            <Badge variant={currentMode === "production" ? "default" : "secondary"}>{modeLabel[currentMode]}</Badge>
+            <p className="text-xs text-muted-foreground mt-1">Fuente maestra: {tenant?.crm.masterSource === "crm" ? "CRM Momentum" : "Nexo ERP"}</p>
           </CardContent>
         </Card>
         <Card>
@@ -143,9 +154,9 @@ export default function CrmPage() {
             <CardTitle className="text-sm text-muted-foreground font-medium">Sincronización</CardTitle>
           </CardHeader>
           <CardContent>
-            <Button size="sm" onClick={runSandboxSync} disabled={syncing} data-testid="crm-sync">
+            <Button size="sm" onClick={runTestSync} disabled={syncing} data-testid="crm-sync">
               {syncing ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-1" />}
-              Sincronizar sandbox
+              Sincronizar prueba
             </Button>
           </CardContent>
         </Card>
@@ -156,7 +167,7 @@ export default function CrmPage() {
           <CardTitle className="flex items-center gap-2">
             <ArrowLeftRight className="w-5 h-5 text-primary" /> Mapeo de entidades
           </CardTitle>
-          <CardDescription>Correspondencia entre Nexo ERP y CRM Momentum (basado en el esquema real de auto-crm).</CardDescription>
+          <CardDescription>Correspondencia entre Nexo ERP y CRM Momentum basada en el esquema real de auto-crm.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="rounded-lg border overflow-x-auto">
@@ -170,16 +181,16 @@ export default function CrmPage() {
                 </tr>
               </thead>
               <tbody>
-                {CRM_ENTITY_MAP.map((m) => (
-                  <tr key={m.nexo} className="border-b last:border-0">
-                    <td className="px-3 py-1.5 font-medium">{m.nexo}</td>
-                    <td className="px-3 py-1.5 text-muted-foreground">{m.crm}</td>
+                {CRM_ENTITY_MAP.map((mapping) => (
+                  <tr key={mapping.nexo} className="border-b last:border-0">
+                    <td className="px-3 py-1.5 font-medium">{mapping.nexo}</td>
+                    <td className="px-3 py-1.5 text-muted-foreground">{mapping.crm}</td>
                     <td className="px-3 py-1.5">
                       <Badge variant="outline" className="text-[10px]">
-                        {m.direction}
+                        {directionLabel[mapping.direction] ?? mapping.direction}
                       </Badge>
                     </td>
-                    <td className="px-3 py-1.5 text-xs text-muted-foreground">{m.keyFields.join(", ")}</td>
+                    <td className="px-3 py-1.5 text-xs text-muted-foreground">{mapping.keyFields.join(", ")}</td>
                   </tr>
                 ))}
               </tbody>
@@ -191,25 +202,25 @@ export default function CrmPage() {
       <Card>
         <CardHeader>
           <CardTitle>Historial de sincronización</CardTitle>
-          <CardDescription>Últimas corridas sandbox de este universo.</CardDescription>
+          <CardDescription>Últimas sincronizaciones de prueba de esta empresa.</CardDescription>
         </CardHeader>
         <CardContent>
           {log.length === 0 ? (
             <p className="text-sm text-muted-foreground py-6 text-center">
-              Sin sincronizaciones. Pulsa "Sincronizar sandbox" para probar el flujo.
+              Sin sincronizaciones. Pulsa &quot;Sincronizar prueba&quot; para probar el flujo.
             </p>
           ) : (
             <div className="space-y-2">
-              {log.map((e, i) => (
-                <div key={i} className="flex items-center justify-between rounded-lg border p-3 text-sm">
+              {log.map((entry, index) => (
+                <div key={index} className="flex items-center justify-between rounded-lg border p-3 text-sm">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    <span>{new Date(e.at).toLocaleString("es-MX")}</span>
+                    <span>{new Date(entry.at).toLocaleString("es-MX")}</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Badge variant="secondary">{e.summary.pulled} traídos</Badge>
-                    <Badge variant="outline">{e.summary.created} creados</Badge>
-                    <Badge variant="outline">{e.summary.deduplicated} dup.</Badge>
+                    <Badge variant="secondary">{entry.summary.pulled} recibidos</Badge>
+                    <Badge variant="outline">{entry.summary.created} creados</Badge>
+                    <Badge variant="outline">{entry.summary.deduplicated} duplicados</Badge>
                   </div>
                 </div>
               ))}
