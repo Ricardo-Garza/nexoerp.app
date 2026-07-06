@@ -6,14 +6,23 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
+  Bookmark,
   Check,
+  ChevronDown,
   Download,
+  EyeOff,
   Filter,
+  HelpCircle,
   History,
+  Printer,
   RefreshCw,
+  RotateCcw,
   Rows3,
   Search,
+  Sigma,
   SlidersHorizontal,
+  Trash2,
+  Upload,
   X,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -44,7 +53,15 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { downloadBlob } from "@/lib/import/engine"
-import { buildExportFilename } from "@/lib/table/enterprise-table"
+import { readErpPreferences } from "@/lib/platform/user-preferences-storage"
+import {
+  buildExportFilename,
+  computeNumberStats,
+  removeSavedView,
+  upsertSavedView,
+  type ColumnStats,
+  type SavedTableView,
+} from "@/lib/table/enterprise-table"
 import { cn } from "@/lib/utils"
 
 type SortDir = "asc" | "desc" | null
@@ -56,6 +73,8 @@ export interface ProColumn<T> {
   accessor: (row: T) => string | number | null | undefined
   cell?: (row: T) => ReactNode
   numeric?: boolean
+  /** Formatea totales y estadísticas como moneda MXN y suma con aritmética decimal segura. */
+  currency?: boolean
   align?: "left" | "right" | "center"
   hideable?: boolean
   defaultVisible?: boolean
@@ -89,11 +108,19 @@ interface DataTableProProps<T> {
   quickFilters?: { label: string; predicate: (row: T) => boolean }[]
   bulkActions?: BulkAction<T>[]
   rowActions?: (row: T) => ReactNode
+  onRowClick?: (row: T) => void
   emptyMessage?: string
+  emptyHint?: string
   moduleName?: string
   tenantName?: string
   toolbarActions?: ReactNode
   recentChanges?: RecentChange[]
+  /** Pasos breves que explican cómo usar el módulo; activan el botón Ayuda. */
+  helpItems?: string[]
+  /** Ruta del Centro de Importación; activa el botón Importar. */
+  importHref?: string
+  /** Alternativa a importHref para abrir un flujo de importación propio. */
+  onImport?: () => void
   onRefresh?: () => void
   testId?: string
 }
@@ -111,6 +138,13 @@ const DENSITIES: Record<string, Density> = {
 
 const DATE_FILTERS = new Set(["today", "thisweek", "thismonth", "last30"])
 
+const DATE_PRESETS: { value: string; label: string }[] = [
+  { value: "today", label: "Hoy" },
+  { value: "thisweek", label: "Esta semana" },
+  { value: "thismonth", label: "Este mes" },
+  { value: "last30", label: "Últimos 30 días" },
+]
+
 export function DataTablePro<T>({
   tableId,
   columns,
@@ -120,55 +154,86 @@ export function DataTablePro<T>({
   quickFilters = [],
   bulkActions = [],
   rowActions,
-  emptyMessage = "Sin registros",
+  onRowClick,
+  emptyMessage = "No hay registros todavía.",
+  emptyHint,
   moduleName,
   tenantName = "empresa",
   toolbarActions,
   recentChanges = [],
+  helpItems = [],
+  importHref,
+  onImport,
   onRefresh,
   testId,
 }: DataTableProProps<T>) {
+  const defaultHidden = useMemo(
+    () => new Set(columns.filter((column) => column.defaultVisible === false).map((column) => column.key)),
+    [columns],
+  )
+
   const [search, setSearch] = useState("")
   const [sortKey, setSortKey] = useState<string | null>(null)
   const [sortDir, setSortDir] = useState<SortDir>(null)
   const [density, setDensity] = useState<keyof typeof DENSITIES>("medium")
-  const [hidden, setHidden] = useState<Set<string>>(new Set())
+  const [hidden, setHidden] = useState<Set<string>>(defaultHidden)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [activeQuick, setActiveQuick] = useState<number | null>(null)
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({})
+  const [savedViews, setSavedViews] = useState<SavedTableView[]>([])
 
   useEffect(() => {
     if (typeof window === "undefined") return
     try {
       const raw = window.localStorage.getItem(`nexo_table_${tableId}`)
-      if (!raw) return
-      const view = JSON.parse(raw) as {
-        hidden?: string[]
-        density?: keyof typeof DENSITIES
-        columnFilters?: Record<string, string>
+      const globalDensity = readErpPreferences().tableDensity
+      if (raw) {
+        const view = JSON.parse(raw) as Partial<SavedTableView> & { density?: keyof typeof DENSITIES }
+        if (view.hidden) setHidden(new Set(view.hidden))
+        if (view.density && DENSITIES[view.density]) setDensity(view.density)
+        else if (DENSITIES[globalDensity]) setDensity(globalDensity)
+        if (view.columnFilters) setColumnFilters(view.columnFilters)
+        if (view.sortKey !== undefined) setSortKey(view.sortKey)
+        if (view.sortDir !== undefined) setSortDir(view.sortDir)
+      } else if (DENSITIES[globalDensity]) {
+        setDensity(globalDensity)
       }
-      if (view.hidden) setHidden(new Set(view.hidden))
-      if (view.density) setDensity(view.density)
-      if (view.columnFilters) setColumnFilters(view.columnFilters)
+      const rawViews = window.localStorage.getItem(`nexo_table_views_${tableId}`)
+      if (rawViews) setSavedViews(JSON.parse(rawViews) as SavedTableView[])
     } catch {
       // La vista se puede reconstruir si el navegador guardó un dato inválido.
     }
   }, [tableId])
 
-  function persist(nextHidden = hidden, nextDensity = density, nextColumnFilters = columnFilters) {
+  function persist(next: {
+    hidden?: Set<string>
+    density?: keyof typeof DENSITIES
+    columnFilters?: Record<string, string>
+    sortKey?: string | null
+    sortDir?: SortDir
+  } = {}) {
     if (typeof window === "undefined") return
     window.localStorage.setItem(
       `nexo_table_${tableId}`,
       JSON.stringify({
-        hidden: [...nextHidden],
-        density: nextDensity,
-        columnFilters: nextColumnFilters,
+        hidden: [...(next.hidden ?? hidden)],
+        density: next.density ?? density,
+        columnFilters: next.columnFilters ?? columnFilters,
+        sortKey: next.sortKey === undefined ? sortKey : next.sortKey,
+        sortDir: next.sortDir === undefined ? sortDir : next.sortDir,
       }),
     )
   }
 
+  function persistViews(views: SavedTableView[]) {
+    setSavedViews(views)
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(`nexo_table_views_${tableId}`, JSON.stringify(views))
+    }
+  }
+
   const visibleColumns = useMemo(
-    () => columns.filter((column) => !hidden.has(column.key) && column.defaultVisible !== false),
+    () => columns.filter((column) => !hidden.has(column.key)),
     [columns, hidden],
   )
 
@@ -209,14 +274,18 @@ export function DataTablePro<T>({
     return data
   }, [activeQuick, columnFilters, columns, quickFilters, rows, search, sortDir, sortKey])
 
-  const totals = useMemo(() => {
-    const next: Record<string, number> = {}
-    for (const column of visibleColumns) {
-      if (!column.numeric) continue
-      next[column.key] = filtered.reduce((sum, row) => sum + toNumber(column.accessor(row)), 0)
+  const numericColumns = useMemo(() => visibleColumns.filter((column) => column.numeric), [visibleColumns])
+
+  const columnStats = useMemo(() => {
+    const next: Record<string, ColumnStats> = {}
+    for (const column of numericColumns) {
+      next[column.key] = computeNumberStats(
+        filtered.map((row) => column.accessor(row)),
+        { money: column.currency },
+      )
     }
     return next
-  }, [filtered, visibleColumns])
+  }, [filtered, numericColumns])
 
   const activeFilterLabels = useMemo(() => {
     const labels: { key: string; label: string }[] = []
@@ -234,19 +303,27 @@ export function DataTablePro<T>({
   const selectedRows = filtered.filter((row) => selected.has(getRowId(row)))
   const d = DENSITIES[density]
   const nf = new Intl.NumberFormat("es-MX", { maximumFractionDigits: 2 })
+  const mf = new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" })
+
+  const formatCell = (column: ProColumn<T>, value: number) => (column.currency ? mf.format(value) : nf.format(value))
 
   function toggleSort(key: string) {
-    if (sortKey !== key) {
-      setSortKey(key)
-      setSortDir("asc")
-      return
+    let nextKey: string | null = key
+    let nextDir: SortDir = "asc"
+    if (sortKey === key && sortDir === "asc") nextDir = "desc"
+    else if (sortKey === key && sortDir === "desc") {
+      nextKey = null
+      nextDir = null
     }
-    if (sortDir === "asc") {
-      setSortDir("desc")
-      return
-    }
-    setSortKey(null)
-    setSortDir(null)
+    setSortKey(nextKey)
+    setSortDir(nextDir)
+    persist({ sortKey: nextKey, sortDir: nextDir })
+  }
+
+  function setSort(key: string, dir: SortDir) {
+    setSortKey(dir ? key : null)
+    setSortDir(dir)
+    persist({ sortKey: dir ? key : null, sortDir: dir })
   }
 
   function toggleColumn(key: string) {
@@ -254,12 +331,12 @@ export function DataTablePro<T>({
     if (next.has(key)) next.delete(key)
     else next.add(key)
     setHidden(next)
-    persist(next)
+    persist({ hidden: next })
   }
 
   function changeDensity(nextDensity: keyof typeof DENSITIES) {
     setDensity(nextDensity)
-    persist(hidden, nextDensity)
+    persist({ density: nextDensity })
   }
 
   function setFilter(key: string, value: string) {
@@ -267,14 +344,57 @@ export function DataTablePro<T>({
     if (value.trim()) next[key] = value
     else delete next[key]
     setColumnFilters(next)
-    persist(hidden, density, next)
+    persist({ columnFilters: next })
   }
 
   function clearFilters() {
     setSearch("")
     setActiveQuick(null)
     setColumnFilters({})
-    persist(hidden, density, {})
+    persist({ columnFilters: {} })
+  }
+
+  function currentView(name: string): SavedTableView {
+    return {
+      name,
+      hidden: [...hidden],
+      density,
+      columnFilters,
+      sortKey,
+      sortDir,
+      quickFilter: activeQuick,
+    }
+  }
+
+  function applyView(view: SavedTableView) {
+    const nextHidden = new Set(view.hidden)
+    const nextDensity = (DENSITIES[view.density] ? view.density : "medium") as keyof typeof DENSITIES
+    setHidden(nextHidden)
+    setDensity(nextDensity)
+    setColumnFilters(view.columnFilters)
+    setSortKey(view.sortKey)
+    setSortDir(view.sortDir)
+    setActiveQuick(view.quickFilter)
+    persist({
+      hidden: nextHidden,
+      density: nextDensity,
+      columnFilters: view.columnFilters,
+      sortKey: view.sortKey,
+      sortDir: view.sortDir,
+    })
+  }
+
+  function restoreDefaultView() {
+    applyView({
+      name: "",
+      hidden: [...defaultHidden],
+      density: "medium",
+      columnFilters: {},
+      sortKey: null,
+      sortDir: null,
+      quickFilter: null,
+    })
+    setSearch("")
   }
 
   function toggleRow(id: string) {
@@ -310,6 +430,48 @@ export function DataTablePro<T>({
     )
   }
 
+  function printTable() {
+    if (typeof window === "undefined") return
+    const win = window.open("", "_blank", "width=1000,height=700")
+    if (!win) return
+    const title = moduleName ?? "Nexo ERP"
+    const filterNote = activeFilterLabels.map((item) => item.label).join(" · ")
+    const head = visibleColumns
+      .map((column) => `<th style="text-align:${column.align ?? "left"}">${escapeHtml(column.header)}</th>`)
+      .join("")
+    const body = filtered
+      .map(
+        (row) =>
+          `<tr>${visibleColumns
+            .map((column) => {
+              const value = column.accessor(row)
+              const text =
+                column.numeric && typeof value === "number" ? formatCell(column, value) : String(value ?? "")
+              return `<td style="text-align:${column.align ?? "left"}">${escapeHtml(text)}</td>`
+            })
+            .join("")}</tr>`,
+      )
+      .join("")
+    win.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title>
+<style>
+  body { font-family: system-ui, sans-serif; color: #111; margin: 24px; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  p { font-size: 12px; color: #555; margin: 0 0 16px; }
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  th, td { border: 1px solid #ccc; padding: 4px 8px; }
+  th { background: #f1f5f9; }
+</style></head><body>
+<h1>${escapeHtml(title)}</h1>
+<p>${escapeHtml(tenantName)} · ${new Date().toLocaleDateString("es-MX")} · ${filtered.length} registros${filterNote ? ` · Filtros: ${escapeHtml(filterNote)}` : ""}</p>
+<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>
+</body></html>`)
+    win.document.close()
+    win.focus()
+    win.print()
+  }
+
+  const importAction = onImport ?? (importHref ? () => window.location.assign(importHref) : undefined)
+
   return (
     <TooltipProvider>
       <div className="space-y-3" data-testid={testId}>
@@ -344,16 +506,51 @@ export function DataTablePro<T>({
                 columns={filterableColumns}
                 filters={columnFilters}
                 onChange={setFilter}
+                activeCount={activeFilterLabels.length}
               />
 
-              <TooltipButton tooltip="Quitar búsqueda y filtros activos" size="sm" variant="outline" onClick={clearFilters}>
-                <X className="mr-1 h-4 w-4" />
-                Limpiar
-              </TooltipButton>
+              {activeFilterLabels.length > 0 && (
+                <TooltipButton tooltip="Quitar búsqueda y filtros activos" size="sm" variant="outline" onClick={clearFilters}>
+                  <X className="mr-1 h-4 w-4" />
+                  Limpiar
+                </TooltipButton>
+              )}
 
+              <TotalsMenu columns={numericColumns} stats={columnStats} rowCount={filtered.length} format={formatCell} />
               <ColumnsMenu columns={columns} hidden={hidden} onToggle={toggleColumn} />
+              <ViewsMenu
+                views={savedViews}
+                onSave={(name) => persistViews(upsertSavedView(savedViews, currentView(name)))}
+                onApply={applyView}
+                onDelete={(name) => persistViews(removeSavedView(savedViews, name))}
+                onRestore={restoreDefaultView}
+              />
               <DensityMenu density={density} onChange={changeDensity} />
               <ExportMenu onExport={exportData} />
+
+              {importAction && (
+                <TooltipButton
+                  tooltip="Carga masiva con plantilla, validación y vista previa"
+                  size="sm"
+                  variant="outline"
+                  onClick={importAction}
+                  data-testid="table-import"
+                >
+                  <Upload className="mr-1 h-4 w-4" />
+                  Importar
+                </TooltipButton>
+              )}
+
+              <TooltipButton
+                tooltip="Imprimir la vista actual con filtros y columnas visibles"
+                size="sm"
+                variant="outline"
+                onClick={printTable}
+                data-testid="table-print"
+              >
+                <Printer className="mr-1 h-4 w-4" />
+                Imprimir
+              </TooltipButton>
 
               {onRefresh && (
                 <TooltipButton tooltip="Recargar información de la tabla" size="sm" variant="outline" onClick={onRefresh}>
@@ -362,7 +559,8 @@ export function DataTablePro<T>({
                 </TooltipButton>
               )}
 
-              {recentChanges.length > 0 && <RecentChangesMenu changes={recentChanges} />}
+              <RecentChangesMenu changes={recentChanges} />
+              {helpItems.length > 0 && <HelpMenu moduleName={moduleName} items={helpItems} />}
               {toolbarActions}
             </div>
           </div>
@@ -381,16 +579,17 @@ export function DataTablePro<T>({
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4" data-testid="table-metrics">
           <Metric label="Registros" value={`${filtered.length} de ${rows.length}`} />
           {selectedRows.length > 0 && <Metric label="Seleccionados" value={selectedRows.length.toString()} />}
-          {visibleColumns
-            .filter((column) => column.numeric)
-            .slice(0, selectedRows.length > 0 ? 2 : 3)
-            .map((column) => (
-              <Metric key={column.key} label={`Total ${column.header}`} value={nf.format(totals[column.key] ?? 0)} />
-            ))}
+          {numericColumns.slice(0, selectedRows.length > 0 ? 2 : 3).map((column) => (
+            <Metric
+              key={column.key}
+              label={`Total ${column.header}`}
+              value={formatCell(column, columnStats[column.key]?.sum ?? 0)}
+            />
+          ))}
         </div>
 
         {selectedRows.length > 0 && bulkActions.length > 0 && (
-          <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2" data-testid="bulk-bar">
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2" data-testid="bulk-bar">
             <Badge variant="secondary">{selectedRows.length} seleccionados</Badge>
             {bulkActions.map((action) => (
               <TooltipButton
@@ -436,23 +635,33 @@ export function DataTablePro<T>({
                     )}
                     key={column.key}
                   >
-                    <button
-                      className="inline-flex items-center gap-1 hover:text-foreground"
-                      onClick={() => toggleSort(column.key)}
-                      title={`Ordenar por ${column.header}`}
-                      type="button"
-                    >
-                      {column.header}
-                      {sortKey === column.key ? (
-                        sortDir === "asc" ? (
-                          <ArrowUp className="h-3 w-3" />
+                    <span className="inline-flex items-center gap-0.5">
+                      <button
+                        className="inline-flex items-center gap-1 hover:text-foreground"
+                        onClick={() => toggleSort(column.key)}
+                        title={`Ordenar por ${column.header}`}
+                        type="button"
+                      >
+                        {column.header}
+                        {sortKey === column.key ? (
+                          sortDir === "asc" ? (
+                            <ArrowUp className="h-3 w-3" />
+                          ) : (
+                            <ArrowDown className="h-3 w-3" />
+                          )
                         ) : (
-                          <ArrowDown className="h-3 w-3" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="h-3 w-3 opacity-40" />
-                      )}
-                    </button>
+                          <ArrowUpDown className="h-3 w-3 opacity-40" />
+                        )}
+                      </button>
+                      <ColumnHeaderMenu
+                        column={column}
+                        sortKey={sortKey}
+                        sortDir={sortDir}
+                        onSort={setSort}
+                        onHide={column.hideable !== false ? () => toggleColumn(column.key) : undefined}
+                        onFilter={(value) => setFilter(column.key, value)}
+                      />
+                    </span>
                   </th>
                 ))}
                 {rowActions && <th className="w-10 px-3" />}
@@ -465,7 +674,8 @@ export function DataTablePro<T>({
                     className="px-3 py-10 text-center text-muted-foreground"
                     colSpan={visibleColumns.length + (bulkActions.length ? 1 : 0) + (rowActions ? 1 : 0)}
                   >
-                    {emptyMessage}
+                    <p>{emptyMessage}</p>
+                    {emptyHint && <p className="mt-1 text-xs">{emptyHint}</p>}
                   </td>
                 </tr>
               ) : (
@@ -473,12 +683,13 @@ export function DataTablePro<T>({
                   const id = getRowId(row)
                   return (
                     <tr
-                      className="border-b last:border-0 hover:bg-muted/45"
+                      className={cn("border-b last:border-0 hover:bg-muted/45", onRowClick && "cursor-pointer")}
                       data-testid={getRowTestId ? getRowTestId(row) : `row-${id}`}
                       key={id}
+                      onClick={onRowClick ? () => onRowClick(row) : undefined}
                     >
                       {bulkActions.length > 0 && (
-                        <td className="px-3">
+                        <td className="px-3" onClick={(event) => event.stopPropagation()}>
                           <Checkbox
                             aria-label={`Seleccionar ${id}`}
                             checked={selected.has(id)}
@@ -496,16 +707,24 @@ export function DataTablePro<T>({
                           )}
                           key={column.key}
                         >
-                          {column.cell ? column.cell(row) : (column.accessor(row) ?? "-")}
+                          {column.cell
+                            ? column.cell(row)
+                            : column.numeric && column.currency && typeof column.accessor(row) === "number"
+                              ? mf.format(column.accessor(row) as number)
+                              : (column.accessor(row) ?? "-")}
                         </td>
                       ))}
-                      {rowActions && <td className="px-3 text-right">{rowActions(row)}</td>}
+                      {rowActions && (
+                        <td className="px-3 text-right" onClick={(event) => event.stopPropagation()}>
+                          {rowActions(row)}
+                        </td>
+                      )}
                     </tr>
                   )
                 })
               )}
             </tbody>
-            {Object.keys(totals).length > 0 && filtered.length > 0 && (
+            {numericColumns.length > 0 && filtered.length > 0 && (
               <tfoot className="border-t bg-muted/60 font-semibold">
                 <tr>
                   {bulkActions.length > 0 && <td className="px-3" />}
@@ -517,7 +736,7 @@ export function DataTablePro<T>({
                       {index === 0 && !column.numeric
                         ? `${filtered.length} filas`
                         : column.numeric
-                          ? nf.format(totals[column.key] ?? 0)
+                          ? formatCell(column, columnStats[column.key]?.sum ?? 0)
                           : ""}
                     </td>
                   ))}
@@ -540,10 +759,12 @@ function ColumnFilters<T>({
   columns,
   filters,
   onChange,
+  activeCount,
 }: {
   columns: ProColumn<T>[]
   filters: Record<string, string>
   onChange: (key: string, value: string) => void
+  activeCount: number
 }) {
   return (
     <Popover>
@@ -553,12 +774,17 @@ function ColumnFilters<T>({
             <Button data-testid="table-filters" size="sm" variant="outline">
               <Filter className="mr-1 h-4 w-4" />
               Filtros
+              {activeCount > 0 && (
+                <Badge className="ml-1 h-5 min-w-5 rounded-full px-1 text-[10px]" variant="secondary">
+                  {activeCount}
+                </Badge>
+              )}
             </Button>
           </PopoverTrigger>
         </TooltipTrigger>
-        <TooltipContent>Filtro por columna</TooltipContent>
+        <TooltipContent>Filtro por columna, combinable</TooltipContent>
       </Tooltip>
-      <PopoverContent align="end" className="w-80">
+      <PopoverContent align="end" className="max-h-[420px] w-80 overflow-y-auto">
         <div className="space-y-3">
           <div>
             <p className="text-sm font-semibold">Filtro por columna</p>
@@ -585,6 +811,12 @@ function ColumnFilters<T>({
                     ))}
                   </SelectContent>
                 </Select>
+              ) : column.filterType === "date" ? (
+                <DateFilterControl
+                  id={`filter-${column.key}`}
+                  value={filters[column.key] ?? ""}
+                  onChange={(value) => onChange(column.key, value)}
+                />
               ) : (
                 <Input
                   id={`filter-${column.key}`}
@@ -595,6 +827,302 @@ function ColumnFilters<T>({
               )}
             </div>
           ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+function DateFilterControl({
+  id,
+  value,
+  onChange,
+}: {
+  id: string
+  value: string
+  onChange: (value: string) => void
+}) {
+  const isPreset = DATE_FILTERS.has(normalizeText(value))
+  const isCustom = value.includes("..")
+  const [from = "", to = ""] = isCustom ? value.split("..") : ["", ""]
+  const selectValue = isPreset ? normalizeText(value) : isCustom ? "__custom" : "__all"
+
+  return (
+    <div className="space-y-1.5">
+      <Select
+        value={selectValue}
+        onValueChange={(next) => {
+          if (next === "__all") onChange("")
+          else if (next === "__custom") onChange("..")
+          else onChange(next)
+        }}
+      >
+        <SelectTrigger id={id}>
+          <SelectValue placeholder="Todas las fechas" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__all">Todas las fechas</SelectItem>
+          {DATE_PRESETS.map((preset) => (
+            <SelectItem key={preset.value} value={preset.value}>
+              {preset.label}
+            </SelectItem>
+          ))}
+          <SelectItem value="__custom">Personalizado</SelectItem>
+        </SelectContent>
+      </Select>
+      {isCustom && (
+        <div className="flex items-center gap-1.5">
+          <Input
+            aria-label="Desde"
+            type="date"
+            value={from}
+            onChange={(event) => onChange(`${event.target.value}..${to}`)}
+          />
+          <span className="text-xs text-muted-foreground">a</span>
+          <Input
+            aria-label="Hasta"
+            type="date"
+            value={to}
+            onChange={(event) => onChange(`${from}..${event.target.value}`)}
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ColumnHeaderMenu<T>({
+  column,
+  sortKey,
+  sortDir,
+  onSort,
+  onHide,
+  onFilter,
+}: {
+  column: ProColumn<T>
+  sortKey: string | null
+  sortDir: SortDir
+  onSort: (key: string, dir: SortDir) => void
+  onHide?: () => void
+  onFilter: (value: string) => void
+}) {
+  const ascLabel = column.numeric
+    ? "Menor a mayor"
+    : column.filterType === "date"
+      ? "Más antiguo primero"
+      : "Ordenar A-Z"
+  const descLabel = column.numeric
+    ? "Mayor a menor"
+    : column.filterType === "date"
+      ? "Más reciente primero"
+      : "Ordenar Z-A"
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          title={`Opciones de columna ${column.header}`}
+          className="rounded p-0.5 opacity-40 hover:bg-muted hover:opacity-100"
+          type="button"
+        >
+          <ChevronDown className="h-3 w-3" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-52">
+        <DropdownMenuItem onClick={() => onSort(column.key, "asc")}>
+          <ArrowUp className="mr-2 h-4 w-4" />
+          {ascLabel}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onSort(column.key, "desc")}>
+          <ArrowDown className="mr-2 h-4 w-4" />
+          {descLabel}
+        </DropdownMenuItem>
+        {sortKey === column.key && sortDir && (
+          <DropdownMenuItem onClick={() => onSort(column.key, null)}>
+            <RotateCcw className="mr-2 h-4 w-4" />
+            Quitar orden
+          </DropdownMenuItem>
+        )}
+        {column.filterType === "select" && column.filterOptions?.length ? (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs">Filtrar por valor</DropdownMenuLabel>
+            {column.filterOptions.slice(0, 8).map((option) => (
+              <DropdownMenuItem key={option.value} onClick={() => onFilter(option.value)}>
+                <Filter className="mr-2 h-4 w-4" />
+                {option.label}
+              </DropdownMenuItem>
+            ))}
+          </>
+        ) : null}
+        {onHide && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={onHide}>
+              <EyeOff className="mr-2 h-4 w-4" />
+              Ocultar columna
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+function TotalsMenu<T>({
+  columns,
+  stats,
+  rowCount,
+  format,
+}: {
+  columns: ProColumn<T>[]
+  stats: Record<string, ColumnStats>
+  rowCount: number
+  format: (column: ProColumn<T>, value: number) => string
+}) {
+  if (columns.length === 0) return null
+  return (
+    <Popover>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <PopoverTrigger asChild>
+            <Button data-testid="table-totals" size="sm" variant="outline">
+              <Sigma className="mr-1 h-4 w-4" />
+              Totales
+            </Button>
+          </PopoverTrigger>
+        </TooltipTrigger>
+        <TooltipContent>Suma, promedio, mínimo y máximo de lo visible</TooltipContent>
+      </Tooltip>
+      <PopoverContent align="end" className="w-96">
+        <div className="space-y-3">
+          <div>
+            <p className="text-sm font-semibold">Totales de la vista</p>
+            <p className="text-xs text-muted-foreground">
+              Calculados sobre {rowCount} registros visibles, respetando filtros.
+            </p>
+          </div>
+          {columns.map((column) => {
+            const stat = stats[column.key]
+            if (!stat) return null
+            return (
+              <div className="rounded-lg border bg-muted/30 p-3" key={column.key}>
+                <p className="text-sm font-medium">{column.header}</p>
+                <dl className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                  <StatRow label="Suma" value={format(column, stat.sum)} />
+                  <StatRow label="Promedio" value={format(column, stat.avg)} />
+                  <StatRow label="Mínimo" value={format(column, stat.min)} />
+                  <StatRow label="Máximo" value={format(column, stat.max)} />
+                  <StatRow label="Con valor" value={String(stat.count)} />
+                </dl>
+              </div>
+            )
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+function StatRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between gap-2">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="font-medium tabular-nums">{value}</dd>
+    </div>
+  )
+}
+
+function ViewsMenu({
+  views,
+  onSave,
+  onApply,
+  onDelete,
+  onRestore,
+}: {
+  views: SavedTableView[]
+  onSave: (name: string) => void
+  onApply: (view: SavedTableView) => void
+  onDelete: (name: string) => void
+  onRestore: () => void
+}) {
+  const [name, setName] = useState("")
+  return (
+    <Popover>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <PopoverTrigger asChild>
+            <Button data-testid="table-views" size="sm" variant="outline">
+              <Bookmark className="mr-1 h-4 w-4" />
+              Vista
+            </Button>
+          </PopoverTrigger>
+        </TooltipTrigger>
+        <TooltipContent>Guardar o cambiar tu vista de columnas y filtros</TooltipContent>
+      </Tooltip>
+      <PopoverContent align="end" className="w-80">
+        <div className="space-y-3">
+          <div>
+            <p className="text-sm font-semibold">Vistas guardadas</p>
+            <p className="text-xs text-muted-foreground">
+              Una vista guarda columnas, filtros, orden y densidad.
+            </p>
+          </div>
+          {views.length === 0 ? (
+            <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
+              Todavía no guardas vistas. Ajusta la tabla a tu gusto y guárdala con un nombre.
+            </p>
+          ) : (
+            <div className="space-y-1.5">
+              {views.map((view) => (
+                <div className="flex items-center gap-1" key={view.name}>
+                  <Button
+                    className="h-8 flex-1 justify-start"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => onApply(view)}
+                    data-testid={`table-view-${view.name}`}
+                  >
+                    <Bookmark className="mr-2 h-3.5 w-3.5" />
+                    {view.name}
+                  </Button>
+                  <Button
+                    aria-label={`Eliminar vista ${view.name}`}
+                    className="h-8 w-8"
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => onDelete(view.name)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex gap-2">
+            <Input
+              className="h-9"
+              placeholder="Nombre de la vista"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              data-testid="table-view-name"
+            />
+            <Button
+              className="h-9 shrink-0"
+              size="sm"
+              disabled={!name.trim()}
+              onClick={() => {
+                onSave(name.trim())
+                setName("")
+              }}
+              data-testid="table-view-save"
+            >
+              Guardar
+            </Button>
+          </div>
+          <Button className="w-full" size="sm" variant="outline" onClick={onRestore} data-testid="table-view-restore">
+            <RotateCcw className="mr-1 h-4 w-4" />
+            Restaurar vista predeterminada
+          </Button>
         </div>
       </PopoverContent>
     </Popover>
@@ -686,7 +1214,7 @@ function ExportMenu({ onExport }: { onExport: (type: "csv" | "xlsx") => void }) 
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>
-        <TooltipContent>Exportar respetando filtros y columnas visibles</TooltipContent>
+        <TooltipContent>Exporta la vista actual con filtros y columnas visibles</TooltipContent>
       </Tooltip>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => onExport("xlsx")}>Excel (.xlsx)</DropdownMenuItem>
@@ -716,17 +1244,54 @@ function RecentChangesMenu({ changes }: { changes: RecentChange[] }) {
             <p className="text-sm font-semibold">Últimos cambios</p>
             <p className="text-xs text-muted-foreground">Actividad reciente visible para este módulo.</p>
           </div>
-          <div className="space-y-2">
-            {changes.slice(0, 8).map((change) => (
-              <div className="rounded-lg border bg-muted/30 p-3" key={change.id}>
-                <p className="text-sm font-medium">{change.title}</p>
-                {change.description && <p className="text-xs text-muted-foreground">{change.description}</p>}
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  {[change.actor, change.at].filter(Boolean).join(" · ")}
-                </p>
-              </div>
+          {changes.length === 0 ? (
+            <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
+              No hay cambios registrados todavía.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {changes.slice(0, 8).map((change) => (
+                <div className="rounded-lg border bg-muted/30 p-3" key={change.id}>
+                  <p className="text-sm font-medium">{change.title}</p>
+                  {change.description && <p className="text-xs text-muted-foreground">{change.description}</p>}
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    {[change.actor, change.at].filter(Boolean).join(" · ")}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+function HelpMenu({ moduleName, items }: { moduleName?: string; items: string[] }) {
+  return (
+    <Popover>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <PopoverTrigger asChild>
+            <Button data-testid="table-help" size="sm" variant="outline">
+              <HelpCircle className="mr-1 h-4 w-4" />
+              Ayuda
+            </Button>
+          </PopoverTrigger>
+        </TooltipTrigger>
+        <TooltipContent>Cómo usar este módulo</TooltipContent>
+      </Tooltip>
+      <PopoverContent align="end" className="w-80">
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">{moduleName ? `Ayuda de ${moduleName}` : "Ayuda"}</p>
+          <ul className="space-y-1.5 text-xs text-muted-foreground">
+            {items.map((item) => (
+              <li className="flex gap-2" key={item}>
+                <span className="text-primary">•</span>
+                <span>{item}</span>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </PopoverContent>
     </Popover>
@@ -781,8 +1346,9 @@ function matchesDateFilter(value: string | number | null | undefined, filter: st
   if (DATE_FILTERS.has(normalized)) return isRelativeDate(time, normalized)
   if (normalized.includes("..")) {
     const [from, to] = normalized.split("..").map((part) => part.trim())
+    if (!from && !to) return true
     const fromTime = from ? new Date(from).getTime() : Number.NEGATIVE_INFINITY
-    const toTime = to ? new Date(to).getTime() : Number.POSITIVE_INFINITY
+    const toTime = to ? new Date(`${to}T23:59:59.999`).getTime() : Number.POSITIVE_INFINITY
     return time >= fromTime && time <= toTime
   }
   return String(value ?? "").includes(filter)
@@ -832,6 +1398,14 @@ function normalizeText(value: string): string {
     .replace(/[\u0300-\u036f]/g, "")
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+}
+
 function prettyFilter(value: string): string {
   const normalized = normalizeText(value)
   if (normalized === "today") return "Hoy"
@@ -843,6 +1417,5 @@ function prettyFilter(value: string): string {
 
 function filterPlaceholder(type: FilterType): string {
   if (type === "number") return "Ej. >100, <50 o 10..200"
-  if (type === "date") return "Ej. today, thisMonth o 2026-07-01..2026-07-31"
   return "Contiene..."
 }

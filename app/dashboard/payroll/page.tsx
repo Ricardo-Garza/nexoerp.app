@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { usePayrollData } from "@/hooks/use-payroll-data"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -58,13 +59,11 @@ export default function PayrollPage() {
   const safeCandidates = Array.isArray(candidates) ? candidates : []
 
   const handleAddEmployee = () => {
-    console.log("[Payroll] Opening employee dialog for new employee")
     setEditingEmployee(null)
     setIsEmployeeDialogOpen(true)
   }
 
   const handleEditEmployee = (employee: any) => {
-    console.log("[Payroll] Opening employee dialog for editing", employee.id)
     setEditingEmployee(employee)
     setIsEmployeeDialogOpen(true)
   }
@@ -72,14 +71,12 @@ export default function PayrollPage() {
   const handleSaveEmployee = async (employeeData: any) => {
     try {
       if (editingEmployee) {
-        console.log("[Payroll] Updating employee", editingEmployee.id, employeeData)
         await updateEmployee(editingEmployee.id, employeeData)
         toast({
           title: "Empleado actualizado",
           description: "Los datos del empleado se han actualizado correctamente.",
         })
       } else {
-        console.log("[Payroll] Creating new employee", employeeData)
         await addEmployee(employeeData)
         toast({
           title: "Empleado creado",
@@ -101,10 +98,12 @@ export default function PayrollPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-<div className="flex gap-2">
-          <Button variant="outline">
-            <Upload className="w-4 h-4 mr-2" />
-            Importar
+        <div className="flex gap-2">
+          <Button variant="outline" asChild title="Carga masiva de empleados con plantilla y validación">
+            <Link href="/dashboard/import">
+              <Upload className="w-4 h-4 mr-2" />
+              Importar
+            </Link>
           </Button>
           <Button onClick={handleAddEmployee}>
             <UserPlus className="w-4 h-4 mr-2" />

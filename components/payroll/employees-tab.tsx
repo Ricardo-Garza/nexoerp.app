@@ -1,11 +1,10 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import { useMemo } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Search, Download, UserPlus } from "lucide-react"
+import { Pencil, UserPlus } from "lucide-react"
+import { DataTablePro, type ProColumn } from "@/components/ui/data-table-pro"
 import type { Employee } from "@/lib/types"
 
 interface EmployeesTabProps {
@@ -15,14 +14,91 @@ interface EmployeesTabProps {
   loading: boolean
 }
 
-export function EmployeesTab({ employees, onAddEmployee, onEditEmployee, loading }: EmployeesTabProps) {
-  const [searchTerm, setSearchTerm] = useState("")
+const ESTADO_LABELS: Record<Employee["estado"], string> = {
+  activo: "Activo",
+  inactivo: "Inactivo",
+  suspendido: "Suspendido",
+  baja: "Baja",
+}
 
-  const filteredEmployees = employees.filter(
-    (emp) =>
-      emp.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.numeroEmpleado.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.puesto.toLowerCase().includes(searchTerm.toLowerCase()),
+function toIsoDate(date: unknown): string {
+  if (!date) return ""
+  try {
+    const d =
+      typeof date === "object" && date !== null && "toDate" in date
+        ? (date as { toDate: () => Date }).toDate()
+        : new Date(date as string)
+    return Number.isFinite(d.getTime()) ? d.toISOString().slice(0, 10) : ""
+  } catch {
+    return ""
+  }
+}
+
+export function EmployeesTab({ employees, onAddEmployee, onEditEmployee, loading }: EmployeesTabProps) {
+  const columns = useMemo<ProColumn<Employee>[]>(
+    () => [
+      {
+        key: "numeroEmpleado",
+        header: "Número",
+        accessor: (emp) => emp.numeroEmpleado,
+        hideable: false,
+      },
+      {
+        key: "nombre",
+        header: "Nombre",
+        accessor: (emp) => `${emp.nombre} ${emp.apellidoPaterno} ${emp.apellidoMaterno ?? ""}`.trim(),
+        cell: (emp) => (
+          <span className="font-medium">
+            {emp.nombre} {emp.apellidoPaterno} {emp.apellidoMaterno}
+          </span>
+        ),
+        hideable: false,
+      },
+      {
+        key: "puesto",
+        header: "Puesto",
+        accessor: (emp) => emp.puesto,
+      },
+      {
+        key: "departamento",
+        header: "Departamento",
+        accessor: (emp) => emp.departamento,
+      },
+      {
+        key: "estado",
+        header: "Estado",
+        accessor: (emp) => ESTADO_LABELS[emp.estado] ?? emp.estado,
+        cell: (emp) => (
+          <Badge variant={emp.estado === "activo" ? "default" : "secondary"}>
+            {ESTADO_LABELS[emp.estado] ?? emp.estado}
+          </Badge>
+        ),
+        filterType: "select",
+        filterOptions: Object.values(ESTADO_LABELS).map((label) => ({ label, value: label })),
+      },
+      {
+        key: "fechaIngreso",
+        header: "Fecha de ingreso",
+        accessor: (emp) => toIsoDate(emp.fechaIngreso),
+        filterType: "date",
+      },
+      {
+        key: "tipoContrato",
+        header: "Contrato",
+        accessor: (emp) => emp.tipoContrato,
+        defaultVisible: false,
+      },
+      {
+        key: "salarioMensual",
+        header: "Salario mensual",
+        accessor: (emp) => emp.salarioMensual ?? 0,
+        numeric: true,
+        currency: true,
+        align: "right",
+        filterType: "number",
+      },
+    ],
+    [],
   )
 
   if (loading) {
@@ -37,65 +113,45 @@ export function EmployeesTab({ employees, onAddEmployee, onEditEmployee, loading
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar empleados..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <Button variant="outline">
-          <Download className="w-4 h-4 mr-2" />
-          Exportar
-        </Button>
-        <Button onClick={onAddEmployee}>
-          <UserPlus className="w-4 h-4 mr-2" />
+    <DataTablePro
+      tableId="payroll-employees"
+      testId="payroll-employees-table"
+      columns={columns}
+      rows={employees}
+      getRowId={(emp) => emp.id}
+      onRowClick={onEditEmployee}
+      moduleName="Nómina"
+      importHref="/dashboard/import"
+      quickFilters={[
+        { label: "Activos", predicate: (emp) => emp.estado === "activo" },
+        { label: "Inactivos", predicate: (emp) => emp.estado !== "activo" },
+      ]}
+      helpItems={[
+        "Crea un empleado con el botón Nuevo Empleado.",
+        "Haz clic en una fila para abrir y editar el expediente.",
+        "Usa Filtros para combinar departamento, estado y fecha de ingreso.",
+        "El botón Totales muestra la suma y promedio del salario de lo visible.",
+        "Importar permite cargar empleados desde Excel o CSV con plantilla.",
+      ]}
+      emptyMessage="No hay empleados registrados."
+      emptyHint="Importa datos o agrega el primer empleado."
+      toolbarActions={
+        <Button size="sm" onClick={onAddEmployee}>
+          <UserPlus className="w-4 h-4 mr-1" />
           Nuevo Empleado
         </Button>
-      </div>
-
-      {filteredEmployees.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No hay empleados registrados</p>
-          <Button onClick={onAddEmployee} className="mt-4">
-            <UserPlus className="w-4 h-4 mr-2" />
-            Agregar Primer Empleado
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {filteredEmployees.map((employee) => (
-            <Card key={employee.id} className="hover:bg-accent/50 transition-colors cursor-pointer">
-              <CardContent className="p-4" onClick={() => onEditEmployee(employee)}>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center font-semibold text-primary">
-                    {employee.nombre.charAt(0)}
-                    {employee.apellidoPaterno.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold">
-                        {employee.nombre} {employee.apellidoPaterno} {employee.apellidoMaterno}
-                      </p>
-                      <Badge variant={employee.estado === "activo" ? "default" : "secondary"}>{employee.estado}</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{employee.puesto}</p>
-                    <p className="text-xs text-muted-foreground">{employee.numeroEmpleado}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold">${employee.salarioMensual.toLocaleString()}</p>
-                    <p className="text-xs text-muted-foreground">{employee.departamento}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      }
+      rowActions={(emp) => (
+        <Button
+          size="sm"
+          variant="ghost"
+          title="Editar expediente del empleado"
+          onClick={() => onEditEmployee(emp)}
+        >
+          <Pencil className="w-4 h-4 mr-1" />
+          Editar
+        </Button>
       )}
-    </div>
+    />
   )
 }

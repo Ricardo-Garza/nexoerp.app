@@ -52,7 +52,7 @@ export default function AdminImportsPage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-bold">Importaciones</h1>
-          <p className="text-muted-foreground mt-1">Historial de cargas masivas de todos los universos.</p>
+          <p className="text-muted-foreground mt-1">Historial de cargas masivas de todas las empresas.</p>
         </div>
         <Button asChild>
           <Link href="/dashboard/import">

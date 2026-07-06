@@ -70,6 +70,65 @@ describe("Nexo assistant", () => {
     expect(reply.suggestions).toHaveLength(0)
   })
 
+  it("guides users to table features for totals, filters and history questions", () => {
+    const base = {
+      pathname: "/dashboard/ventas/ordenes",
+      isNexoAdmin: false,
+      canImport: true,
+      canExport: true,
+    }
+
+    expect(buildAssistantReply({ ...base, input: "sumar ventas" }).text).toContain("Totales")
+    expect(buildAssistantReply({ ...base, input: "filtrar por fecha" }).text).toContain("Filtros")
+    expect(buildAssistantReply({ ...base, input: "ver historial" }).text).toContain("Últimos cambios")
+    expect(buildAssistantReply({ ...base, input: "guardar vista" }).text).toContain("Vista")
+  })
+
+  it("recognizes the payroll, banking and accounting screens", () => {
+    const payroll = buildAssistantReply({
+      input: "que puedo hacer aqui",
+      pathname: "/dashboard/payroll",
+      isNexoAdmin: false,
+      canImport: true,
+      canExport: true,
+    })
+    expect(payroll.text).toContain("Nómina")
+    expect(payroll.suggestions.map((s) => s.label)).toContain("Importar empleados")
+
+    const banking = buildAssistantReply({
+      input: "ayuda",
+      pathname: "/dashboard/banking",
+      isNexoAdmin: false,
+      canImport: false,
+      canExport: false,
+    })
+    expect(banking.text).toContain("Bancos")
+    expect(banking.suggestions.map((s) => s.label)).not.toContain("Importar movimientos")
+
+    const accounting = buildAssistantReply({
+      input: "ayuda",
+      pathname: "/dashboard/accounting",
+      isNexoAdmin: false,
+      canImport: true,
+      canExport: true,
+    })
+    expect(accounting.text).toContain("Contabilidad")
+  })
+
+  it("replies in English when the user prefers English", () => {
+    const reply = buildAssistantReply({
+      input: "what can i do",
+      pathname: "/dashboard/payroll",
+      isNexoAdmin: false,
+      canImport: true,
+      canExport: true,
+      language: "en",
+    })
+
+    expect(reply.text).toContain("Payroll")
+    expect(reply.text).not.toContain("Estás en")
+  })
+
   it("keeps Spanish as the default visible language", () => {
     const reply = buildAssistantReply({
       input: "que puedo hacer aqui",

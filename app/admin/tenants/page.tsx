@@ -156,7 +156,7 @@ export default function TenantsPage() {
             <Building2 className="w-7 h-7 text-primary" /> Empresas
           </h1>
           <p className="text-muted-foreground mt-1">
-            Cada empresa es un universo aislado con su propia marca, módulos, datos y auditoría.
+            Cada empresa está aislada, con su propia marca, módulos, datos y auditoría.
           </p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { dec } from "@/lib/domain/shared/decimal"
 import { getCommercialConfig, getDataQualityIssues } from "@/lib/server/queries"
+import { UserPreferencesCard } from "@/components/erp/user-preferences-card"
 
 export const dynamic = "force-dynamic"
 
@@ -25,6 +26,8 @@ export default async function ConfiguracionPage() {
           Reglas comerciales parametrizadas, control interno de calidad de datos y módulos auxiliares de la empresa.
         </p>
       </div>
+
+      <UserPreferencesCard />
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Link href="/dashboard/attributes" className="rounded-lg border p-4 hover:bg-accent transition-colors">

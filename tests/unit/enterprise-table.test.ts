@@ -2,9 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   applyEnterpriseTableState,
   buildExportFilename,
+  computeNumberStats,
   createDefaultTableState,
+  removeSavedView,
   serializeCsv,
+  upsertSavedView,
   type EnterpriseColumnDef,
+  type SavedTableView,
 } from "@/lib/table/enterprise-table";
 
 interface Row {
@@ -158,5 +162,77 @@ describe("enterprise table logic", () => {
       "Importe: 1000 - 10000",
       "Fecha: 2026-07-01 - 2026-07-31",
     ]);
+  });
+});
+
+describe("column stats (Totales)", () => {
+  it("computes count, sum, average, min and max ignoring non-numeric values", () => {
+    const stats = computeNumberStats([1200, 450, 9800, null, undefined, "x"]);
+
+    expect(stats).toEqual({
+      count: 3,
+      sum: 11450,
+      avg: 11450 / 3,
+      min: 450,
+      max: 9800,
+    });
+  });
+
+  it("sums money columns with decimal-safe arithmetic", () => {
+    // 0.1 + 0.2 con floats daría 0.30000000000000004
+    const stats = computeNumberStats([0.1, 0.2], { money: true });
+
+    expect(stats.sum).toBe(0.3);
+    expect(stats.avg).toBe(0.15);
+  });
+
+  it("returns zeros for an empty column", () => {
+    expect(computeNumberStats([])).toEqual({
+      count: 0,
+      sum: 0,
+      avg: 0,
+      min: 0,
+      max: 0,
+    });
+  });
+});
+
+describe("saved views (Vistas)", () => {
+  const base: SavedTableView = {
+    name: "Mi vista",
+    hidden: ["status"],
+    density: "compact",
+    columnFilters: { name: "cliente" },
+    sortKey: "amount",
+    sortDir: "desc",
+    quickFilter: null,
+  };
+
+  it("adds a view and replaces an existing one by name, case-insensitive", () => {
+    const once = upsertSavedView([], base);
+    const twice = upsertSavedView(once, {
+      ...base,
+      name: "mi vista",
+      density: "comfortable",
+    });
+
+    expect(twice).toHaveLength(1);
+    expect(twice[0].density).toBe("comfortable");
+  });
+
+  it("ignores empty names and sorts views alphabetically", () => {
+    const views = upsertSavedView(
+      upsertSavedView(upsertSavedView([], base), { ...base, name: "Ventas mes" }),
+      { ...base, name: "   " },
+    );
+
+    expect(views.map((view) => view.name)).toEqual(["Mi vista", "Ventas mes"]);
+  });
+
+  it("removes a view by name", () => {
+    const views = upsertSavedView([], base);
+
+    expect(removeSavedView(views, "MI VISTA")).toEqual([]);
+    expect(removeSavedView(views, "otra")).toHaveLength(1);
   });
 });

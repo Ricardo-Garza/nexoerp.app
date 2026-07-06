@@ -425,7 +425,7 @@ export function ImportWizard({ initialEntity }: { initialEntity?: string }) {
                 {committed} registros importados
               </h3>
               <p className="text-muted-foreground text-sm mt-1">
-                {template.label} agregados al universo activo. Quedó registrado en auditoría e importaciones.
+                {template.label} agregados a la empresa activa. Quedó registrado en auditoría e importaciones.
               </p>
             </div>
             <div className="flex gap-2 justify-center">

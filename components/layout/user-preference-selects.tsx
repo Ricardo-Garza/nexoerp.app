@@ -16,10 +16,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { normalizeLocale, type ErpLanguage, type ErpTheme } from "@/lib/platform/preferences"
+import { type ErpLanguage, type ErpTheme } from "@/lib/platform/preferences"
+import { readErpPreferences, writeErpPreferences } from "@/lib/platform/user-preferences-storage"
 import { cn } from "@/lib/utils"
-
-const USER_LANGUAGE_KEY = "nexo_user_language"
 
 interface UserPreferenceSelectsProps {
   compact?: boolean
@@ -32,13 +31,12 @@ export function UserPreferenceSelects({ compact = false, className }: UserPrefer
 
   useEffect(() => {
     if (typeof window === "undefined") return
-    const stored = window.localStorage.getItem(USER_LANGUAGE_KEY)
-    setLanguage(normalizeLocale(stored ?? navigator.language))
+    setLanguage(readErpPreferences().language)
   }, [])
 
   function changeLanguage(value: ErpLanguage) {
     setLanguage(value)
-    if (typeof window !== "undefined") window.localStorage.setItem(USER_LANGUAGE_KEY, value)
+    writeErpPreferences({ language: value })
     document.documentElement.lang = value
   }
 

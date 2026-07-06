@@ -1,3 +1,5 @@
+import { dec } from "@/lib/domain/shared/decimal";
+
 export type EnterpriseColumnKind = "text" | "number" | "date" | "boolean";
 export type EnterpriseSortDirection = "asc" | "desc";
 export type EnterpriseFilterOperator =
@@ -107,6 +109,81 @@ export function applyEnterpriseTableState<T>(
   }
 
   return { rows: nextRows, visibleColumns, totals, activeFilterLabels };
+}
+
+export interface ColumnStats {
+  count: number;
+  sum: number;
+  avg: number;
+  min: number;
+  max: number;
+}
+
+/**
+ * Estadísticas de una columna numérica sobre las filas visibles.
+ * Para dinero, la suma se acumula con `dec` (fixed-point) para evitar
+ * arrastre de error de floats en listas largas.
+ */
+export function computeNumberStats(
+  values: (string | number | null | undefined)[],
+  options: { money?: boolean } = {},
+): ColumnStats {
+  const numbers = values
+    .filter((value): value is string | number => value != null && value !== "")
+    .map((value) => (typeof value === "number" ? value : Number(value)))
+    .filter((value) => Number.isFinite(value));
+  if (numbers.length === 0) {
+    return { count: 0, sum: 0, avg: 0, min: 0, max: 0 };
+  }
+  let sum: number;
+  if (options.money) {
+    let acc = "0";
+    for (const value of numbers) acc = dec.add(acc, value.toFixed(6));
+    sum = dec.toNumber(acc);
+  } else {
+    sum = numbers.reduce((total, value) => total + value, 0);
+  }
+  return {
+    count: numbers.length,
+    sum,
+    avg: options.money
+      ? dec.toNumber(dec.div(sum.toFixed(6), numbers.length))
+      : sum / numbers.length,
+    min: Math.min(...numbers),
+    max: Math.max(...numbers),
+  };
+}
+
+export interface SavedTableView {
+  name: string;
+  hidden: string[];
+  density: string;
+  columnFilters: Record<string, string>;
+  sortKey: string | null;
+  sortDir: "asc" | "desc" | null;
+  quickFilter: number | null;
+}
+
+export function upsertSavedView(
+  views: SavedTableView[],
+  view: SavedTableView,
+): SavedTableView[] {
+  const name = view.name.trim();
+  if (!name) return views;
+  const next = views.filter(
+    (candidate) => candidate.name.toLowerCase() !== name.toLowerCase(),
+  );
+  next.push({ ...view, name });
+  return next.sort((a, b) => a.name.localeCompare(b.name, "es"));
+}
+
+export function removeSavedView(
+  views: SavedTableView[],
+  name: string,
+): SavedTableView[] {
+  return views.filter(
+    (candidate) => candidate.name.toLowerCase() !== name.trim().toLowerCase(),
+  );
 }
 
 export function serializeCsv<T>(

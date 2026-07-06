@@ -35,7 +35,7 @@ export default function ImportCenterPage() {
         <Card>
           <CardHeader>
             <CardTitle>Importaciones recientes</CardTitle>
-            <CardDescription>Últimas cargas de este universo.</CardDescription>
+            <CardDescription>Últimas cargas de esta empresa.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {recent.map((r) => (

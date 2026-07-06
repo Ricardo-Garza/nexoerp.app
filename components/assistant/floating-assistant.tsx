@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { usePlatform } from "@/contexts/platform-context"
 import { buildAssistantReply, type AssistantSuggestion } from "@/lib/assistant/nexo-assistant"
+import { readErpPreferences } from "@/lib/platform/user-preferences-storage"
 
 interface Suggestion extends AssistantSuggestion {
   action: () => void
@@ -27,7 +28,15 @@ export function FloatingAssistant() {
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
+  const [language, setLanguage] = useState<"es" | "en">("es")
   const endRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const sync = () => setLanguage(readErpPreferences().language)
+    sync()
+    window.addEventListener("nexo-preferences-changed", sync)
+    return () => window.removeEventListener("nexo-preferences-changed", sync)
+  }, [])
 
   const go = useCallback(
     (href: string) => () => {
@@ -51,10 +60,11 @@ export function FloatingAssistant() {
         isNexoAdmin: isPlatformAdmin,
         canImport: true,
         canExport: true,
+        language,
       })
       return { from: "assistant", text: reply.text, suggestions: makeSuggestions(reply.suggestions) }
     },
-    [isPlatformAdmin, makeSuggestions, pathname],
+    [isPlatformAdmin, language, makeSuggestions, pathname],
   )
 
   const greeting = useMemo<Message>(() => replyFor("que puedo hacer aqui"), [replyFor])
