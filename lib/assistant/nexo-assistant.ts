@@ -29,6 +29,8 @@ type ScreenKey =
   | "suppliers"
   | "priceLists"
   | "catalog"
+  | "productsPricing"
+  | "inventoryStock"
   | "warehouse"
   | "banking"
   | "accounting"
@@ -60,6 +62,10 @@ const SCREEN_HELP: Record<ScreenKey, string> = {
     "Estás en Listas de Precios. Puedes buscar productos, ordenar por precio, filtrar por marca o familia, comparar menudeo contra mayoreo, exportar la lista o abrir el detalle de un producto.",
   catalog:
     "Estás en Catálogo. Puedes buscar por SKU, producto, marca o familia, revisar presentaciones, precios y abrir el detalle de cada producto.",
+  productsPricing:
+    "Estás en Productos y Precios. Puedes buscar por SKU, producto, familia o aplicación, ver productos sin precio, capturar o importar precios, cambiar entre vista tabla, tarjetas o lista, y exportar el catálogo o la lista de precios.",
+  inventoryStock:
+    "Estás en Inventario y Existencias. Puedes revisar disponible y apartado por bobina, rollo o serie, registrar entradas, salidas, transferencias y ajustes con motivo, ver stock bajo y seguir la trazabilidad de cada movimiento.",
   warehouse:
     "Estás en Almacén. Puedes revisar existencias por almacén, registrar entradas, salidas, transferencias y conteos físicos.",
   banking:
@@ -101,6 +107,10 @@ const SCREEN_HELP_EN: Record<ScreenKey, string> = {
     "You are in Price Lists. You can search products, sort by price, filter by brand or family, compare retail and wholesale, and export the list.",
   catalog:
     "You are in Catalog. You can search by SKU, product, brand or family, and open each product's detail.",
+  productsPricing:
+    "You are in Products and Pricing. You can search by SKU, product, family or application, see products without price, capture or import prices, switch between table, cards or list view, and export the catalog or price list.",
+  inventoryStock:
+    "You are in Inventory and Stock. You can review available and reserved quantities by reel, roll or serial, register receipts, issues, transfers and reasoned adjustments, spot low stock and trace every movement.",
   warehouse:
     "You are in Warehouse. You can review stock by warehouse, register receipts, issues, transfers and physical counts.",
   banking:
@@ -195,6 +205,22 @@ const SCREEN_ACTIONS: Record<ScreenKey, AssistantSuggestion[]> = {
     { label: "Ver listas de precios", href: "/dashboard/listas-precios" },
     { label: "Importar productos", href: "/dashboard/import", permission: "import" },
     { label: "Exportar catálogo", href: "/dashboard/catalogo", permission: "export" },
+  ],
+  productsPricing: [
+    { label: "Ver productos sin precio", href: "/dashboard/productos-precios" },
+    { label: "Ver productos activos", href: "/dashboard/productos-precios" },
+    { label: "Ver lista de precios", href: "/dashboard/productos-precios" },
+    { label: "Importar precios", href: "/dashboard/import?entity=precios", permission: "import" },
+    { label: "Importar productos", href: "/dashboard/import?entity=productos", permission: "import" },
+    { label: "Exportar catálogo", href: "/dashboard/productos-precios", permission: "export" },
+  ],
+  inventoryStock: [
+    { label: "Ver stock bajo", href: "/dashboard/inventario-existencias" },
+    { label: "Ver existencias disponibles", href: "/dashboard/inventario-existencias" },
+    { label: "Registrar entrada o salida", href: "/dashboard/inventario-existencias" },
+    { label: "Ver movimientos y trazabilidad", href: "/dashboard/inventario-existencias" },
+    { label: "Importar inventario inicial", href: "/dashboard/import?entity=inventario-inicial", permission: "import" },
+    { label: "Exportar inventario", href: "/dashboard/inventario-existencias", permission: "export" },
   ],
   warehouse: [
     { label: "Ver existencias", href: "/dashboard/warehouse" },
@@ -295,8 +321,9 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
   const en = context.language === "en"
 
   if (isHelpIntent(query)) return { text: screenHelp(screen, context), suggestions: allowedActions(screen, context) }
-  if (isImportIntent(query)) return permissionReply(context, "Centro de Importación", "/dashboard/import", "import")
+  // Exportar se evalúa antes que importar: "exportar excel/csv" no debe caer en importación.
   if (isExportIntent(query)) return permissionReply(context, "Exportar información", context.pathname, "export")
+  if (isImportIntent(query)) return permissionReply(context, "Centro de Importación", "/dashboard/import", "import")
 
   if (/total|sumar|suma|promedio|cuanto llevo|cuanto suma/.test(query)) {
     return {
@@ -347,6 +374,22 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
     }
   }
 
+  if (/sin precio|sin precios|precio pendiente|precios pendientes|falta precio|faltan precios|capturar precio|actualizar precio/.test(query)) {
+    return {
+      text: en
+        ? "In Products and Pricing use the 'Sin precio' quick filter to see pending SKUs, capture prices row by row or import them from Excel."
+        : "En Productos y Precios usa el filtro rápido 'Sin precio' para ver los SKUs pendientes, captura el precio por fila o impórtalos desde Excel.",
+      suggestions: allowedActions("productsPricing", context),
+    }
+  }
+  if (/stock bajo|bobina|rollo|serie|apartar|apartado|liberar material/.test(query)) {
+    return {
+      text: en
+        ? "In Inventory and Stock you can see low stock, available vs reserved quantities, and trace every reel/roll/serial movement."
+        : "En Inventario y Existencias puedes ver stock bajo, disponible contra apartado, y seguir la trazabilidad de cada bobina, rollo o serie.",
+      suggestions: allowedActions("inventoryStock", context),
+    }
+  }
   if (/factura|cobrar|cobranza|pago|pendiente|saldo/.test(query)) {
     return {
       text: en
@@ -369,6 +412,14 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
         ? "These options help you review inventory, products, expirations and movements."
         : "Estas opciones te ayudan a revisar inventario, productos, existencias, caducidades y movimientos.",
       suggestions: allowedActions("inventory", context),
+    }
+  }
+  if (/cotiza|cotizacion|cotizaciones/.test(query)) {
+    return {
+      text: en
+        ? "These actions help you create and follow up quotes and open opportunities."
+        : "Estas acciones te ayudan a crear y dar seguimiento a cotizaciones y oportunidades abiertas.",
+      suggestions: allowedActions("sales", context),
     }
   }
   if (/venta|pedido|remision|margen|disponibilidad/.test(query)) {
@@ -454,6 +505,8 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
 
 function resolveScreen(pathname: string): ScreenKey {
   if (pathname.startsWith("/admin")) return "admin"
+  if (pathname.startsWith("/dashboard/productos-precios")) return "productsPricing"
+  if (pathname.startsWith("/dashboard/inventario-existencias")) return "inventoryStock"
   if (pathname.startsWith("/dashboard/inventario-lotes")) return "inventoryLots"
   if (pathname.startsWith("/dashboard/ventas") || pathname.startsWith("/dashboard/sales")) return "sales"
   if (pathname.startsWith("/dashboard/facturacion")) return "invoicing"

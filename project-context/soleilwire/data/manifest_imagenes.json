@@ -1,0 +1,114 @@
+[
+  {
+    "id": "SW-REF-001",
+    "file": "imagenes_referencia/SW-REF-001__inicio_portada_inventarios.png",
+    "slug": "inicio_portada_inventarios",
+    "descripcion": "Referencia visual de identidad, encabezado y propuesta de inventarios amplios.",
+    "source_path": "/mnt/data/a874ba3f-1a98-43b3-b7b6-b5d485d98497.png"
+  },
+  {
+    "id": "SW-REF-002",
+    "file": "imagenes_referencia/SW-REF-002__menu_categorias_cables.png",
+    "slug": "menu_categorias_cables",
+    "descripcion": "Referencia de familias/categorías principales de cables.",
+    "source_path": "/mnt/data/711ebfb5-97a0-4113-9c44-e92b8fcd8c9b.png"
+  },
+  {
+    "id": "SW-CAT-ARMADOS",
+    "file": "imagenes_referencia/SW-CAT-ARMADOS__cables_armados.png",
+    "slug": "cables_armados",
+    "descripcion": "Categoría Armados: armadura de aluminio y armadura corrugada soldada.",
+    "source_path": "/mnt/data/4e3dc196-a8ac-423c-bb67-b1e986fe0186.png"
+  },
+  {
+    "id": "SW-CAT-MEDIO-VOLTAJE",
+    "file": "imagenes_referencia/SW-CAT-MEDIO-VOLTAJE__medio_voltaje.png",
+    "slug": "medio_voltaje",
+    "descripcion": "Categoría Medio Voltaje: XLPE y EPR.",
+    "source_path": "/mnt/data/2483213f-d21d-462a-a10d-404b8c6f2e62.png"
+  },
+  {
+    "id": "SW-CAT-MINERIA",
+    "file": "imagenes_referencia/SW-CAT-MINERIA__mineria.png",
+    "slug": "mineria",
+    "descripcion": "Categoría Minería: DLO, G, G-GC, SHD-GC.",
+    "source_path": "/mnt/data/1259923e-9b35-4ef6-ab67-6e69851e2236.png"
+  },
+  {
+    "id": "SW-CAT-CONTROL-POTENCIA",
+    "file": "imagenes_referencia/SW-CAT-CONTROL-POTENCIA__control_potencia_multiconductores.png",
+    "slug": "control_potencia_multiconductores",
+    "descripcion": "Categoría Control/Potencia: cables multiconductores.",
+    "source_path": "/mnt/data/e5cb65b7-ccd2-42af-a260-9336ce90815d.png"
+  },
+  {
+    "id": "SW-CAT-RENOVABLE",
+    "file": "imagenes_referencia/SW-CAT-RENOVABLE__energia_renovable.png",
+    "slug": "energia_renovable",
+    "descripcion": "Categoría Energía Renovable: solar y eólico.",
+    "source_path": "/mnt/data/790ef85a-b415-433e-94d8-8148cd1aeb2d.png"
+  },
+  {
+    "id": "SW-CAT-MONOPOLARES",
+    "file": "imagenes_referencia/SW-CAT-MONOPOLARES__monopolares.png",
+    "slug": "monopolares",
+    "descripcion": "Categoría Monopolares.",
+    "source_path": "/mnt/data/31cac9d6-0641-4a86-87ce-5c0acedd4309.png"
+  },
+  {
+    "id": "SW-CAT-ALTA-TEMP",
+    "file": "imagenes_referencia/SW-CAT-ALTA-TEMP__alta_temperatura.png",
+    "slug": "alta_temperatura",
+    "descripcion": "Categoría Alta Temperatura.",
+    "source_path": "/mnt/data/9a68fd92-2b18-4164-a816-f96e3987a029.png"
+  },
+  {
+    "id": "SW-CAT-IEC",
+    "file": "imagenes_referencia/SW-CAT-IEC__norma_iec.png",
+    "slug": "norma_iec",
+    "descripcion": "Categoría Norma IEC.",
+    "source_path": "/mnt/data/d9ae54dc-e1fc-4e1c-b3df-80f2b2162643.png"
+  },
+  {
+    "id": "SW-CAT-ALUMINIO",
+    "file": "imagenes_referencia/SW-CAT-ALUMINIO__aluminio.png",
+    "slug": "aluminio",
+    "descripcion": "Categoría Aluminio.",
+    "source_path": "/mnt/data/d7afa001-2c40-4ff1-9f4c-2e9c999de5c0.png"
+  },
+  {
+    "id": "SW-CAT-PLANOS",
+    "file": "imagenes_referencia/SW-CAT-PLANOS__planos.png",
+    "slug": "planos",
+    "descripcion": "Categoría Cables Planos.",
+    "source_path": "/mnt/data/d695169f-8db4-4a90-b231-59c3e7ba32d4.png"
+  },
+  {
+    "id": "SW-CAT-INSTRUMENTACION",
+    "file": "imagenes_referencia/SW-CAT-INSTRUMENTACION__instrumentacion.png",
+    "slug": "instrumentacion",
+    "descripcion": "Categoría Instrumentación.",
+    "source_path": "/mnt/data/47d4cb21-ea73-4d09-8e0d-085bba4540a5.png"
+  },
+  {
+    "id": "SW-CAT-FLEXIBLES",
+    "file": "imagenes_referencia/SW-CAT-FLEXIBLES__flexibles.png",
+    "slug": "flexibles",
+    "descripcion": "Categoría Flexibles.",
+    "source_path": "/mnt/data/54f5a943-dab8-4baa-9afe-daf094a81e3f.png"
+  },
+  {
+    "id": "SW-CAT-INDUSTRIALES",
+    "file": "imagenes_referencia/SW-CAT-INDUSTRIALES__industriales.png",
+    "slug": "industriales",
+    "descripcion": "Categoría Industriales.",
+    "source_path": "/mnt/data/fcae7795-3f43-4bc1-879b-213e6c48db16.png"
+  },
+  {
+    "id": "NEXO-UI-TABLE-REFERENCE",
+    "file": "imagenes_referencia/NEXO-UI-TABLE-REFERENCE__nexo_tabla_referencia_acciones.png",
+    "slug": "nexo_tabla_referencia_acciones",
+    "descripcion": "Referencia de tabla Nexo ERP donde faltan filtros, sumas, importación/exportación y ordenamiento.",
+    "source_path": "/mnt/data/79269825-9265-4c97-8110-a6ca14942cbf.png"
+  }
+]

@@ -1,0 +1,4 @@
+| ﻿oportunidad | cliente | contacto | familia_interes | producto_interes | cantidad_estimada | unidad | monto_estimado | etapa | probabilidad | fecha_cierre_estimada | responsable | origen | notas |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| OPP-SW-001 | Cliente ejemplo Minería | Compras | Minería | Cable tipo SHD-GC |  | m |  | Nueva | 20 |  | ventas | Demo | Completar datos reales |
+| OPP-SW-002 | Cliente ejemplo Solar | Ingeniería | Renovable | Cable fotovoltaico PV Wire con UL |  | m |  | Nueva | 20 |  | ventas | Demo | Completar datos reales |

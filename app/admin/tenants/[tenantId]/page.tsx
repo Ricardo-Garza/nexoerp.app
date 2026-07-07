@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { usePlatform } from "@/contexts/platform-context"
 import { getTenant, saveTenant, appendAudit, listAudit } from "@/lib/platform/tenant-store"
 import { MODULE_CATALOG } from "@/lib/platform/modules"
+import { ASSIGNABLE_VERSIONS, LATEST_STABLE_VERSION, getRelease } from "@/lib/platform/versions"
 import { RecordAuditSheet } from "@/components/audit/record-audit-sheet"
 import type { Tenant, ModuleId, AuditRecord } from "@/lib/platform/types"
 
@@ -123,6 +124,7 @@ export default function TenantDetailPage() {
       <Tabs defaultValue="modules">
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="modules">Módulos</TabsTrigger>
+          <TabsTrigger value="version">Versión</TabsTrigger>
           <TabsTrigger value="branding">Diseño</TabsTrigger>
           <TabsTrigger value="fiscal">Fiscal</TabsTrigger>
           <TabsTrigger value="crm">CRM</TabsTrigger>
@@ -164,6 +166,103 @@ export default function TenantDetailPage() {
           </Card>
           <Button onClick={() => persist("tenant.modules.update", `Módulos actualizados (${tenant.modules.length})`)} disabled={saving}>
             <Save className="w-4 h-4 mr-1" /> Guardar módulos
+          </Button>
+        </TabsContent>
+
+        <TabsContent value="version" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Versión del sistema</CardTitle>
+              <CardDescription>
+                Cada empresa puede usar una versión distinta. Cambiar la versión queda registrado en el historial y se
+                puede regresar a una versión anterior (rollback lógico de configuración).
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="space-y-2">
+                  <Label>Versión asignada</Label>
+                  <Select
+                    value={tenant.version}
+                    onValueChange={(value) => {
+                      if (value === tenant.version) return
+                      patch({
+                        version: value,
+                        versionHistory: [
+                          ...(tenant.versionHistory ?? []),
+                          {
+                            version: value,
+                            previousVersion: tenant.version,
+                            at: new Date().toISOString(),
+                            actorEmail: user?.email ?? "operaciones@nexo.com",
+                            note:
+                              value === LATEST_STABLE_VERSION
+                                ? "Actualización a la última versión estable"
+                                : "Cambio de versión manual",
+                          },
+                        ],
+                      })
+                    }}
+                  >
+                    <SelectTrigger className="w-56" data-testid="tenant-version-select">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ASSIGNABLE_VERSIONS.map((v) => (
+                        <SelectItem key={v} value={v}>
+                          v{v}
+                          {v === LATEST_STABLE_VERSION ? " · última estable" : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {tenant.version === LATEST_STABLE_VERSION ? (
+                  <Badge variant="default">Última estable</Badge>
+                ) : (
+                  <Badge variant="outline" className="border-amber-400/60 text-amber-600 dark:text-amber-300">
+                    Versión anterior
+                  </Badge>
+                )}
+              </div>
+              {getRelease(tenant.version) && (
+                <div className="rounded-lg border p-3 text-sm">
+                  <p className="font-medium">{getRelease(tenant.version)?.title}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Publicada el {getRelease(tenant.version)?.date}
+                  </p>
+                </div>
+              )}
+              <div>
+                <p className="text-sm font-medium mb-2">Historial de versiones</p>
+                {(tenant.versionHistory ?? []).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Sin cambios de versión registrados.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {[...(tenant.versionHistory ?? [])].reverse().map((change, i) => (
+                      <div key={`${change.version}-${change.at}-${i}`} className="flex items-start gap-3 rounded-lg border p-3 text-sm">
+                        <Badge variant="outline" className="shrink-0 font-mono text-[10px]">
+                          {change.previousVersion ? `${change.previousVersion} → ${change.version}` : `v${change.version}`}
+                        </Badge>
+                        <div className="min-w-0">
+                          <p>{change.note}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(change.at).toLocaleString("es-MX")} · {change.actorEmail}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          <Button
+            onClick={() => persist("tenant.version.update", `Versión asignada: v${tenant.version}`)}
+            disabled={saving}
+            data-testid="save-tenant-version"
+          >
+            <Save className="w-4 h-4 mr-1" /> Guardar versión
           </Button>
         </TabsContent>
 

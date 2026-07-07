@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useMemo, useState } from "react"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { DataTablePro, type ProColumn } from "@/components/ui/data-table-pro"
 import {
   Dialog,
   DialogContent,
@@ -16,13 +16,12 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Plus, MapPin, Building2, Pencil, Trash2 } from "lucide-react"
+import { Plus, MapPin, Pencil, Trash2 } from "lucide-react"
 import type { Warehouse } from "@/lib/types"
 
 export function WarehousesTab({ warehouseData }: { warehouseData: any }) {
   const { warehouses, almacenesEstadisticas, createWarehouse, updateWarehouse, removeWarehouse, loading } =
     warehouseData
-  const [searchTerm, setSearchTerm] = useState<any>("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingWarehouse, setEditingWarehouse] = useState<Warehouse | null>(null)
 
@@ -39,12 +38,7 @@ export function WarehousesTab({ warehouseData }: { warehouseData: any }) {
     email: "",
   })
 
-  const filteredWarehouses = (almacenesEstadisticas || []).filter(
-    (w: any) =>
-      w.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      w.codigo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      w.ubicacion?.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+  const rows = useMemo<any[]>(() => almacenesEstadisticas || [], [almacenesEstadisticas])
 
   const handleOpenDialog = (warehouse?: Warehouse) => {
     if (warehouse) {
@@ -119,29 +113,77 @@ export function WarehousesTab({ warehouseData }: { warehouseData: any }) {
     }
   }
 
+  const columns = useMemo<ProColumn<any>[]>(
+    () => [
+      {
+        key: "codigo",
+        header: "Código",
+        accessor: (w) => w.codigo ?? "",
+        cell: (w) => <span className="font-medium">{w.codigo}</span>,
+        filterType: "text",
+      },
+      { key: "nombre", header: "Nombre", accessor: (w) => w.nombre ?? "", filterType: "text" },
+      {
+        key: "ubicacion",
+        header: "Ubicación",
+        accessor: (w) => w.ubicacion ?? "",
+        cell: (w) => (
+          <div className="flex items-center gap-1">
+            <MapPin className="w-4 h-4 text-muted-foreground" />
+            {w.ubicacion}
+          </div>
+        ),
+        filterType: "text",
+      },
+      {
+        key: "tipo",
+        header: "Tipo",
+        accessor: (w) => w.tipo ?? "",
+        cell: (w) => <span className="capitalize">{w.tipo}</span>,
+        filterType: "select",
+        filterOptions: [
+          { label: "Principal", value: "principal" },
+          { label: "Sucursal", value: "sucursal" },
+          { label: "Consignación", value: "consignacion" },
+          { label: "Tránsito", value: "transito" },
+        ],
+      },
+      {
+        key: "productosCantidad",
+        header: "Productos",
+        accessor: (w) => w.productosCantidad || 0,
+        numeric: true,
+        align: "right",
+        filterType: "number",
+      },
+      {
+        key: "valorInventario",
+        header: "Valor Inventario",
+        accessor: (w) => w.valorInventario || 0,
+        cell: (w) => <span>${(w.valorInventario || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>,
+        numeric: true,
+        currency: true,
+        align: "right",
+        filterType: "number",
+      },
+      {
+        key: "estado",
+        header: "Estado",
+        accessor: (w) => w.estado ?? "",
+        cell: (w) => <Badge variant={w.estado === "activo" ? "default" : "secondary"}>{w.estado}</Badge>,
+        filterType: "select",
+        filterOptions: [
+          { label: "Activo", value: "activo" },
+          { label: "Inactivo", value: "inactivo" },
+        ],
+      },
+    ],
+    [],
+  )
+
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Catalogo de Almacenes</CardTitle>
-          <Button onClick={() => handleOpenDialog()}>
-            <Plus className="w-4 h-4 mr-2" />
-            Nuevo Almacen
-          </Button>
-        </div>
-        <div className="flex items-center gap-2 mt-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder="Buscar almacenes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         {loading && warehouses.length === 0 ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
@@ -149,66 +191,42 @@ export function WarehousesTab({ warehouseData }: { warehouseData: any }) {
               <p className="text-sm text-muted-foreground">Cargando almacenes...</p>
             </div>
           </div>
-        ) : filteredWarehouses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Building2 className="w-12 h-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
-              {warehouses.length === 0 ? "No hay almacenes registrados" : "No se encontraron almacenes"}
-            </p>
-            {warehouses.length === 0 && (
-              <Button onClick={() => handleOpenDialog()} variant="outline" className="mt-4">
-                <Plus className="w-4 h-4 mr-2" />
-                Crear primer almacen
-              </Button>
-            )}
-          </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Codigo</TableHead>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Ubicacion</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Productos</TableHead>
-                <TableHead>Valor Inventario</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredWarehouses.map((warehouse: any) => (
-                <TableRow key={warehouse.id}>
-                  <TableCell className="font-medium">{warehouse.codigo}</TableCell>
-                  <TableCell>{warehouse.nombre}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4 text-muted-foreground" />
-                      {warehouse.ubicacion}
-                    </div>
-                  </TableCell>
-                  <TableCell className="capitalize">{warehouse.tipo}</TableCell>
-                  <TableCell>{warehouse.productosCantidad || 0}</TableCell>
-                  <TableCell>
-                    ${(warehouse.valorInventario || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={warehouse.estado === "activo" ? "default" : "secondary"}>{warehouse.estado}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(warehouse)}>
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(warehouse.id)}>
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <DataTablePro
+            tableId="warehouse-warehouses"
+            columns={columns}
+            rows={rows}
+            getRowId={(w) => String(w.id ?? w.codigo)}
+            moduleName="Almacén · Almacenes"
+            quickFilters={[
+              { label: "Activos", predicate: (w) => w.estado === "activo" },
+              { label: "Con productos", predicate: (w) => (w.productosCantidad || 0) > 0 },
+            ]}
+            rowActions={(w) => (
+              <div className="flex items-center gap-1 justify-end">
+                <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(w)} title="Editar almacén">
+                  <Pencil className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => handleDelete(w.id)} title="Eliminar almacén">
+                  <Trash2 className="w-4 h-4 text-destructive" />
+                </Button>
+              </div>
+            )}
+            toolbarActions={
+              <Button size="sm" onClick={() => handleOpenDialog()}>
+                <Plus className="w-4 h-4 mr-1" /> Nuevo almacén
+              </Button>
+            }
+            helpItems={[
+              "Busca por código, nombre o ubicación con la barra de búsqueda.",
+              "Filtra por tipo o estado, ordena por valor de inventario y exporta la vista.",
+              "Usa Totales para sumar productos y valor de inventario de lo que estás viendo.",
+              "Crea o edita almacenes con el botón Nuevo almacén y el lápiz de cada fila.",
+            ]}
+            emptyMessage="No hay almacenes registrados."
+            emptyHint="Crea el primer almacén con el botón Nuevo almacén."
+            testId="warehouses-table"
+          />
         )}
       </CardContent>
 

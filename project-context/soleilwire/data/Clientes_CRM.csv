@@ -1,0 +1,3 @@
+﻿tipo,razon_social,nombre_comercial,rfc,contacto_principal,correo,telefono,whatsapp,ciudad,estado,industria,estatus,limite_credito,dias_credito,origen,notas
+Cliente,Cliente ejemplo Minería SA de CV,Cliente ejemplo Minería,,Compras,,,,Monterrey,Nuevo León,Minería,Prospecto,,30,Demo,Reemplazar con datos reales
+Cliente,Cliente ejemplo Energía Renovable SA de CV,Cliente ejemplo Solar,,Ingeniería,,,,San Pedro Garza García,Nuevo León,Energía renovable,Prospecto,,30,Demo,Reemplazar con datos reales

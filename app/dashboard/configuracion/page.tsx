@@ -5,6 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { dec } from "@/lib/domain/shared/decimal"
 import { getCommercialConfig, getDataQualityIssues } from "@/lib/server/queries"
 import { UserPreferencesCard } from "@/components/erp/user-preferences-card"
+import { IndicatorSettingsCard } from "@/components/dashboard/indicator-settings-card"
+import { TenantScope } from "@/components/erp/tenant-scope"
 
 export const dynamic = "force-dynamic"
 
@@ -29,6 +31,8 @@ export default async function ConfiguracionPage() {
 
       <UserPreferencesCard />
 
+      <IndicatorSettingsCard />
+
       <div className="grid gap-4 sm:grid-cols-3">
         <Link href="/dashboard/attributes" className="rounded-lg border p-4 hover:bg-accent transition-colors">
           <p className="font-medium">Atributos de producto</p>
@@ -44,6 +48,7 @@ export default async function ConfiguracionPage() {
         </Link>
       </div>
 
+      <TenantScope tenantId="org-delar">
       <Card>
         <CardHeader>
           <CardTitle>Matriz de discrepancias ({issues.length})</CardTitle>
@@ -126,6 +131,7 @@ export default async function ConfiguracionPage() {
           </dl>
         </CardContent>
       </Card>
+      </TenantScope>
     </div>
   )
 }
