@@ -6,18 +6,18 @@ import type { ModuleDefinition, ModuleId } from "./types"
  * `maturity` evita vender humo: un módulo "planned" se muestra deshabilitado.
  */
 export const MODULE_CATALOG: ModuleDefinition[] = [
-  { id: "dashboard", name: "Dashboard", description: "Panel de indicadores del tenant", href: "/dashboard", group: "principal", maturity: "stable" },
+  { id: "dashboard", name: "Dashboard", description: "Panel de indicadores de la empresa", href: "/dashboard", group: "principal", maturity: "stable" },
   { id: "clients", name: "Clientes / CRM", description: "Cartera de clientes, contactos y saldos", href: "/dashboard/clients", group: "principal", maturity: "stable" },
   { id: "sales", name: "Ventas", description: "Órdenes de venta, cotizaciones y remisiones", href: "/dashboard/ventas/ordenes", group: "principal", maturity: "beta" },
   { id: "invoicing", name: "Facturación", description: "Facturas, complementos y notas de crédito", href: "/dashboard/facturacion", group: "principal", maturity: "beta" },
   { id: "suppliers", name: "Proveedores", description: "Padrón de proveedores y compras", href: "/dashboard/suppliers", group: "principal", maturity: "stable" },
-  { id: "inventory", name: "Inventario", description: "Existencias y movimientos", href: "/dashboard/inventory", group: "principal", maturity: "beta" },
+  { id: "inventory", name: "Inventario y Almacén", description: "Existencias, almacenes, movimientos, transferencias, conteos y reportes", href: "/dashboard/inventory", group: "principal", maturity: "stable", combines: ["inventoryStock", "warehouse"] },
   { id: "catalog", name: "Catálogo", description: "Presentaciones normalizadas por marca/familia", href: "/dashboard/catalogo", group: "principal", maturity: "stable" },
   { id: "priceLists", name: "Listas de Precios", description: "Menudeo, mayoreo y reglas comerciales", href: "/dashboard/listas-precios", group: "principal", maturity: "stable" },
   { id: "productsPricing", name: "Productos y Precios", description: "Catálogo y listas de precios unificados en un solo módulo", href: "/dashboard/productos-precios", group: "principal", maturity: "stable", combines: ["catalog", "priceLists"] },
-  { id: "inventoryStock", name: "Inventario y Existencias", description: "Existencias, bobinas/rollos/series y movimientos unificados", href: "/dashboard/inventario-existencias", group: "principal", maturity: "stable", combines: ["inventory", "lots"] },
+  { id: "inventoryStock", name: "Inventario y Almacén", description: "Existencias, bobinas/rollos/series y movimientos unificados", href: "/dashboard/inventory", group: "principal", maturity: "stable", combines: ["warehouse"] },
   { id: "lots", name: "Inventario por Lote", description: "Trazabilidad FEFO, calidad y caducidades", href: "/dashboard/inventario-lotes", group: "principal", maturity: "stable" },
-  { id: "warehouse", name: "Almacén", description: "Ubicaciones, transferencias y conteos", href: "/dashboard/warehouse", group: "principal", maturity: "beta" },
+  { id: "warehouse", name: "Almacén", description: "Ubicaciones, transferencias y conteos", href: "/dashboard/inventory", group: "principal", maturity: "beta" },
   { id: "pos", name: "Punto de Venta", description: "Ventas de mostrador", href: "/dashboard/punto-venta", group: "principal", maturity: "planned" },
   { id: "banking", name: "Bancos / Tesorería", description: "Cuentas, conciliación y flujo", href: "/dashboard/banking", group: "principal", maturity: "beta" },
   { id: "production", name: "Producción", description: "Órdenes de producción y fórmulas", href: "/dashboard/production", group: "operaciones", maturity: "beta" },
@@ -49,7 +49,6 @@ export const DEFAULT_TENANT_MODULES: ModuleId[] = [
   "catalog",
   "priceLists",
   "lots",
-  "warehouse",
   "banking",
   "service",
   "crm",
@@ -64,7 +63,9 @@ export const COMBINED_MODULE_IDS: ModuleId[] = MODULE_CATALOG.filter((m) => m.co
  * Excluye los módulos combinados: una empresa los activa explícitamente y
  * entonces sustituyen a los módulos que cubren.
  */
-export const ALL_MODULE_IDS: ModuleId[] = MODULE_CATALOG.filter((m) => !m.combines?.length).map((m) => m.id)
+export const ALL_MODULE_IDS: ModuleId[] = MODULE_CATALOG.filter(
+  (m) => !["productsPricing", "inventoryStock", "warehouse"].includes(m.id),
+).map((m) => m.id)
 
 /**
  * Módulos para una empresa comercial / de distribución (plantilla del giro
@@ -77,8 +78,7 @@ export const DISTRIBUTION_TENANT_MODULES: ModuleId[] = [
   "sales",
   "invoicing",
   "productsPricing",
-  "inventoryStock",
-  "warehouse",
+  "inventory",
   "suppliers",
   "banking",
   "accounting",

@@ -65,9 +65,9 @@ const SCREEN_HELP: Record<ScreenKey, string> = {
   productsPricing:
     "Estás en Productos y Precios. Puedes buscar por SKU, producto, familia o aplicación, ver productos sin precio, capturar o importar precios, cambiar entre vista tabla, tarjetas o lista, y exportar el catálogo o la lista de precios.",
   inventoryStock:
-    "Estás en Inventario y Existencias. Puedes revisar disponible y apartado por bobina, rollo o serie, registrar entradas, salidas, transferencias y ajustes con motivo, ver stock bajo y seguir la trazabilidad de cada movimiento.",
+    "Estás en Inventario y Almacén. Puedes revisar existencias, almacenes, movimientos, transferencias, conteos físicos, reportes, stock bajo y trazabilidad.",
   warehouse:
-    "Estás en Almacén. Puedes revisar existencias por almacén, registrar entradas, salidas, transferencias y conteos físicos.",
+    "Estás en Inventario y Almacén. Puedes revisar existencias por almacén, registrar entradas, salidas, transferencias, conteos físicos y reportes.",
   banking:
     "Estás en Bancos. Puedes revisar cuentas, movimientos, ingresos y egresos, conciliar y exportar el estado de cuenta.",
   accounting:
@@ -110,9 +110,9 @@ const SCREEN_HELP_EN: Record<ScreenKey, string> = {
   productsPricing:
     "You are in Products and Pricing. You can search by SKU, product, family or application, see products without price, capture or import prices, switch between table, cards or list view, and export the catalog or price list.",
   inventoryStock:
-    "You are in Inventory and Stock. You can review available and reserved quantities by reel, roll or serial, register receipts, issues, transfers and reasoned adjustments, spot low stock and trace every movement.",
+    "You are in Inventory and Warehouse. You can review stock, warehouses, movements, transfers, physical counts, reports, low stock and traceability.",
   warehouse:
-    "You are in Warehouse. You can review stock by warehouse, register receipts, issues, transfers and physical counts.",
+    "You are in Inventory and Warehouse. You can review stock by warehouse, register receipts, issues, transfers, physical counts and reports.",
   banking:
     "You are in Banking. You can review accounts, movements, income and expenses, reconcile and export the statement.",
   accounting:
@@ -165,8 +165,8 @@ const SCREEN_ACTIONS: Record<ScreenKey, AssistantSuggestion[]> = {
     { label: "Buscar producto", href: "/dashboard/inventory" },
     { label: "Ver lotes", href: "/dashboard/inventario-lotes" },
     { label: "Ver caducidades", href: "/dashboard/inventario-lotes" },
-    { label: "Ajustar inventario", href: "/dashboard/warehouse" },
-    { label: "Transferir almacén", href: "/dashboard/warehouse" },
+    { label: "Ajustar inventario", href: "/dashboard/inventory" },
+    { label: "Transferir almacén", href: "/dashboard/inventory" },
     { label: "Importar inventario", href: "/dashboard/import", permission: "import" },
     { label: "Exportar inventario", href: "/dashboard/inventory", permission: "export" },
   ],
@@ -215,18 +215,18 @@ const SCREEN_ACTIONS: Record<ScreenKey, AssistantSuggestion[]> = {
     { label: "Exportar catálogo", href: "/dashboard/productos-precios", permission: "export" },
   ],
   inventoryStock: [
-    { label: "Ver stock bajo", href: "/dashboard/inventario-existencias" },
-    { label: "Ver existencias disponibles", href: "/dashboard/inventario-existencias" },
-    { label: "Registrar entrada o salida", href: "/dashboard/inventario-existencias" },
-    { label: "Ver movimientos y trazabilidad", href: "/dashboard/inventario-existencias" },
+    { label: "Ver stock bajo", href: "/dashboard/inventory" },
+    { label: "Ver existencias disponibles", href: "/dashboard/inventory" },
+    { label: "Registrar entrada o salida", href: "/dashboard/inventory" },
+    { label: "Ver movimientos y trazabilidad", href: "/dashboard/inventory" },
     { label: "Importar inventario inicial", href: "/dashboard/import?entity=inventario-inicial", permission: "import" },
-    { label: "Exportar inventario", href: "/dashboard/inventario-existencias", permission: "export" },
+    { label: "Exportar inventario", href: "/dashboard/inventory", permission: "export" },
   ],
   warehouse: [
-    { label: "Ver existencias", href: "/dashboard/warehouse" },
-    { label: "Registrar entrada o salida", href: "/dashboard/warehouse" },
-    { label: "Transferir entre almacenes", href: "/dashboard/warehouse" },
-    { label: "Conteo físico", href: "/dashboard/warehouse" },
+    { label: "Ver existencias", href: "/dashboard/inventory" },
+    { label: "Registrar entrada o salida", href: "/dashboard/inventory" },
+    { label: "Transferir entre almacenes", href: "/dashboard/inventory" },
+    { label: "Conteo físico", href: "/dashboard/inventory" },
     { label: "Importar existencias", href: "/dashboard/import", permission: "import" },
   ],
   banking: [
@@ -385,8 +385,8 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
   if (/stock bajo|bobina|rollo|serie|apartar|apartado|liberar material/.test(query)) {
     return {
       text: en
-        ? "In Inventory and Stock you can see low stock, available vs reserved quantities, and trace every reel/roll/serial movement."
-        : "En Inventario y Existencias puedes ver stock bajo, disponible contra apartado, y seguir la trazabilidad de cada bobina, rollo o serie.",
+        ? "In Inventory and Warehouse you can see low stock, available vs reserved quantities, movements, transfers and physical counts."
+        : "En Inventario y Almacén puedes ver stock bajo, disponible contra apartado, movimientos, transferencias y conteos físicos.",
       suggestions: allowedActions("inventoryStock", context),
     }
   }

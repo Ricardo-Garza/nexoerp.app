@@ -33,7 +33,7 @@ const TENANT_TEMPLATES: { value: TenantTemplate; label: string; description: str
   {
     value: "distribucion-cables",
     label: "Comercial / Distribución",
-    description: "Productos y Precios e Inventario y Existencias unificados; sin producción ni nómina",
+    description: "Productos y Precios e Inventario y Almacén unificados; sin producción ni nómina",
   },
   { value: "demo", label: "Demo / Prototipo", description: "Empresa de demostración con módulos estándar" },
 ]

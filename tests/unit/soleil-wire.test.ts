@@ -89,7 +89,7 @@ describe("Empresa Soleil Wire — configuración base", () => {
   it("activa módulos comerciales y apaga producción, nómina y mantenimiento", () => {
     const modules = soleil?.modules ?? []
     expect(modules).toContain("productsPricing")
-    expect(modules).toContain("inventoryStock")
+    expect(modules).toContain("inventory")
     expect(modules).toContain("crm")
     expect(modules).toContain("imports")
     expect(modules).toContain("accounting")
@@ -133,11 +133,11 @@ describe("Menú por empresa y módulos combinados", () => {
   it("los módulos combinados sustituyen a los que cubren en Soleil Wire", () => {
     const effective = resolveTenantModules(soleil)
     expect(effective).toContain("productsPricing")
-    expect(effective).toContain("inventoryStock")
+    expect(effective).toContain("inventory")
     expect(effective).not.toContain("catalog")
     expect(effective).not.toContain("priceLists")
-    expect(effective).not.toContain("inventory")
-    expect(effective).not.toContain("lots")
+    expect(effective).not.toContain("inventoryStock")
+    expect(effective).not.toContain("warehouse")
   })
 
   it("DELAR conserva su menú clásico sin módulos combinados", () => {
@@ -168,8 +168,7 @@ describe("Menú por empresa y módulos combinados", () => {
       "Ventas",
       "Facturación y Remisiones",
       "Productos y Precios",
-      "Inventario y Existencias",
-      "Almacén",
+      "Inventario y Almacén",
       "Proveedores / Compras",
       "Bancos / Tesorería",
     ])
@@ -237,7 +236,7 @@ describe("Catálogo Soleil Wire — datos sin inventos", () => {
   })
 })
 
-describe("Inventario y Existencias — posiciones por bobina/serie", () => {
+describe("Inventario y Almacén — posiciones por bobina/serie", () => {
   it("aplica entradas, salidas, apartados, liberaciones y transferencias", () => {
     const positions = buildStockPositions(
       [
@@ -434,14 +433,14 @@ describe("Asistente — módulos combinados y lenguaje informal", () => {
     expect(reply.suggestions.some((s) => s.href.includes("productos-precios"))).toBe(true)
   })
 
-  it("entiende 'stock bajo' y lleva a Inventario y Existencias", () => {
+  it("entiende 'stock bajo' y lleva a Inventario y Almacén", () => {
     const reply = buildAssistantReply({ ...base, input: "stock bajo" })
-    expect(reply.suggestions.some((s) => s.href.includes("inventario-existencias"))).toBe(true)
+    expect(reply.suggestions.some((s) => s.href.includes("inventory"))).toBe(true)
   })
 
   it("entiende 'bobina' como trazabilidad de inventario", () => {
     const reply = buildAssistantReply({ ...base, input: "donde veo la bobina BOB-0001" })
-    expect(reply.suggestions.some((s) => s.href.includes("inventario-existencias"))).toBe(true)
+    expect(reply.suggestions.some((s) => s.href.includes("inventory"))).toBe(true)
   })
 
   it("responde sin romperse a toda la lista de frases mal escritas", () => {

@@ -161,7 +161,7 @@ export function TransfersTab({ warehouseData }: { warehouseData: any }) {
           columns={columns}
           rows={rows}
           getRowId={(t) => String(t.id ?? t.folioTransferencia)}
-          moduleName="Almacén · Transferencias"
+          moduleName="Inventario y Almacén · Transferencias"
           quickFilters={[
             { label: "Solicitadas", predicate: (t) => t.estado === "solicitada" },
             { label: "En tránsito", predicate: (t) => t.estado === "en_transito" },
