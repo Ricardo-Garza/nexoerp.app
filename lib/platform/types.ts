@@ -18,6 +18,8 @@ export type ModuleId =
   | "inventory"
   | "catalog"
   | "priceLists"
+  | "productsPricing"
+  | "inventoryStock"
   | "lots"
   | "warehouse"
   | "pos"
@@ -30,6 +32,8 @@ export type ModuleId =
   | "bi"
   | "crm"
   | "imports"
+  | "webMobile"
+  | "ecommerce"
 
 export interface ModuleDefinition {
   id: ModuleId
@@ -41,7 +45,32 @@ export interface ModuleDefinition {
   group: "principal" | "operaciones" | "administracion" | "analitica" | "expansion"
   /** Estado de madurez para no vender humo (§6 del prompt de rescate) */
   maturity: "stable" | "beta" | "planned"
+  /**
+   * Módulos base que este módulo combinado reemplaza en el menú (p. ej.
+   * "Productos y Precios" cubre catálogo + listas de precios). Un tenant con
+   * el combinado activo no muestra los módulos cubiertos por separado.
+   */
+  combines?: ModuleId[]
 }
+
+/** Indicadores del dashboard que cada empresa puede activar y ordenar. */
+export type DashboardIndicatorId =
+  | "ventasMes"
+  | "ventasPorCobrar"
+  | "cotizacionesAbiertas"
+  | "oportunidadesCrm"
+  | "margenBruto"
+  | "productosSinPrecio"
+  | "stockBajo"
+  | "inventarioDisponible"
+  | "pedidosPendientes"
+  | "facturasPendientes"
+  | "cobranzaVencida"
+  | "movimientosBancarios"
+  | "topProductos"
+  | "topClientes"
+  | "actividadComercial"
+  | "alertas"
 
 export type TenantStatus = "active" | "trial" | "suspended" | "prospect"
 
@@ -69,6 +98,10 @@ export interface TenantUiConfig {
   tableDensity: ErpTableDensity
   moduleColumns: Record<string, string[]>
   sharedViewVariants: Record<string, string[]>
+  /** Etiquetas de menú propias de la empresa (p. ej. "Proveedores / Compras"). */
+  moduleLabels?: Partial<Record<ModuleId, string>>
+  /** Indicadores del dashboard activos, en el orden elegido por la empresa. */
+  dashboardIndicators?: DashboardIndicatorId[]
 }
 
 export interface TenantFiscal {
@@ -78,6 +111,18 @@ export interface TenantFiscal {
   address: string
   /** Adaptador de timbrado: mock hasta contratar PAC (§14) */
   pac: "mock" | "configured"
+}
+
+/** Datos de contacto comercial de la empresa (editables). */
+export interface TenantContact {
+  email: string
+  phone: string
+  country: string
+  state: string
+  /** Giro / actividad principal, en lenguaje del cliente. */
+  businessLine: string
+  /** Tipo de operación: comercial, distribución, manufactura, servicios… */
+  operationType: string
 }
 
 export interface TenantCrmConfig {
@@ -98,15 +143,32 @@ export interface TenantAiConfig {
   hasServerKey: boolean
 }
 
+/** Cambio de versión aplicado a una empresa (historial y rollback lógico). */
+export interface TenantVersionChange {
+  version: string
+  previousVersion: string | null
+  at: string
+  actorEmail: string
+  note: string
+}
+
+/** Plantilla/giro usado al crear la empresa (define módulos y menú inicial). */
+export type TenantTemplate = "general" | "alimentos" | "distribucion-cables" | "demo"
+
 export interface Tenant {
   id: string
   name: string
   slug: string
   status: TenantStatus
   version: string
+  /** Historial de cambios de versión (el último es el vigente). */
+  versionHistory?: TenantVersionChange[]
+  /** Plantilla/giro con el que se creó la empresa. */
+  template?: TenantTemplate
   branding: TenantBranding
   /** Módulos activos por tenant; el menú del tenant respeta esto */
   modules: ModuleId[]
+  contact?: TenantContact
   fiscal: TenantFiscal
   crm: TenantCrmConfig
   ai: TenantAiConfig

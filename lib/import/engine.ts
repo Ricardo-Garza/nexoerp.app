@@ -51,14 +51,26 @@ export async function parseFile(file: File): Promise<ParsedFile> {
   return { headers, rows }
 }
 
-/** Auto-mapea encabezados del archivo a los campos de la plantilla por nombre/alias. */
+/**
+ * Auto-mapea encabezados del archivo a los campos de la plantilla.
+ * La prioridad es del candidato (clave exacta > etiqueta > alias en orden),
+ * no del orden de columnas del archivo, y cada encabezado se asigna a un solo
+ * campo (evita que "descripcion" le robe la columna a "producto").
+ */
 export function autoMap(template: EntityTemplate, headers: string[]): Record<string, string> {
   const mapping: Record<string, string> = {}
   const normHeaders = headers.map((h) => ({ raw: h, norm: normalizeHeader(h) }))
+  const claimed = new Set<string>()
   for (const field of template.fields) {
     const candidates = [field.key, field.label, ...(field.aliases ?? [])].map(normalizeHeader)
-    const hit = normHeaders.find((h) => candidates.includes(h.norm))
-    if (hit) mapping[field.key] = hit.raw
+    for (const candidate of candidates) {
+      const hit = normHeaders.find((h) => !claimed.has(h.raw) && h.norm === candidate)
+      if (hit) {
+        mapping[field.key] = hit.raw
+        claimed.add(hit.raw)
+        break
+      }
+    }
   }
   return mapping
 }

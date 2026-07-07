@@ -60,7 +60,6 @@ export function FormDialog({
   }
 
   useEffect(() => {
-    console.log("[v0] FormDialog opened, initialValues:", initialValues)
     if (open) {
       // Create safe defaults for all fields
       const safeDefaults: Record<string, any> = {}
@@ -68,7 +67,6 @@ export function FormDialog({
         const initialValue = initialValues?.[field.name]
         safeDefaults[field.name] = initialValue ?? ""
       })
-      console.log("[v0] Setting safe defaults:", safeDefaults)
       if (!areValuesEqual(values, safeDefaults)) {
         setValues(safeDefaults)
       }
@@ -77,14 +75,12 @@ export function FormDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("[v0] Form submit started with values:", values)
     setLoading(true)
     try {
       await onSubmit(values)
-      console.log("[v0] Form submit successful")
       // Don't clear values here, let the parent control closing
     } catch (error) {
-      console.error("[v0] Form submission error:", error)
+      console.error("Error al guardar el formulario:", error)
     } finally {
       setLoading(false)
     }
@@ -92,7 +88,6 @@ export function FormDialog({
 
   useEffect(() => {
     if (!open) {
-      console.log("[v0] Dialog closed, clearing values")
       setValues({})
     }
   }, [open])

@@ -17,13 +17,26 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { DataTablePro, type ProColumn } from "@/components/ui/data-table-pro"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, LogIn, Building2 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { usePlatform } from "@/contexts/platform-context"
 import { listTenants, saveTenant, makeTenantId, appendAudit } from "@/lib/platform/tenant-store"
-import { DEFAULT_TENANT_MODULES } from "@/lib/platform/modules"
+import { DEFAULT_TENANT_MODULES, DISTRIBUTION_TENANT_MODULES } from "@/lib/platform/modules"
 import { DEFAULT_ERP_PREFERENCES } from "@/lib/platform/preferences"
-import type { Tenant } from "@/lib/platform/types"
+import { LATEST_STABLE_VERSION } from "@/lib/platform/versions"
+import type { Tenant, TenantTemplate } from "@/lib/platform/types"
+
+/** Plantillas de giro disponibles al crear una empresa. */
+const TENANT_TEMPLATES: { value: TenantTemplate; label: string; description: string }[] = [
+  { value: "general", label: "General", description: "Módulos estándar: ventas, clientes, inventario, catálogo" },
+  {
+    value: "distribucion-cables",
+    label: "Comercial / Distribución",
+    description: "Productos y Precios e Inventario y Existencias unificados; sin producción ni nómina",
+  },
+  { value: "demo", label: "Demo / Prototipo", description: "Empresa de demostración con módulos estándar" },
+]
 
 const statusLabel: Record<Tenant["status"], string> = {
   active: "Activa",
@@ -40,6 +53,7 @@ export default function TenantsPage() {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState("")
   const [rfc, setRfc] = useState("")
+  const [template, setTemplate] = useState<TenantTemplate>("general")
   const [creating, setCreating] = useState(false)
 
   async function refresh() {
@@ -55,12 +69,23 @@ export default function TenantsPage() {
     const id = makeTenantId(name)
     const nowIso = new Date().toISOString()
     const trimmedName = name.trim()
+    const modules = template === "distribucion-cables" ? DISTRIBUTION_TENANT_MODULES : DEFAULT_TENANT_MODULES
     const tenant: Tenant = {
       id,
       name: trimmedName,
       slug: id.replace(/^org-/, ""),
-      status: "trial",
-      version: "0.1.0",
+      status: template === "demo" ? "trial" : "active",
+      version: LATEST_STABLE_VERSION,
+      versionHistory: [
+        {
+          version: LATEST_STABLE_VERSION,
+          previousVersion: null,
+          at: nowIso,
+          actorEmail: user?.email ?? "operaciones@nexo.com",
+          note: "Alta de la empresa con la última versión estable",
+        },
+      ],
+      template,
       branding: {
         logoText: trimmedName,
         logoUrl: "/Logo Nexo ERP.svg",
@@ -68,13 +93,13 @@ export default function TenantsPage() {
         primaryColor: "#06b6d4",
         theme: "dark",
       },
-      modules: DEFAULT_TENANT_MODULES,
+      modules,
       fiscal: { legalName: trimmedName, rfc: rfc.trim() || "XAXX010101000", regime: "601", address: "", pac: "mock" },
       crm: { enabled: false, baseUrl: "https://crm-momentum.vercel.app", mode: "sandbox", masterSource: "nexo", modules: [] },
       ai: { enabled: false, provider: "none", model: "", monthlyBudgetUsd: 0, hasServerKey: false },
       ui: {
         preferences: DEFAULT_ERP_PREFERENCES,
-        visibleModules: DEFAULT_TENANT_MODULES,
+        visibleModules: modules,
         menuMode: DEFAULT_ERP_PREFERENCES.menuMode,
         tableDensity: DEFAULT_ERP_PREFERENCES.tableDensity,
         moduleColumns: {},
@@ -186,6 +211,24 @@ export default function TenantsPage() {
               <div className="space-y-2">
                 <Label htmlFor="t-rfc">RFC (opcional)</Label>
                 <Input id="t-rfc" value={rfc} onChange={(e) => setRfc(e.target.value)} placeholder="XAXX010101000" />
+              </div>
+              <div className="space-y-2">
+                <Label>Plantilla / giro</Label>
+                <Select value={template} onValueChange={(v) => setTemplate(v as TenantTemplate)}>
+                  <SelectTrigger data-testid="tenant-template-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TENANT_TEMPLATES.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {TENANT_TEMPLATES.find((t) => t.value === template)?.description}
+                </p>
               </div>
             </div>
             <DialogFooter>

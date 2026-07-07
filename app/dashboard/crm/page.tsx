@@ -16,9 +16,11 @@ import {
   Settings,
 } from "lucide-react"
 import { usePlatform } from "@/contexts/platform-context"
-import { getTenant } from "@/lib/platform/tenant-store"
+import { useAuth } from "@/hooks/use-auth"
+import { getTenant, appendAudit } from "@/lib/platform/tenant-store"
 import { MockMomentumAdapter } from "@/lib/integrations/crm/mock-adapter"
 import { CRM_ENTITY_MAP } from "@/lib/integrations/crm/entity-mapping"
+import { SOLEIL_TENANT_ID, getSoleilClients } from "@/lib/domain/soleilwire"
 import type { Tenant } from "@/lib/platform/types"
 import type { SyncSummary } from "@/lib/integrations/crm/types"
 
@@ -41,7 +43,8 @@ const directionLabel: Record<string, string> = {
 
 export default function CrmPage() {
   const router = useRouter()
-  const { activeTenantId } = usePlatform()
+  const { activeTenantId, isPlatformAdmin } = usePlatform()
+  const { user } = useAuth()
   const [tenant, setTenant] = useState<Tenant | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [log, setLog] = useState<SyncLogEntry[]>([])
@@ -59,11 +62,22 @@ export default function CrmPage() {
   async function runTestSync() {
     setSyncing(true)
     try {
-      const adapter = new MockMomentumAdapter([
-        { name: "Restaurante El Fogón", email: "compras@elfogon.mx", company: "El Fogón SA", temperature: "hot", score: 85 },
-        { name: "Abarrotes La Moderna", email: "pedidos@lamoderna.mx", company: "La Moderna", temperature: "warm", score: 60 },
-        { name: "Cocina Norteña", email: "info@nortena.mx", company: "Norteña", temperature: "cold", score: 30 },
-      ])
+      // Contactos ficticios acordes al giro de la empresa activa (modo de prueba).
+      const sandboxContacts =
+        activeTenantId === SOLEIL_TENANT_ID
+          ? getSoleilClients().map((c, i) => ({
+              name: c.contactoPrincipal ?? c.nombreComercial ?? `Contacto ${i + 1}`,
+              email: c.correo ?? `contacto${i + 1}@ejemplo.mx`,
+              company: c.nombreComercial ?? c.razonSocial ?? "Cliente demo",
+              temperature: "warm" as const,
+              score: 50,
+            }))
+          : [
+              { name: "Restaurante El Fogón", email: "compras@elfogon.mx", company: "El Fogón SA", temperature: "hot" as const, score: 85 },
+              { name: "Abarrotes La Moderna", email: "pedidos@lamoderna.mx", company: "La Moderna", temperature: "warm" as const, score: 60 },
+              { name: "Cocina Norteña", email: "info@nortena.mx", company: "Norteña", temperature: "cold" as const, score: 30 },
+            ]
+      const adapter = new MockMomentumAdapter(sandboxContacts)
       const contacts = await adapter.listContacts()
       const summary: SyncSummary = {
         pulled: contacts.length,
@@ -77,6 +91,19 @@ export default function CrmPage() {
       setLog(next)
       if (typeof window !== "undefined")
         window.localStorage.setItem(`nexo_crm_log_${activeTenantId}`, JSON.stringify(next))
+      // Trazabilidad: la sincronización queda en la auditoría de la empresa.
+      await appendAudit({
+        tenantId: activeTenantId,
+        actorEmail: user?.email ?? "usuario@empresa",
+        actorRole: "usuario",
+        action: "crm.sync.test",
+        entityType: "crm",
+        entityId: "momentum-sandbox",
+        summary: `Sincronización de prueba CRM: ${summary.pulled} recibidos, ${summary.created} creados`,
+        before: null,
+        after: { ...summary },
+        source: "integration",
+      })
       toast.success(`Sincronización de prueba: ${summary.pulled} contactos`, {
         description: `${summary.created} creados, ${summary.deduplicated} duplicados`,
       })
@@ -118,11 +145,15 @@ export default function CrmPage() {
         <Card className="border-amber-500/40 bg-amber-500/5">
           <CardContent className="py-4 flex items-center justify-between flex-wrap gap-3">
             <p className="text-sm">
-              El CRM está deshabilitado para esta empresa. Actívalo desde Administración Nexo para operar la sincronización.
+              {isPlatformAdmin
+                ? "El CRM está deshabilitado para esta empresa. Actívalo desde Administración Nexo para operar la sincronización."
+                : "El CRM está deshabilitado para esta empresa. Contacta a soporte de Nexo si lo necesitas."}
             </p>
-            <Button size="sm" variant="outline" onClick={() => router.push(`/admin/tenants/${activeTenantId}`)}>
-              <Settings className="w-4 h-4 mr-1" /> Configurar CRM
-            </Button>
+            {isPlatformAdmin && (
+              <Button size="sm" variant="outline" onClick={() => router.push(`/admin/tenants/${activeTenantId}`)}>
+                <Settings className="w-4 h-4 mr-1" /> Configurar CRM
+              </Button>
+            )}
           </CardContent>
         </Card>
       )}

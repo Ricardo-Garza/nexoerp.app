@@ -23,9 +23,6 @@ const tabs = [
 export default function BusinessIntelligencePage() {
   const { user, loading: authLoading } = useAuth()
   const companyId = user?.companyId || ""
-  const userId = user?.uid || ""
-
-  console.log("[v0] BusinessIntelligence - companyId:", companyId, "userId:", userId)
 
   const [activeTab, setActiveTab] = useState("dashboards")
 
@@ -69,12 +66,8 @@ export default function BusinessIntelligencePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">
-              Para usar Business Intelligence, necesitas estar asociado a una empresa.
-            </p>
-            <p className="text-sm text-muted-foreground">
-              CompanyId: {companyId || "No disponible"}
-              <br />
-              UserId: {userId}
+              Para usar Reportes / BI necesitas tener una empresa activa. Selecciona tu empresa o pide a soporte que
+              revise tu cuenta.
             </p>
             <Button onClick={() => window.location.reload()} className="w-full">
               Recargar página

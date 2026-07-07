@@ -3,32 +3,9 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Rocket, CheckCircle2 } from "lucide-react"
-import type { ReleaseNote } from "@/lib/platform/types"
+import { PLATFORM_RELEASES } from "@/lib/platform/versions"
 
-const RELEASES: ReleaseNote[] = [
-  {
-    version: "0.3.0",
-    date: "2026-07-06",
-    title: "Administración Nexo, Firebase real y CRM integrado",
-    environment: "production",
-    highlights: [
-      "Administración Nexo para operaciones@nexo.com",
-      "Persistencia real en Firestore con aislamiento por empresa",
-      "Centro de Importación masiva con plantillas, validación y prueba previa",
-      "Tablas empresariales con filtros, sumas, columnas, exportación y acciones masivas",
-      "CRM Momentum integrado por empresa: abrir, regresar y sincronizar en modo de prueba",
-      "Asistente flotante y auditoría visible por registro",
-      "Reglas de Firestore con aislamiento por empresa",
-    ],
-  },
-  {
-    version: "0.2.0",
-    date: "2026-07-03",
-    title: "Dominio DELAR, tema oscuro y CRM en modo de prueba",
-    environment: "production",
-    highlights: ["Dominio food-service", "0 errores TypeScript", "44 unitarias + 14 E2E"],
-  },
-]
+const RELEASES = PLATFORM_RELEASES
 
 export default function ReleasesPage() {
   return (
