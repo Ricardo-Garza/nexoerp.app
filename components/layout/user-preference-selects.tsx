@@ -16,7 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { type ErpLanguage, type ErpTheme } from "@/lib/platform/preferences"
+import { normalizeLocale, type ErpLanguage, type ErpTheme } from "@/lib/platform/preferences"
 import { readErpPreferences, writeErpPreferences } from "@/lib/platform/user-preferences-storage"
 import { cn } from "@/lib/utils"
 
@@ -31,7 +31,9 @@ export function UserPreferenceSelects({ compact = false, className }: UserPrefer
 
   useEffect(() => {
     if (typeof window === "undefined") return
-    setLanguage(readErpPreferences().language)
+    const nextLanguage = normalizeLocale(readErpPreferences().language || navigator.language)
+    setLanguage(nextLanguage)
+    document.documentElement.lang = nextLanguage
   }, [])
 
   function changeLanguage(value: ErpLanguage) {
@@ -44,10 +46,16 @@ export function UserPreferenceSelects({ compact = false, className }: UserPrefer
 
   return (
     <TooltipProvider>
-      <div className={cn("flex items-center gap-3", compact && "flex-col items-stretch", className)}>
+      <div
+        className={cn(
+          "flex items-center gap-3 overflow-visible",
+          compact && "flex-col items-stretch",
+          className,
+        )}
+      >
         <Tooltip>
           <TooltipTrigger asChild>
-            <div>
+            <div className="shrink-0">
               <Select value={language} onValueChange={(value) => changeLanguage(value as ErpLanguage)}>
                 <SelectTrigger
                   className={cn("h-10", compact ? "w-full" : "w-[142px]")}
@@ -68,7 +76,7 @@ export function UserPreferenceSelects({ compact = false, className }: UserPrefer
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <div>
+            <div className="shrink-0">
               <Select value={themeValue} onValueChange={(value) => setTheme(value)}>
                 <SelectTrigger
                   className={cn("h-10", compact ? "w-full" : "w-[142px]")}

@@ -67,7 +67,7 @@ const SCREEN_HELP: Record<ScreenKey, string> = {
   accounting:
     "Estás en Contabilidad. Puedes revisar el catálogo de cuentas, registrar pólizas, ver debe y haber, y cargar tu catálogo desde Excel.",
   payroll:
-    "Estás en Nómina y Recursos Humanos. Puedes revisar empleados, incidencias, periodos de nómina, importar empleados y exportar reportes.",
+    "Estás en Nómina y Recursos Humanos. Puedes revisar empleados, incidencias, periodos de nómina, vacaciones, importar empleados y exportar reportes.",
   production:
     "Estás en Producción. Puedes crear órdenes de producción, reservar materiales, registrar producción terminada y revisar el avance.",
   maintenance:
@@ -108,7 +108,7 @@ const SCREEN_HELP_EN: Record<ScreenKey, string> = {
   accounting:
     "You are in Accounting. You can review the chart of accounts, register journal entries, view debits and credits, and import your chart from Excel.",
   payroll:
-    "You are in Payroll and HR. You can review employees, incidents, payroll periods, import employees and export reports.",
+    "You are in Payroll and HR. You can review employees, incidents, payroll periods, vacations, import employees and export reports.",
   production:
     "You are in Production. You can create production orders, reserve materials, register finished production and track progress.",
   maintenance:
@@ -301,8 +301,16 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
   if (/total|sumar|suma|promedio|cuanto llevo|cuanto suma/.test(query)) {
     return {
       text: en
-        ? "Use the Totals (Σ) button on the table toolbar: it shows sum, average, minimum and maximum of what you are viewing, respecting your filters."
-        : "Usa el botón Totales (Σ) en la barra de la tabla: muestra suma, promedio, mínimo y máximo de lo que estás viendo, respetando tus filtros.",
+        ? "Use the Totals button on the table toolbar. It shows sum, average, minimum and maximum for the current view."
+        : "Usa el botón Totales en la barra de la tabla. Ahí ves suma, promedio, mínimo y máximo de lo que estás viendo.",
+      suggestions: allowedActions(screen, context).slice(0, 3),
+    }
+  }
+  if (/ordenar|orden|ascendente|descendente|mayor a menor|menor a mayor|mas reciente|mas antiguo/.test(query)) {
+    return {
+      text: en
+        ? "Use the column header or the column menu to sort. For numbers you can choose lower to higher or higher to lower, and for dates older to newer or newer to older."
+        : "Usa el encabezado o el menú de la columna para ordenar. En números puedes elegir menor a mayor o mayor a menor, y en fechas más antiguo o más reciente.",
       suggestions: allowedActions(screen, context).slice(0, 3),
     }
   }
@@ -310,7 +318,7 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
     return {
       text: en
         ? "Open Filters on the table toolbar. You can combine columns, use date ranges like Today, This week or This month, and clear everything with one click."
-        : "Abre Filtros en la barra de la tabla. Puedes combinar columnas, usar rangos de fecha como Hoy, Esta semana o Este mes, y limpiar todo con un clic.",
+        : "Abre Filtros en la barra de la tabla. Puedes combinar columnas, usar Hoy, Esta semana, Este mes o un rango personalizado, y limpiar todo con un clic.",
       suggestions: allowedActions(screen, context).slice(0, 3),
     }
   }
@@ -318,7 +326,7 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
     return {
       text: en
         ? "Use the Recent changes button on the table toolbar to see the latest activity in this module."
-        : "Usa el botón Últimos cambios en la barra de la tabla para ver la actividad reciente de este módulo.",
+        : "Usa el botón Últimos cambios para revisar acción, usuario, fecha y registro afectado en este módulo.",
       suggestions: allowedActions(screen, context).slice(0, 3),
     }
   }
@@ -339,11 +347,11 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
     }
   }
 
-  if (/factura|cobrar|pago|pendiente|saldo/.test(query)) {
+  if (/factura|cobrar|cobranza|pago|pendiente|saldo/.test(query)) {
     return {
       text: en
         ? "These options help you review invoices, balances and pending payments."
-        : "Te llevo a la vista donde puedes revisar facturas, saldos y pagos pendientes.",
+        : "Te llevo a la vista donde puedes revisar facturas, saldos, cobranza y pagos pendientes.",
       suggestions: allowedActions("invoicing", context),
     }
   }
@@ -355,11 +363,11 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
       suggestions: allowedActions("inventoryLots", context),
     }
   }
-  if (/inventario|almacen|existencia/.test(query)) {
+  if (/inventario|almacen|existencia|sku/.test(query)) {
     return {
       text: en
         ? "These options help you review inventory, products, expirations and movements."
-        : "Estas opciones te ayudan a revisar inventario, productos, caducidades y movimientos.",
+        : "Estas opciones te ayudan a revisar inventario, productos, existencias, caducidades y movimientos.",
       suggestions: allowedActions("inventory", context),
     }
   }
@@ -379,15 +387,15 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
       suggestions: allowedActions("suppliers", context),
     }
   }
-  if (/empleado|nomina|vacacion|incidencia|rrhh/.test(query)) {
+  if (/empleado|nomina|vacacion|incidencia|rrhh|recursos humanos/.test(query)) {
     return {
       text: en
-        ? "These actions help you manage employees, payroll and incidents."
-        : "Estas acciones te ayudan a gestionar empleados, nómina e incidencias.",
+        ? "These actions help you manage employees, payroll, vacations and incidents."
+        : "Estas acciones te ayudan a gestionar empleados, nómina, vacaciones e incidencias.",
       suggestions: allowedActions("payroll", context),
     }
   }
-  if (/banco|movimiento|conciliar|tesoreria/.test(query)) {
+  if (/banco|movimiento|conciliar|tesoreria|tesorería/.test(query)) {
     return {
       text: en
         ? "These actions help you review bank accounts, movements and reconciliation."
@@ -403,7 +411,7 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
       suggestions: allowedActions("accounting", context),
     }
   }
-  if (/produccion|orden de produccion|fabricar/.test(query)) {
+  if (/produccion|producción|orden de produccion|fabricar/.test(query)) {
     return {
       text: en
         ? "These actions help you plan and register production."
@@ -438,8 +446,8 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
 
   return {
     text: en
-      ? "I can help you navigate sales, customers, inventory, invoicing or data import. Type what you want to do in your own words."
-      : "Puedo ayudarte a navegar por ventas, clientes, inventario, facturación o importación de datos. Escribe lo que quieres hacer con tus palabras.",
+      ? "I can help you with sales, invoicing, inventory, banking, production, maintenance or imports. Type what you want to do in your own words."
+      : "Puedo ayudarte con ventas, facturación, inventario, bancos, producción, mantenimiento o importaciones. Escribe lo que quieres hacer con tus palabras.",
     suggestions: allowedActions(screen, context).slice(0, 4),
   }
 }
@@ -493,7 +501,7 @@ function allowedActions(screen: ScreenKey, context: AssistantContext): Assistant
 }
 
 function isHelpIntent(query: string): boolean {
-  return /que puedo hacer|que hay aqui|ayuda|explica|esta pantalla|donde estoy|como funciona|what can i do|help/.test(query)
+  return /que puedo hacer|que puedo hacer aqui|que hay aqui|ayuda|explica|esta pantalla|donde estoy|como funciona|what can i do|help/.test(query)
 }
 
 function isImportIntent(query: string): boolean {
@@ -527,7 +535,7 @@ function permissionReply(
           ? "I'll take you to the Import Center. There you can download a template, upload your file and validate before saving."
           : "Te llevo al Centro de Importación. Ahí puedes descargar plantilla, subir archivo y validar antes de guardar."
         : en
-          ? "You can export from the module's table, respecting active filters and visible columns."
+          ? "You can export from the module table respecting active filters and visible columns."
           : "Puedes exportar desde la tabla del módulo respetando filtros y columnas visibles.",
     suggestions: [{ label, href, permission }],
   }
