@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { collection, query, where, orderBy, onSnapshot, updateDoc, doc, or } from "firebase/firestore"
+import { getAuthMode } from "@/lib/config/auth-mode"
 import { getFirebaseDb } from "@/lib/firebase"
 import { COLLECTIONS, addItem } from "@/lib/firestore"
 import type { SalesOrder, Delivery, Invoice } from "@/lib/types"
@@ -21,17 +22,21 @@ export function useSalesData(companyId: string, userId?: string) {
   const { createMovement, selectLotsForFulfillment } = useWarehouseData()
 
   useEffect(() => {
+    // Modo demo: sin Firebase configurado el módulo muestra estado vacío
+    // en lugar de quedarse cargando.
+    if (getAuthMode() === "demo") {
+      setLoading(false)
+      setSalesOrders([])
+      setDeliveries([])
+      setInvoices([])
+      return
+    }
+
     if (!effectiveCompanyId) {
-      console.log("[v0] useSalesData - No companyId or userId provided")
       setLoading(false)
       setSalesOrders([])
       return
     }
-
-    console.log("[v0] useSalesData - Setting up listeners")
-    console.log("[v0] useSalesData - companyId:", companyId)
-    console.log("[v0] useSalesData - userId:", userId)
-    console.log("[v0] useSalesData - effectiveCompanyId:", effectiveCompanyId)
 
     const db = getFirebaseDb()
     const unsubscribers: (() => void)[] = []

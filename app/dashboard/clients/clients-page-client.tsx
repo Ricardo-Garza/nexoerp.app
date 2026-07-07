@@ -53,6 +53,7 @@ import { useFirestore } from "@/hooks/use-firestore"
 import { COLLECTIONS } from "@/lib/firestore"
 import type { Customer } from "@/lib/types"
 import { getItems } from "@/lib/storage"
+import { DataTablePro, type ProColumn } from "@/components/ui/data-table-pro"
 import { FormDialog } from "@/components/ui/form-dialog"
 import { NewClientSheet } from "@/components/clients/new-client-sheet"
 import { ClientDetail } from "@/components/clients/client-detail"
@@ -148,7 +149,6 @@ export default function ClientsPageClient() {
   const companyId = user?.companyId || user?.uid || ""
   const [activeTab, setActiveTab] = useState("clientes")
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("todos")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [newClientOpen, setNewClientOpen] = useState(false)
   const [editingClient, setEditingClient] = useState<Client | null>(null)
@@ -601,19 +601,6 @@ export default function ClientsPageClient() {
   }
 
 
-  const filteredClients = useMemo(
-    () =>
-      clientsMapped.filter((client) => {
-        const matchesSearch =
-          client?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          client?.rfc?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          client?.email?.toLowerCase().includes(searchTerm.toLowerCase())
-        const matchesStatus = statusFilter === "todos" || client?.status === statusFilter
-        return matchesSearch && matchesStatus
-      }),
-    [clientsMapped, searchTerm, statusFilter],
-  )
-
   const normalizeProspectStage = (stage?: string) => (stage === "cerrado" ? "ganado" : stage ?? "")
 
   const filteredProspects = useMemo(() => {
@@ -689,6 +676,100 @@ export default function ClientsPageClient() {
     }
     return { show: false, message: "", color: "" }
   }
+
+  const clientStatusLabel = (status?: string) =>
+    status === "active" ? "Activo" : status === "vip" ? "VIP" : status === "prospecto" ? "Prospecto" : status === "inactive" ? "Inactivo" : "Sin estado"
+
+  const clientColumns: ProColumn<Client>[] = [
+    {
+      key: "name",
+      header: "Cliente",
+      accessor: (client) => client?.name ?? "Sin nombre",
+      cell: (client) => <span className="font-medium">{client?.name ?? "Sin nombre"}</span>,
+      hideable: false,
+    },
+    {
+      key: "rfc",
+      header: "RFC",
+      accessor: (client) => client?.rfc ?? "",
+      defaultVisible: false,
+    },
+    {
+      key: "email",
+      header: "Correo",
+      accessor: (client) => client?.email ?? "",
+      defaultVisible: false,
+    },
+    {
+      key: "status",
+      header: "Estado",
+      accessor: (client) => clientStatusLabel(client?.status),
+      cell: (client) => getStatusBadge(client?.status),
+      filterType: "select",
+      filterOptions: [
+        { label: "Activo", value: "Activo" },
+        { label: "VIP", value: "VIP" },
+        { label: "Prospecto", value: "Prospecto" },
+        { label: "Inactivo", value: "Inactivo" },
+      ],
+    },
+    {
+      key: "tags",
+      header: "Etiquetas",
+      accessor: (client) => {
+        const tags = client?.tags && client.tags.length > 0 ? client.tags : [client?.city, client?.state].filter(Boolean)
+        return tags.join(", ")
+      },
+      cell: (client) => {
+        const tags = client?.tags && client.tags.length > 0 ? client.tags : [client?.city, client?.state].filter(Boolean)
+        return tags.length === 0 ? (
+          <span className="text-xs text-muted-foreground">Sin etiquetas</span>
+        ) : (
+          <div className="flex gap-1 flex-wrap">
+            {tags.map((tag) => (
+              <Badge key={tag} variant="outline" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        )
+      },
+    },
+    {
+      key: "balance",
+      header: "Saldo",
+      accessor: (client) => client?.balance ?? 0,
+      numeric: true,
+      currency: true,
+      align: "right",
+      filterType: "number",
+      cell: (client) => {
+        const balance = client?.balance ?? 0
+        const creditLimit = client?.creditLimit ?? 0
+        const alert = getCreditAlert(balance, creditLimit)
+        return (
+          <div className={`flex items-center justify-end gap-2 font-medium ${getBalanceColor(balance, creditLimit)}`}>
+            {formatCurrency(balance)}
+            {alert.show ? (
+              <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${alert.color} border-current`}>
+                {alert.message}
+              </Badge>
+            ) : null}
+          </div>
+        )
+      },
+    },
+    {
+      key: "creditLimit",
+      header: "Límite Crédito",
+      accessor: (client) => client?.creditLimit ?? 0,
+      numeric: true,
+      currency: true,
+      align: "right",
+      filterType: "number",
+      cell: (client) => <span className="text-muted-foreground">{formatCurrency(client?.creditLimit ?? 0)}</span>,
+    },
+  ]
 
   const handleClientSheetChange = (open: boolean) => {
     setNewClientOpen(open)
@@ -943,146 +1024,73 @@ export default function ClientsPageClient() {
             </Button>
           </div>
 
-          <div className="bg-card rounded-lg border border-border p-4">
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex-1 min-w-[240px] max-w-sm relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Buscar cliente..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-muted-foreground" />
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Estado" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos los estados</SelectItem>
-                    <SelectItem value="active">Activo</SelectItem>
-                    <SelectItem value="prospecto">Prospecto</SelectItem>
-                    <SelectItem value="vip">VIP</SelectItem>
-                    <SelectItem value="inactive">Inactivo</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="text-sm text-muted-foreground">{filteredClients.length} clientes</div>
+          {loadingClients ? (
+            <div className="bg-card rounded-lg border border-border text-center py-8 text-muted-foreground">
+              Cargando...
             </div>
-          </div>
-
-          <div className="bg-card rounded-lg border border-border">
-            {loadingClients ? (
-              <div className="text-center py-8 text-muted-foreground">Cargando...</div>
-            ) : filteredClients.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">No hay clientes registrados</p>
-                <Button onClick={openCreateClient}>
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Agregar Primer Cliente
-                </Button>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/50 hover:bg-muted/50">
-                    <TableHead className="font-semibold">Cliente</TableHead>
-                    <TableHead className="font-semibold">Tipo</TableHead>
-                    <TableHead className="font-semibold">Estado</TableHead>
-                    <TableHead className="font-semibold">Etiquetas</TableHead>
-                    <TableHead className="font-semibold">Última Compra</TableHead>
-                    <TableHead className="font-semibold text-right">Saldo</TableHead>
-                    <TableHead className="font-semibold text-right">Límite Crédito</TableHead>
-                    <TableHead className="font-semibold text-center">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredClients.map((client) => {
-                    const tags =
-                      client?.tags && client.tags.length > 0
-                        ? client.tags
-                        : [client?.city, client?.state].filter(Boolean)
-                    const balance = client?.balance ?? 0
-                    const creditLimit = client?.creditLimit ?? 0
-                    const alert = getCreditAlert(balance, creditLimit)
-                    return (
-                      <TableRow key={client?.id ?? Math.random()} className="hover:bg-muted/30">
-                        <TableCell className="font-medium">{client?.name ?? "Sin nombre"}</TableCell>
-                        <TableCell>
-                          <span className="text-muted-foreground text-sm">{client?.status === "vip" ? "VIP" : "Cliente"}</span>
-                        </TableCell>
-                        <TableCell>{getStatusBadge(client?.status)}</TableCell>
-                        <TableCell>
-                          {tags.length === 0 ? (
-                            <span className="text-xs text-muted-foreground">Sin etiquetas</span>
-                          ) : (
-                            <div className="flex gap-1 flex-wrap">
-                              {tags.map((tag) => (
-                                <Badge key={tag} variant="outline" className="text-xs">
-                                  {tag}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">-</TableCell>
-                        <TableCell className={`text-right font-medium ${getBalanceColor(balance, creditLimit)}`}>
-                          <div className="flex items-center justify-end gap-2">
-                            {formatCurrency(balance)}
-                            {alert.show ? (
-                              <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${alert.color} border-current`}>
-                                {alert.message}
-                              </Badge>
-                            ) : null}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right text-muted-foreground">
-                          {formatCurrency(creditLimit)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center justify-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openViewClient(client as Client)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Eye className="w-4 h-4 text-primary" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              onClick={() => openEditClient(client as Client)}
-                            >
-                              <Pencil className="w-4 h-4 text-muted-foreground" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                              onClick={() => {
-                                setItemToDelete(client)
-                                setCurrentModule("clients")
-                                setDeleteDialogOpen(true)
-                              }}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            )}
-          </div>
+          ) : (
+            <DataTablePro
+              tableId="clientes"
+              testId="clients-table"
+              columns={clientColumns}
+              rows={clientsMapped}
+              getRowId={(client) => client.firestoreId ?? client.id}
+              onRowClick={(client) => openViewClient(client as Client)}
+              moduleName="Clientes"
+              importHref="/dashboard/import"
+              recentChanges={[]}
+              quickFilters={[
+                { label: "Activos", predicate: (client) => client?.status === "active" },
+                { label: "VIP", predicate: (client) => client?.status === "vip" },
+                { label: "Prospectos", predicate: (client) => client?.status === "prospecto" },
+                { label: "Con saldo", predicate: (client) => (client?.balance ?? 0) > 0 },
+              ]}
+              helpItems={[
+                "Crea un cliente con el botón Nuevo Cliente.",
+                "Haz clic en una fila para abrir el expediente completo.",
+                "Usa Filtros para combinar estado, saldo y límite de crédito.",
+                "Importar te permite cargar clientes desde Excel o CSV con plantilla.",
+                "Exportar descarga la cartera con los filtros aplicados.",
+              ]}
+              emptyMessage="No hay clientes registrados."
+              emptyHint="Importa datos o crea el primer cliente."
+              rowActions={(client) => (
+                <div className="flex items-center justify-end gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    title="Ver expediente del cliente"
+                    onClick={() => openViewClient(client as Client)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Eye className="w-4 h-4 text-primary" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    title="Editar datos del cliente"
+                    className="h-8 w-8 p-0"
+                    onClick={() => openEditClient(client as Client)}
+                  >
+                    <Pencil className="w-4 h-4 text-muted-foreground" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    title="Eliminar cliente"
+                    className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                    onClick={() => {
+                      setItemToDelete(client)
+                      setCurrentModule("clients")
+                      setDeleteDialogOpen(true)
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="crm" className="space-y-4">
@@ -1114,14 +1122,6 @@ export default function ClientsPageClient() {
                     <Plus className="mr-2 h-4 w-4" />
                     Nueva oportunidad
                   </Button>
-                  <Button
-                    variant="outline"
-                    className="border-white/20 bg-white/5 text-white hover:bg-white/10"
-                    onClick={() => toast.message("Reglas", { description: "Próximamente podrás automatizar etapas." })}
-                  >
-                    <Target className="mr-2 h-4 w-4" />
-                    Reglas
-                  </Button>
                 </div>
               </div>
 
@@ -1147,14 +1147,6 @@ export default function ClientsPageClient() {
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
-                  <Button
-                    variant="outline"
-                    className="border-white/20 bg-white/5 text-white hover:bg-white/10"
-                    onClick={() => toast.message("En proceso", { description: "Filtro avanzado en preparación." })}
-                  >
-                    <CheckCircle2 className="mr-2 h-4 w-4" />
-                    En proceso
-                  </Button>
                 </div>
               </div>
 

@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Edit, Trash2, Search, Settings2, Download, PackagePlus, Plus } from "lucide-react"
+import Link from "next/link"
+import { Edit, Trash2, Search, Settings2, Download, PackagePlus, Plus, Upload } from "lucide-react"
 import { useFirestore } from "@/hooks/use-firestore"
 import { useUserPreferences } from "@/hooks/use-user-preferences"
 import { useInventoryCalculations } from "@/hooks/use-inventory-calculations"
@@ -350,6 +351,11 @@ export function InventoryTable() {
                 title="Exportar a CSV"
               >
                 <Download className="w-4 h-4" />
+              </Button>
+              <Button variant="outline" size="icon" asChild title="Importar inventario con plantilla y validación">
+                <Link href="/dashboard/import">
+                  <Upload className="w-4 h-4" />
+                </Link>
               </Button>
               <Button
                 variant="outline"

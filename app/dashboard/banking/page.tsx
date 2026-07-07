@@ -11,6 +11,7 @@ import { ChecksTab } from "@/components/banking/checks-tab"
 import { TransfersTab } from "@/components/banking/transfers-tab"
 import { ReconciliationTab } from "@/components/banking/reconciliation-tab"
 import { CashFlowTab } from "@/components/banking/cash-flow-tab"
+import { MovementsTab } from "@/components/banking/movements-tab"
 import { Badge } from "@/components/ui/badge"
 
 export default function BankingPage() {
@@ -82,6 +83,7 @@ export default function BankingPage() {
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList>
           <TabsTrigger value="overview">Resumen</TabsTrigger>
+          <TabsTrigger value="movements">Movimientos</TabsTrigger>
           <TabsTrigger value="accounts">Cuentas</TabsTrigger>
           <TabsTrigger value="checks">Cheques</TabsTrigger>
           <TabsTrigger value="transfers">Transferencias</TabsTrigger>
@@ -180,6 +182,10 @@ export default function BankingPage() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="movements">
+          <MovementsTab />
         </TabsContent>
 
         <TabsContent value="accounts">

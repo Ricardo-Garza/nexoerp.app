@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Plus, Edit, Trash2, Play, CheckCircle } from "lucide-react"
+import { DataTablePro, type ProColumn } from "@/components/ui/data-table-pro"
 import type { ProductionOrder, Product, ProductFormula, Warehouse } from "@/lib/types"
 import { ProductionOrderDialog } from "./production-order-dialog"
 
@@ -83,6 +84,78 @@ export function ProductionOrdersTab({
     }
   }
 
+  const columns = useMemo<ProColumn<ProductionOrder>[]>(
+    () => [
+      {
+        key: "folio",
+        header: "Orden",
+        accessor: (order) => order.folio,
+        cell: (order) => <span className="font-medium">{order.folio}</span>,
+        hideable: false,
+      },
+      {
+        key: "productName",
+        header: "Producto",
+        accessor: (order) => order.productName,
+        hideable: false,
+      },
+      {
+        key: "quantity",
+        header: "Planeado",
+        accessor: (order) => order.quantity ?? 0,
+        numeric: true,
+        align: "right",
+        filterType: "number",
+      },
+      {
+        key: "completed",
+        header: "Producido",
+        accessor: (order) => order.completed ?? 0,
+        numeric: true,
+        align: "right",
+        filterType: "number",
+      },
+      {
+        key: "progress",
+        header: "Progreso",
+        accessor: (order) => (order.quantity ? Math.round(((order.completed ?? 0) / order.quantity) * 100) : 0),
+        cell: (order) => {
+          const percentage = order.quantity ? ((order.completed ?? 0) / order.quantity) * 100 : 0
+          return (
+            <div className="flex items-center gap-2">
+              <Progress value={percentage} className="h-2 w-24" />
+              <span className="text-xs text-muted-foreground">{Math.round(percentage)}%</span>
+            </div>
+          )
+        },
+      },
+      {
+        key: "status",
+        header: "Estado",
+        accessor: (order) => getStatusLabel(order.status),
+        cell: (order) => <Badge variant={getStatusVariant(order.status)}>{getStatusLabel(order.status)}</Badge>,
+        filterType: "select",
+        filterOptions: ["Pendiente", "En Proceso", "Completado", "Pausado", "Cancelado"].map((label) => ({
+          label,
+          value: label,
+        })),
+      },
+      {
+        key: "warehouses",
+        header: "Almacenes",
+        accessor: (order) => `${order.almacenOrigenNombre ?? ""} → ${order.almacenDestinoNombre ?? ""}`,
+        cell: (order) => (
+          <div className="text-xs text-muted-foreground">
+            <div>Origen: {order.almacenOrigenNombre}</div>
+            <div>Destino: {order.almacenDestinoNombre}</div>
+          </div>
+        ),
+        defaultVisible: false,
+      },
+    ],
+    [],
+  )
+
   const handleCreate = () => {
     setSelectedOrder(null)
     setDialogOpen(true)
@@ -151,86 +224,51 @@ export function ProductionOrdersTab({
           </div>
         </CardHeader>
         <CardContent>
-          {filteredOrders.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No hay órdenes de producción</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Orden</th>
-                    <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Producto</th>
-                    <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Cantidad</th>
-                    <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Progreso</th>
-                    <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Estado</th>
-                    <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Almacenes</th>
-                    <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredOrders.map((order) => {
-                    const percentage = (order.completed / order.quantity) * 100
-                    return (
-                      <tr key={order.id} className="border-b last:border-0">
-                        <td className="py-3 px-2 text-sm font-medium">{order.folio}</td>
-                        <td className="py-3 px-2 text-sm">{order.productName}</td>
-                        <td className="py-3 px-2 text-sm">
-                          {order.completed} / {order.quantity}
-                        </td>
-                        <td className="py-3 px-2">
-                          <div className="flex items-center gap-2">
-                            <Progress value={percentage} className="h-2 w-24" />
-                            <span className="text-xs text-muted-foreground">{Math.round(percentage)}%</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-2">
-                          <Badge variant={getStatusVariant(order.status)}>{getStatusLabel(order.status)}</Badge>
-                        </td>
-                        <td className="py-3 px-2 text-xs text-muted-foreground">
-                          <div>Origen: {order.almacenOrigenNombre}</div>
-                          <div>Destino: {order.almacenDestinoNombre}</div>
-                        </td>
-                        <td className="py-3 px-2">
-                          <div className="flex items-center justify-end gap-1">
-                            {!order.materialsReserved && order.status === "pending" && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleReserve(order)}
-                                title="Reservar materiales"
-                              >
-                                <Play className="w-4 h-4" />
-                              </Button>
-                            )}
-                            {order.materialsReserved && !order.materialsConsumed && order.status === "in_process" && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleComplete(order)}
-                                title="Completar producción"
-                              >
-                                <CheckCircle className="w-4 h-4" />
-                              </Button>
-                            )}
-                            <Button variant="ghost" size="sm" onClick={() => handleEdit(order)}>
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            {order.status === "pending" && (
-                              <Button variant="ghost" size="sm" onClick={() => handleDelete(order.id)}>
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <DataTablePro
+            tableId="production-orders"
+            testId="production-orders-table"
+            columns={columns}
+            rows={filteredOrders}
+            getRowId={(order) => order.id}
+            moduleName="Producción"
+            importHref="/dashboard/import"
+            quickFilters={[
+              { label: "Pendientes", predicate: (order) => order.status === "pending" },
+              { label: "En proceso", predicate: (order) => order.status === "in_process" },
+              { label: "Completadas", predicate: (order) => order.status === "completed" },
+            ]}
+            helpItems={[
+              "Crea una orden de producción con el botón Nueva Orden.",
+              "Reserva materiales con el botón de reproducir cuando la orden está pendiente.",
+              "Registra la producción terminada con el botón de palomita.",
+              "Usa Filtros para combinar producto, estado y cantidades.",
+              "Exportar descarga el programa de producción con los filtros aplicados.",
+            ]}
+            emptyMessage="No hay órdenes de producción."
+            emptyHint="Crea la primera orden para programar la producción."
+            rowActions={(order) => (
+              <div className="flex items-center justify-end gap-1">
+                {!order.materialsReserved && order.status === "pending" && (
+                  <Button variant="ghost" size="sm" onClick={() => handleReserve(order)} title="Reservar materiales">
+                    <Play className="w-4 h-4" />
+                  </Button>
+                )}
+                {order.materialsReserved && !order.materialsConsumed && order.status === "in_process" && (
+                  <Button variant="ghost" size="sm" onClick={() => handleComplete(order)} title="Completar producción">
+                    <CheckCircle className="w-4 h-4" />
+                  </Button>
+                )}
+                <Button variant="ghost" size="sm" onClick={() => handleEdit(order)} title="Editar orden">
+                  <Edit className="w-4 h-4" />
+                </Button>
+                {order.status === "pending" && (
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete(order.id)} title="Eliminar orden">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            )}
+          />
         </CardContent>
       </Card>
 

@@ -44,7 +44,7 @@ export default function GlobalAuditPage() {
     <div className="space-y-6 max-w-6xl">
       <div>
         <h1 className="text-3xl font-bold">Auditoría global</h1>
-        <p className="text-muted-foreground mt-1">Trazabilidad de cambios administrativos en todos los universos.</p>
+        <p className="text-muted-foreground mt-1">Trazabilidad de cambios administrativos en todas las empresas.</p>
       </div>
       <Card>
         <CardHeader>

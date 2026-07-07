@@ -28,6 +28,35 @@ describe("UI language polish", () => {
     expect(all).not.toMatch(/>\s*Mock\s*</)
   })
 
+  it("uses 'empresa' instead of 'universo' or 'tenant' in visible copy", () => {
+    const screens = [
+      "app/dashboard/import/page.tsx",
+      "app/admin/imports/page.tsx",
+      "app/admin/audit/page.tsx",
+      "app/admin/tenants/page.tsx",
+    ].map(read)
+
+    const all = screens.join("\n")
+    expect(all).not.toMatch(/universo/i)
+    // "Tenant(s)" solo puede aparecer como identificador de código, nunca como texto visible
+    expect(all).not.toMatch(/[>"]\s*Tenants?\s*[<"]/)
+    expect(read("app/admin/tenants/page.tsx")).toContain("Empresas")
+  })
+
+  it("payroll and accounting expose real import/export instead of dead buttons", () => {
+    const payroll = read("app/dashboard/payroll/page.tsx")
+    const employees = read("components/payroll/employees-tab.tsx")
+    const accounts = read("components/accounting/accounts-table.tsx")
+    const journal = read("components/accounting/journal-entries-table.tsx")
+
+    expect(payroll).toContain('href="/dashboard/import"')
+    expect(employees).toContain("DataTablePro")
+    expect(accounts).not.toMatch(/alert\(/)
+    expect(journal).not.toMatch(/alert\(.*en desarrollo/)
+    expect(accounts).toContain("DataTablePro")
+    expect(journal).toContain("DataTablePro")
+  })
+
   it("does not use question mark icons or bare question marks as dashboard actions", () => {
     const topProducts = read("components/dashboard/top-products.tsx")
 
