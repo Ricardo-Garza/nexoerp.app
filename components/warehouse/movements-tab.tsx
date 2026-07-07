@@ -1,11 +1,10 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useMemo, useState } from "react"
 import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { DataTablePro, type ProColumn } from "@/components/ui/data-table-pro"
 import {
   Dialog,
   DialogContent,
@@ -14,17 +13,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Plus, ArrowUpDown } from "lucide-react"
+import { Plus } from "lucide-react"
 import { format } from "date-fns"
 
 export function MovementsTab({ warehouseData }: { warehouseData: any }) {
   const { stockMovements, warehouses, products, createMovement } = warehouseData
-  const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [filterType, setFilterType] = useState("all")
-
   const [formData, setFormData] = useState({
     almacenId: "",
     productoId: "",
@@ -35,16 +32,7 @@ export function MovementsTab({ warehouseData }: { warehouseData: any }) {
     notas: "",
   })
 
-  const filteredMovements = (stockMovements || []).filter((m: any) => {
-    const matchesSearch =
-      m.productoNombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.almacenNombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.referencia?.toLowerCase().includes(searchTerm.toLowerCase())
-
-    const matchesType = filterType === "all" || m.tipo === filterType
-
-    return matchesSearch && matchesType
-  })
+  const rows = useMemo(() => stockMovements || [], [stockMovements])
 
   const handleOpenDialog = () => {
     setFormData({
@@ -60,148 +48,121 @@ export function MovementsTab({ warehouseData }: { warehouseData: any }) {
   }
 
   const handleSave = async () => {
-    try {
-      const almacen = (warehouses || []).find((w: any) => w.id === formData.almacenId)
-      const producto = (products || []).find((p: any) => p.id === formData.productoId)
+    const almacen = (warehouses || []).find((w: any) => w.id === formData.almacenId)
+    const producto = (products || []).find((p: any) => p.id === formData.productoId)
 
-      await createMovement({
-        ...formData,
-        almacenNombre: almacen?.nombre || "",
-        productoNombre: producto?.name || "",
-        fecha: new Date().toISOString(),
-        usuarioId: "current-user",
-        usuarioNombre: "Usuario Actual",
-      })
-      setIsDialogOpen(false)
-    } catch (error) {
-      console.error("Error creating movement:", error)
-    }
+    await createMovement({
+      ...formData,
+      almacenNombre: almacen?.nombre || "",
+      productoNombre: producto?.name || producto?.producto || "",
+      sku: producto?.sku || "",
+      fecha: new Date().toISOString(),
+      usuarioId: "current-user",
+      usuarioNombre: "Usuario actual",
+    })
+    setIsDialogOpen(false)
   }
 
-  const getTypeBadge = (type: string) => {
-    const variants: any = {
-      entrada: "default",
-      salida: "secondary",
-      ajuste: "outline",
-    }
-    return <Badge variant={variants[type] || "secondary"}>{type.charAt(0).toUpperCase() + type.slice(1)}</Badge>
-  }
+  const typeLabel = (type: string) =>
+    type === "transferencia_salida"
+      ? "Transferencia salida"
+      : type === "transferencia_entrada"
+        ? "Transferencia entrada"
+        : type.charAt(0).toUpperCase() + type.slice(1)
 
-  const handleExport = () => {
-    const csv = [
-      ["Fecha", "Tipo", "Almacén", "Producto", "Cantidad", "Motivo", "Referencia"].join(","),
-      ...filteredMovements.map((m: any) =>
-        [
-          m.fecha ? format(new Date(m.fecha), "dd/MM/yyyy HH:mm") : "",
-          m.tipo,
-          m.almacenNombre,
-          m.productoNombre,
-          m.cantidad,
-          m.motivo || "",
-          m.referencia || "",
-        ].join(","),
-      ),
-    ].join("\n")
-
-    const blob = new Blob([csv], { type: "text/csv" })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `movimientos-${format(new Date(), "yyyy-MM-dd")}.csv`
-    a.click()
-  }
+  const columns = useMemo<ProColumn<any>[]>(
+    () => [
+      {
+        key: "fecha",
+        header: "Fecha",
+        accessor: (m) => (m.fecha ? format(new Date(m.fecha), "yyyy-MM-dd HH:mm") : ""),
+        cell: (m) => <span className="text-xs">{m.fecha ? format(new Date(m.fecha), "dd/MM/yyyy HH:mm") : "-"}</span>,
+        filterType: "date",
+      },
+      {
+        key: "tipo",
+        header: "Tipo",
+        accessor: (m) => typeLabel(m.tipo ?? ""),
+        cell: (m) => <Badge variant={m.tipo === "salida" ? "outline" : "secondary"}>{typeLabel(m.tipo ?? "")}</Badge>,
+        filterType: "select",
+        filterOptions: [
+          { label: "Entrada", value: "Entrada" },
+          { label: "Salida", value: "Salida" },
+          { label: "Ajuste", value: "Ajuste" },
+          { label: "Transferencia salida", value: "Transferencia salida" },
+          { label: "Transferencia entrada", value: "Transferencia entrada" },
+        ],
+      },
+      { key: "sku", header: "SKU", accessor: (m) => m.sku ?? "", cell: (m) => <span className="font-mono text-xs">{m.sku || "-"}</span>, filterType: "text" },
+      { key: "productoNombre", header: "Producto", accessor: (m) => m.productoNombre ?? "", filterType: "text" },
+      { key: "almacenNombre", header: "Almacén", accessor: (m) => m.almacenNombre ?? "", filterType: "text" },
+      {
+        key: "cantidad",
+        header: "Cantidad",
+        accessor: (m) => m.cantidad ?? 0,
+        cell: (m) => (
+          <span className="font-mono text-sm">
+            {m.tipo === "salida" || m.tipo === "transferencia_salida" ? "-" : "+"}
+            {m.cantidad || 0}
+          </span>
+        ),
+        numeric: true,
+        align: "right",
+        filterType: "number",
+      },
+      { key: "motivo", header: "Motivo", accessor: (m) => m.motivo ?? "", filterType: "text" },
+      { key: "referencia", header: "Referencia", accessor: (m) => m.referencia ?? "", filterType: "text" },
+      { key: "usuarioNombre", header: "Usuario", accessor: (m) => m.usuarioNombre ?? "", filterType: "text" },
+    ],
+    [],
+  )
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Movimientos de Inventario</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">Total de movimientos: {filteredMovements.length}</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleExport}>
-              Exportar CSV
-            </Button>
-            <Button onClick={handleOpenDialog}>
-              <Plus className="w-4 h-4 mr-2" />
-              Registrar Movimiento
-            </Button>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 mt-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder="Buscar movimientos..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="entrada">Entradas</SelectItem>
-              <SelectItem value="salida">Salidas</SelectItem>
-              <SelectItem value="ajuste">Ajustes</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <CardTitle>Movimientos</CardTitle>
+        <p className="text-sm text-muted-foreground">Entradas, salidas, ajustes y transferencias con usuario y fecha.</p>
       </CardHeader>
       <CardContent>
-        {filteredMovements.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <ArrowUpDown className="w-12 h-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">No hay movimientos registrados</p>
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Almacén</TableHead>
-                <TableHead>Producto</TableHead>
-                <TableHead>Cantidad</TableHead>
-                <TableHead>Motivo</TableHead>
-                <TableHead>Referencia</TableHead>
-                <TableHead>Usuario</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredMovements.map((movement: any) => (
-                <TableRow key={movement.id}>
-                  <TableCell>{movement.fecha ? format(new Date(movement.fecha), "dd/MM/yyyy HH:mm") : "-"}</TableCell>
-                  <TableCell>{getTypeBadge(movement.tipo)}</TableCell>
-                  <TableCell>{movement.almacenNombre}</TableCell>
-                  <TableCell>{movement.productoNombre}</TableCell>
-                  <TableCell className="font-medium">
-                    {movement.tipo === "salida" ? "-" : "+"}
-                    {movement.cantidad}
-                  </TableCell>
-                  <TableCell>{movement.motivo || "-"}</TableCell>
-                  <TableCell>{movement.referencia || "-"}</TableCell>
-                  <TableCell>{movement.usuarioNombre || "-"}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+        <DataTablePro
+          tableId="warehouse-movements"
+          columns={columns}
+          rows={rows}
+          getRowId={(m) => String(m.id ?? `${m.productoId}-${m.fecha}`)}
+          moduleName="Inventario y Almacén · Movimientos"
+          quickFilters={[
+            { label: "Entradas", predicate: (m) => m.tipo === "entrada" },
+            { label: "Salidas", predicate: (m) => m.tipo === "salida" },
+            { label: "Ajustes", predicate: (m) => m.tipo === "ajuste" },
+            { label: "Últimos 30 días", predicate: (m) => Date.now() - new Date(m.fecha).getTime() <= 30 * 86400000 },
+          ]}
+          toolbarActions={
+            <Button size="sm" onClick={handleOpenDialog}>
+              <Plus className="mr-1 h-4 w-4" />
+              Registrar movimiento
+            </Button>
+          }
+          helpItems={[
+            "Filtra por fecha, tipo, almacén, SKU o usuario.",
+            "Cada movimiento conserva fecha, usuario, motivo y referencia.",
+            "Exporta la vista actual para conciliación o revisión.",
+          ]}
+          importHref="/dashboard/import?entity=movimientos-inventario"
+          emptyMessage="No hay movimientos registrados."
+          emptyHint="Registra una entrada, salida o ajuste desde el botón superior."
+          testId="warehouse-movements-table"
+        />
       </CardContent>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Registrar Movimiento</DialogTitle>
-            <DialogDescription>Registra una entrada, salida o ajuste de inventario</DialogDescription>
+            <DialogTitle>Registrar movimiento</DialogTitle>
+            <DialogDescription>Registra una entrada, salida o ajuste de inventario.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Tipo de Movimiento</Label>
+              <Label>Tipo de movimiento</Label>
               <Select value={formData.tipo} onValueChange={(value: any) => setFormData({ ...formData, tipo: value })}>
                 <SelectTrigger>
                   <SelectValue />
@@ -215,10 +176,7 @@ export function MovementsTab({ warehouseData }: { warehouseData: any }) {
             </div>
             <div className="space-y-2">
               <Label>Almacén</Label>
-              <Select
-                value={formData.almacenId}
-                onValueChange={(value) => setFormData({ ...formData, almacenId: value })}
-              >
+              <Select value={formData.almacenId} onValueChange={(value) => setFormData({ ...formData, almacenId: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar almacén" />
                 </SelectTrigger>
@@ -233,54 +191,36 @@ export function MovementsTab({ warehouseData }: { warehouseData: any }) {
             </div>
             <div className="space-y-2">
               <Label>Producto</Label>
-              <Select
-                value={formData.productoId}
-                onValueChange={(value) => setFormData({ ...formData, productoId: value })}
-              >
+              <Select value={formData.productoId} onValueChange={(value) => setFormData({ ...formData, productoId: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar producto" />
                 </SelectTrigger>
                 <SelectContent>
                   {(products || []).map((p: any) => (
                     <SelectItem key={p.id} value={p.id}>
-                      {p.name}
+                      {p.name || p.producto}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Cantidad</Label>
-              <Input
-                type="number"
-                value={formData.cantidad}
-                onChange={(e) => setFormData({ ...formData, cantidad: Number(e.target.value) })}
-                placeholder="10"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Cantidad</Label>
+                <Input type="number" value={formData.cantidad} onChange={(e) => setFormData({ ...formData, cantidad: Number(e.target.value) })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Referencia</Label>
+                <Input value={formData.referencia} onChange={(e) => setFormData({ ...formData, referencia: e.target.value })} placeholder="Orden, factura..." />
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Motivo</Label>
-              <Input
-                value={formData.motivo}
-                onChange={(e) => setFormData({ ...formData, motivo: e.target.value })}
-                placeholder="Compra, Venta, Corrección..."
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Referencia</Label>
-              <Input
-                value={formData.referencia}
-                onChange={(e) => setFormData({ ...formData, referencia: e.target.value })}
-                placeholder="Número de orden, factura..."
-              />
+              <Input value={formData.motivo} onChange={(e) => setFormData({ ...formData, motivo: e.target.value })} placeholder="Compra, venta, corrección..." />
             </div>
             <div className="space-y-2">
               <Label>Notas</Label>
-              <Input
-                value={formData.notas}
-                onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
-                placeholder="Notas adicionales"
-              />
+              <Input value={formData.notas} onChange={(e) => setFormData({ ...formData, notas: e.target.value })} placeholder="Notas adicionales" />
             </div>
           </div>
           <DialogFooter>

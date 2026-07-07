@@ -275,17 +275,22 @@ export function DataTablePro<T>({
   }, [activeQuick, columnFilters, columns, quickFilters, rows, search, sortDir, sortKey])
 
   const numericColumns = useMemo(() => visibleColumns.filter((column) => column.numeric), [visibleColumns])
+  const selectedRows = filtered.filter((row) => selected.has(getRowId(row)))
 
-  const columnStats = useMemo(() => {
+  const statsFor = (scopeRows: T[]) => {
     const next: Record<string, ColumnStats> = {}
     for (const column of numericColumns) {
       next[column.key] = computeNumberStats(
-        filtered.map((row) => column.accessor(row)),
+        scopeRows.map((row) => column.accessor(row)),
         { money: column.currency },
       )
     }
     return next
-  }, [filtered, numericColumns])
+  }
+
+  const allColumnStats = useMemo(() => statsFor(rows), [rows, numericColumns])
+  const filteredColumnStats = useMemo(() => statsFor(filtered), [filtered, numericColumns])
+  const selectedColumnStats = useMemo(() => statsFor(selectedRows), [selectedRows, numericColumns])
 
   const activeFilterLabels = useMemo(() => {
     const labels: { key: string; label: string }[] = []
@@ -300,7 +305,6 @@ export function DataTablePro<T>({
     return labels
   }, [activeQuick, columnFilters, columns, quickFilters, search])
 
-  const selectedRows = filtered.filter((row) => selected.has(getRowId(row)))
   const d = DENSITIES[density]
   const nf = new Intl.NumberFormat("es-MX", { maximumFractionDigits: 2 })
   const mf = new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" })
@@ -516,7 +520,14 @@ export function DataTablePro<T>({
                 </TooltipButton>
               )}
 
-              <TotalsMenu columns={numericColumns} stats={columnStats} rowCount={filtered.length} format={formatCell} />
+              <TotalsMenu
+                columns={numericColumns}
+                allStats={allColumnStats}
+                filteredStats={filteredColumnStats}
+                selectedStats={selectedColumnStats}
+                rowCounts={{ all: rows.length, filtered: filtered.length, selected: selectedRows.length }}
+                format={formatCell}
+              />
               <ColumnsMenu columns={columns} hidden={hidden} onToggle={toggleColumn} />
               <ViewsMenu
                 views={savedViews}
@@ -583,7 +594,7 @@ export function DataTablePro<T>({
             <Metric
               key={column.key}
               label={`Total ${column.header}`}
-              value={formatCell(column, columnStats[column.key]?.sum ?? 0)}
+              value={formatCell(column, filteredColumnStats[column.key]?.sum ?? 0)}
             />
           ))}
         </div>
@@ -736,7 +747,7 @@ export function DataTablePro<T>({
                       {index === 0 && !column.numeric
                         ? `${filtered.length} filas`
                         : column.numeric
-                          ? formatCell(column, columnStats[column.key]?.sum ?? 0)
+                          ? formatCell(column, filteredColumnStats[column.key]?.sum ?? 0)
                           : ""}
                     </td>
                   ))}
@@ -970,16 +981,24 @@ function ColumnHeaderMenu<T>({
 
 function TotalsMenu<T>({
   columns,
-  stats,
-  rowCount,
+  allStats,
+  filteredStats,
+  selectedStats,
+  rowCounts,
   format,
 }: {
   columns: ProColumn<T>[]
-  stats: Record<string, ColumnStats>
-  rowCount: number
+  allStats: Record<string, ColumnStats>
+  filteredStats: Record<string, ColumnStats>
+  selectedStats: Record<string, ColumnStats>
+  rowCounts: { all: number; filtered: number; selected: number }
   format: (column: ProColumn<T>, value: number) => string
 }) {
+  const [scope, setScope] = useState<"filtered" | "selected" | "all">("filtered")
   if (columns.length === 0) return null
+  const stats = scope === "all" ? allStats : scope === "selected" ? selectedStats : filteredStats
+  const rowCount = rowCounts[scope]
+  const scopeLabel = scope === "all" ? "toda la tabla" : scope === "selected" ? "filas seleccionadas" : "filas filtradas"
   return (
     <Popover>
       <Tooltip>
@@ -998,8 +1017,28 @@ function TotalsMenu<T>({
           <div>
             <p className="text-sm font-semibold">Totales de la vista</p>
             <p className="text-xs text-muted-foreground">
-              Calculados sobre {rowCount} registros visibles, respetando filtros.
+              Calculados sobre {rowCount} registros de {scopeLabel}.
             </p>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <Button
+              size="sm"
+              variant={scope === "filtered" ? "default" : "outline"}
+              onClick={() => setScope("filtered")}
+            >
+              Filtradas
+            </Button>
+            <Button
+              size="sm"
+              variant={scope === "selected" ? "default" : "outline"}
+              onClick={() => setScope("selected")}
+              disabled={rowCounts.selected === 0}
+            >
+              Seleccionadas
+            </Button>
+            <Button size="sm" variant={scope === "all" ? "default" : "outline"} onClick={() => setScope("all")}>
+              Toda la tabla
+            </Button>
           </div>
           {columns.map((column) => {
             const stat = stats[column.key]

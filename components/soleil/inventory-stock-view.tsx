@@ -49,7 +49,7 @@ interface PositionRow extends SoleilStockPosition {
   stockBajo: boolean
 }
 
-export function InventoryStockView({ tenantName }: { tenantName: string }) {
+export function InventoryStockView({ tenantName, embedded = false }: { tenantName: string; embedded?: boolean }) {
   const { toast } = useToast()
   const { user } = useAuth()
   const { activeTenantId } = usePlatform()
@@ -361,7 +361,9 @@ export function InventoryStockView({ tenantName }: { tenantName: string }) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-balance">Inventario y Existencias</h1>
+          <h1 className={embedded ? "text-xl font-semibold text-balance" : "text-3xl font-bold text-balance"}>
+            Inventario y Almacén
+          </h1>
           <p className="text-muted-foreground mt-2 max-w-2xl">
             Existencias por bobina, rollo y serie con movimientos auditados. El inventario inicial se importa o se
             captura; nada se inventa.
@@ -400,7 +402,7 @@ export function InventoryStockView({ tenantName }: { tenantName: string }) {
             columns={positionColumns}
             rows={rows}
             getRowId={(r) => r.key}
-            moduleName="Inventario y Existencias"
+            moduleName="Inventario y Almacén"
             tenantName={tenantName}
             quickFilters={[
               { label: "Stock bajo", predicate: (r) => r.stockBajo },

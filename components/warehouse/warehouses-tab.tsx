@@ -197,7 +197,7 @@ export function WarehousesTab({ warehouseData }: { warehouseData: any }) {
             columns={columns}
             rows={rows}
             getRowId={(w) => String(w.id ?? w.codigo)}
-            moduleName="Almacén · Almacenes"
+            moduleName="Inventario y Almacén · Almacenes"
             quickFilters={[
               { label: "Activos", predicate: (w) => w.estado === "activo" },
               { label: "Con productos", predicate: (w) => (w.productosCantidad || 0) > 0 },
@@ -233,7 +233,7 @@ export function WarehousesTab({ warehouseData }: { warehouseData: any }) {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{editingWarehouse ? "Editar Almacen" : "Nuevo Almacen"}</DialogTitle>
+            <DialogTitle>{editingWarehouse ? "Editar almacén" : "Nuevo almacén"}</DialogTitle>
             <DialogDescription>
               {editingWarehouse ? "Actualiza la informacion del almacen" : "Registra un nuevo almacen"}
             </DialogDescription>
@@ -253,7 +253,7 @@ export function WarehousesTab({ warehouseData }: { warehouseData: any }) {
               <Input
                 value={formData.nombre}
                 onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                placeholder="Almacen Principal"
+                placeholder="Almacén principal"
                 required
               />
             </div>

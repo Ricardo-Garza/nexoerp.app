@@ -16,7 +16,7 @@ export const PLATFORM_RELEASES: ReleaseNote[] = [
       "Empresa Soleil Wire (cables especiales) con universo propio y datos aislados",
       "Menú por empresa: módulos activos, combinados y etiquetas configurables",
       "Productos y Precios unificado (catálogo + listas) con vistas tabla/tarjetas/lista",
-      "Inventario y Existencias unificado por bobina/rollo/serie con movimientos y trazabilidad",
+      "Inventario y Almacén unificado por bobina/rollo/serie con movimientos y trazabilidad",
       "Indicadores del dashboard configurables por empresa",
       "Centro de Importación con oportunidades CRM, movimientos bancarios y catálogo contable",
       "Versión del sistema y su historial administrables por empresa",

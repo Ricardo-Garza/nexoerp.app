@@ -24,7 +24,7 @@ import { readImportedData } from "@/lib/platform/tenant-store"
  * el indicador lo dice tal cual (no se inventan cifras).
  */
 
-interface IndicatorValue {
+export interface IndicatorValue {
   id: DashboardIndicatorId
   value: string
   detail: string
@@ -32,7 +32,7 @@ interface IndicatorValue {
   pending?: boolean
 }
 
-function useIndicatorValues(tenant: Tenant | null): IndicatorValue[] {
+export function useIndicatorValues(tenant: Tenant | null): IndicatorValue[] {
   const { activeTenantId } = usePlatform()
   const [values, setValues] = useState<IndicatorValue[]>([])
 
@@ -87,7 +87,7 @@ function useIndicatorValues(tenant: Tenant | null): IndicatorValue[] {
             id,
             value: capturado ? String(stockBajo) : "—",
             detail: capturado ? "SKUs debajo de su mínimo" : "Sin existencias capturadas aún",
-            href: "/dashboard/inventario-existencias",
+            href: "/dashboard/inventory",
             pending: !capturado,
           }
         case "inventarioDisponible":
@@ -95,7 +95,7 @@ function useIndicatorValues(tenant: Tenant | null): IndicatorValue[] {
             id,
             value: capturado ? disponibleTotal.toLocaleString("es-MX") : "—",
             detail: capturado ? "Unidades disponibles (todas las unidades)" : "Importa o captura el inventario inicial",
-            href: "/dashboard/inventario-existencias",
+            href: "/dashboard/inventory",
             pending: !capturado,
           }
         case "oportunidadesCrm":
