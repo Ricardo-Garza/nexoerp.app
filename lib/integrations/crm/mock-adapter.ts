@@ -32,7 +32,7 @@ export class MockMomentumAdapter implements CrmSyncPort {
   }
 
   async health() {
-    return { ok: true, detail: "mock adapter (sandbox) — sin conexión externa" }
+    return { ok: true, detail: "Datos de prueba — preparado para conexión real" }
   }
 
   async listContacts(params?: { search?: string }) {

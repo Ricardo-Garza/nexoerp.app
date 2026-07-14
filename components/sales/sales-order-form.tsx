@@ -7,6 +7,10 @@ import { useSearchParams } from "next/navigation"
 import { useFirestore } from "@/hooks/use-firestore"
 import { useSalesData } from "@/hooks/use-sales-data"
 import { useWarehouseData } from "@/hooks/use-warehouse-data"
+import { usePlatform } from "@/contexts/platform-context"
+import { getTenant, appendAudit } from "@/lib/platform/tenant-store"
+import { MockMomentumAdapter } from "@/lib/integrations/crm/mock-adapter"
+import { customerToMomentumContact } from "@/lib/integrations/crm/entity-mapping"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -16,7 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
-import { Save, Send, CheckCircle2, Eye, X, Loader2, Truck, Receipt, AlertTriangle } from "lucide-react"
+import { Save, Send, CheckCircle2, Eye, X, Loader2, Truck, Receipt, AlertTriangle, MessageSquare, Activity, RefreshCw } from "lucide-react"
 import { COLLECTIONS, addItem, getItem, updateItem } from "@/lib/firestore"
 import type { SalesOrder, SalesOrderLine, Customer, Product } from "@/lib/types"
 import { calculateOrderTotals, formatCurrency } from "@/lib/utils/sales-calculations"
@@ -41,6 +45,62 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
   const { user } = useAuth()
   const companyId = user?.companyId || user?.uid || ""
   const searchParams = useSearchParams()
+  const { activeTenantId } = usePlatform()
+  const [crmEnabled, setCrmEnabled] = useState(false)
+
+  useEffect(() => {
+    let alive = true
+    getTenant(activeTenantId).then((t) => {
+      if (alive) setCrmEnabled(t?.crm.enabled ?? false)
+    })
+    return () => {
+      alive = false
+    }
+  }, [activeTenantId])
+
+  const [syncingCustomer, setSyncingCustomer] = useState(false)
+
+  async function handleSyncCustomer(customerId: string) {
+    const customer = customers.find((c) => c.id === customerId)
+    if (!customer) return
+    setSyncingCustomer(true)
+    try {
+      const contact = customerToMomentumContact({
+        nombre: customer.nombre,
+        email: customer.email,
+        telefono: customer.telefono,
+      })
+      await new MockMomentumAdapter().createContact(contact)
+      const entry = {
+        at: new Date().toISOString(),
+        summary: { pulled: 0, created: 1, updated: 0, deduplicated: 0, skipped: 0 },
+        status: "ok" as const,
+      }
+      if (typeof window !== "undefined") {
+        const key = `nexo_crm_log_${activeTenantId}`
+        const raw = window.localStorage.getItem(key)
+        const prev = raw ? JSON.parse(raw) : []
+        window.localStorage.setItem(key, JSON.stringify([entry, ...prev].slice(0, 10)))
+      }
+      await appendAudit({
+        tenantId: activeTenantId,
+        actorEmail: user?.email ?? "usuario@empresa",
+        actorRole: "usuario",
+        action: "crm.sync.test",
+        entityType: "crm",
+        entityId: "momentum-sandbox",
+        summary: `Sincronización de prueba CRM: cliente "${customer.nombre}" enviado a CRM Momentum`,
+        before: null,
+        after: { customerId: customer.id },
+        source: "integration",
+      })
+      toast.success(`Cliente "${customer.nombre}" sincronizado (modo de prueba)`)
+    } catch {
+      toast.error("No se pudo sincronizar el cliente")
+    } finally {
+      setSyncingCustomer(false)
+    }
+  }
 
   // Load warehouse data for validation
   const { warehouses, inventoryStock, loading: loadingWarehouse } = useWarehouseData()
@@ -510,6 +570,36 @@ export function SalesOrderForm({ salesOrderId, onSuccess, onCancel }: SalesOrder
                     ))}
                   </SelectContent>
                 </Select>
+                {order.customerId && (
+                  crmEnabled ? (
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => router.push("/dashboard/crm")}
+                        className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                      >
+                        <MessageSquare className="w-3 h-3" /> Ver cliente en CRM
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => router.push("/dashboard/crm?historial=1")}
+                        className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                      >
+                        <Activity className="w-3 h-3" /> Ver actividad comercial
+                      </button>
+                      <button
+                        type="button"
+                        disabled={syncingCustomer}
+                        onClick={() => handleSyncCustomer(order.customerId!)}
+                        className="inline-flex items-center gap-1 text-xs text-primary hover:underline disabled:opacity-50"
+                      >
+                        <RefreshCw className={`w-3 h-3 ${syncingCustomer ? "animate-spin" : ""}`} /> Sincronizar cliente
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground pt-1">Conexión CRM no configurada</p>
+                  )
+                )}
               </div>
 
               {/* Add mandatory warehouse selector */}

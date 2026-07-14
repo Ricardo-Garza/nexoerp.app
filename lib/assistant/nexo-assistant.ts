@@ -26,6 +26,7 @@ type ScreenKey =
   | "inventory"
   | "inventoryLots"
   | "clients"
+  | "crm"
   | "suppliers"
   | "priceLists"
   | "catalog"
@@ -56,6 +57,8 @@ const SCREEN_HELP: Record<ScreenKey, string> = {
     "Estás en Inventario por Lote. Puedes buscar lote, revisar vencimientos, validar disponibilidad, exportar inventario y ver últimos movimientos.",
   clients:
     "Estás en Clientes. Puedes buscar clientes, revisar saldo, últimas ventas, facturas pendientes, contactos y abrir su actividad comercial.",
+  crm:
+    "Estás en CRM Momentum. Aquí vive tu cartera comercial: clientes, contactos, prospectos, oportunidades y actividades. Puedes sincronizar, revisar el historial y abrir el CRM completo.",
   suppliers:
     "Estás en Proveedores. Puedes buscar proveedores, revisar compras, saldos por pagar, productos que surten y sus datos de contacto.",
   priceLists:
@@ -101,6 +104,8 @@ const SCREEN_HELP_EN: Record<ScreenKey, string> = {
     "You are in Lot Inventory. You can search lots, review expirations, validate availability, export inventory and see recent movements.",
   clients:
     "You are in Customers. You can search customers, review balances, recent sales, pending invoices and contact details.",
+  crm:
+    "You are in CRM Momentum. This is where your commercial data lives: customers, contacts, prospects, deals and activities. You can sync, review history and open the full CRM.",
   suppliers:
     "You are in Suppliers. You can search suppliers, review purchases, payables and their contact details.",
   priceLists:
@@ -139,6 +144,7 @@ const SCREEN_ACTIONS: Record<ScreenKey, AssistantSuggestion[]> = {
     { label: "Ver inventario bajo", href: "/dashboard/inventory" },
     { label: "Ver facturas pendientes", href: "/dashboard/facturacion" },
     { label: "Ver cobranza", href: "/dashboard/banking" },
+    { label: "Configurar dashboard", href: "/dashboard?configurar=1" },
     { label: "Importar datos", href: "/dashboard/import", permission: "import" },
     { label: "Exportar indicadores", href: "/dashboard/reports", permission: "export" },
   ],
@@ -185,6 +191,14 @@ const SCREEN_ACTIONS: Record<ScreenKey, AssistantSuggestion[]> = {
     { label: "Ver facturas pendientes", href: "/dashboard/facturacion" },
     { label: "Importar clientes", href: "/dashboard/import", permission: "import" },
     { label: "Exportar clientes", href: "/dashboard/clients", permission: "export" },
+  ],
+  crm: [
+    { label: "Buscar cliente en CRM", href: "/dashboard/crm" },
+    { label: "Ver prospectos", href: "/dashboard/crm" },
+    { label: "Ver oportunidades", href: "/dashboard/crm" },
+    { label: "Ver actividad comercial", href: "/dashboard/crm" },
+    { label: "Sincronizar cliente", href: "/dashboard/crm" },
+    { label: "Abrir CRM Momentum", href: "/dashboard/crm/embed" },
   ],
   suppliers: [
     { label: "Buscar proveedor", href: "/dashboard/suppliers" },
@@ -290,7 +304,7 @@ const SCREEN_ACTIONS: Record<ScreenKey, AssistantSuggestion[]> = {
     { label: "Revisar integraciones", href: "/admin/integrations", permission: "nexoAdmin" },
   ],
   default: [
-    { label: "Ver clientes", href: "/dashboard/clients" },
+    { label: "Ver clientes en CRM", href: "/dashboard/crm" },
     { label: "Ver inventario", href: "/dashboard/inventory" },
     { label: "Ver ventas", href: "/dashboard/ventas/ordenes" },
     { label: "Importar datos", href: "/dashboard/import", permission: "import" },
@@ -486,12 +500,20 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
       suggestions: allowedActions("service", context),
     }
   }
-  if (/cliente|contacto|crm/.test(query)) {
+  if (/configurar dashboard|personalizar dashboard|cambiar (el )?dashboard|agregar (un )?indicador|agregar (una )?grafica|quitar indicador|mover (el )?bloque|orden(ar)? (el )?dashboard|tablero/.test(query)) {
     return {
       text: en
-        ? "These actions help you find customers, review balances and follow up commercially."
-        : "Estas acciones te ayudan a buscar clientes, revisar saldos y dar seguimiento comercial.",
-      suggestions: allowedActions("clients", context),
+        ? "You can choose which indicators to show, reorder them and change their size from \"Configurar dashboard\"."
+        : "Puedes elegir qué indicadores mostrar, cambiar su orden y ajustar su tamaño desde \"Configurar dashboard\".",
+      suggestions: allowedActions("dashboard", context).filter((a) => a.label === "Configurar dashboard"),
+    }
+  }
+  if (/cliente|contacto|crm|prospecto|oportunidad|actividad comercial|seguimiento comercial/.test(query)) {
+    return {
+      text: en
+        ? "CRM Momentum is where your customers, contacts, prospects and deals live. These actions help you find them and follow up commercially."
+        : "CRM Momentum es donde vive tu cartera de clientes, contactos, prospectos y oportunidades. Estas acciones te ayudan a encontrarlos y dar seguimiento comercial.",
+      suggestions: allowedActions("crm", context),
     }
   }
 
@@ -512,7 +534,8 @@ function resolveScreen(pathname: string): ScreenKey {
   if (pathname.startsWith("/dashboard/facturacion")) return "invoicing"
   if (pathname.startsWith("/dashboard/warehouse")) return "warehouse"
   if (pathname.startsWith("/dashboard/inventory")) return "inventory"
-  if (pathname.startsWith("/dashboard/clients") || pathname.startsWith("/dashboard/crm")) return "clients"
+  if (pathname.startsWith("/dashboard/crm")) return "crm"
+  if (pathname.startsWith("/dashboard/clients")) return "clients"
   if (pathname.startsWith("/dashboard/suppliers") || pathname.startsWith("/dashboard/eprocurement")) return "suppliers"
   if (pathname.startsWith("/dashboard/listas-precios")) return "priceLists"
   if (pathname.startsWith("/dashboard/catalogo")) return "catalog"

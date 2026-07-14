@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -14,6 +14,8 @@ import {
   CheckCircle2,
   Loader2,
   Settings,
+  History,
+  Building2,
 } from "lucide-react"
 import { usePlatform } from "@/contexts/platform-context"
 import { useAuth } from "@/hooks/use-auth"
@@ -36,19 +38,23 @@ const modeLabel = {
 } as const
 
 const directionLabel: Record<string, string> = {
-  pull: "Importar desde CRM",
-  push: "Enviar a CRM",
-  bidirectional: "Ambas direcciones",
+  "crm→nexo": "Importar desde CRM",
+  "nexo→crm": "Enviar a CRM",
+  bidireccional: "Ambas direcciones",
 }
 
 export default function CrmPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { activeTenantId, isPlatformAdmin } = usePlatform()
   const { user } = useAuth()
   const [tenant, setTenant] = useState<Tenant | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [log, setLog] = useState<SyncLogEntry[]>([])
   const [health, setHealth] = useState<{ ok: boolean; detail: string } | null>(null)
+  // Ventas/Facturación pueden enlazar aquí con ?historial=1 para abrir la
+  // "actividad comercial" (historial de sincronización) directamente.
+  const [showHistory, setShowHistory] = useState(() => searchParams.get("historial") === "1")
 
   useEffect(() => {
     getTenant(activeTenantId).then(setTenant)
@@ -89,6 +95,7 @@ export default function CrmPage() {
       const entry: SyncLogEntry = { at: new Date().toISOString(), summary, status: "ok" }
       const next = [entry, ...log].slice(0, 10)
       setLog(next)
+      setShowHistory(true) // feedback inmediato del resultado tras un sync explícito
       if (typeof window !== "undefined")
         window.localStorage.setItem(`nexo_crm_log_${activeTenantId}`, JSON.stringify(next))
       // Trazabilidad: la sincronización queda en la auditoría de la empresa.
@@ -117,6 +124,7 @@ export default function CrmPage() {
   const crmUrl = tenant?.crm.baseUrl ?? "https://crm-momentum.vercel.app"
   const enabled = tenant?.crm.enabled ?? false
   const currentMode = tenant?.crm.mode ?? "sandbox"
+  const lastSync = log[0]?.at ? new Date(log[0].at).toLocaleString("es-MX") : null
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -129,7 +137,7 @@ export default function CrmPage() {
             Integración del CRM por empresa. {enabled ? "Habilitado" : "Deshabilitado"} para esta empresa.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" onClick={() => router.push("/dashboard/crm/embed")}>
             <ExternalLink className="w-4 h-4 mr-1" /> Abrir CRM en Nexo
           </Button>
@@ -137,6 +145,13 @@ export default function CrmPage() {
             <a href={crmUrl} target="_blank" rel="noopener noreferrer">
               Abrir en pestaña nueva
             </a>
+          </Button>
+          <Button variant="outline" onClick={runTestSync} disabled={syncing} data-testid="crm-sync">
+            {syncing ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-1" />}
+            Sincronizar prueba
+          </Button>
+          <Button variant="outline" onClick={() => setShowHistory((v) => !v)} data-testid="crm-toggle-history">
+            <History className="w-4 h-4 mr-1" /> {showHistory ? "Ocultar historial" : "Ver historial"}
           </Button>
         </div>
       </div>
@@ -158,7 +173,7 @@ export default function CrmPage() {
         </Card>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground font-medium">Estado</CardTitle>
@@ -173,22 +188,33 @@ export default function CrmPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground font-medium">Modo</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground font-medium flex items-center gap-1.5">
+              <Building2 className="w-3.5 h-3.5" /> Empresa activa
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <Badge variant={currentMode === "production" ? "default" : "secondary"}>{modeLabel[currentMode]}</Badge>
-            <p className="text-xs text-muted-foreground mt-1">Fuente maestra: {tenant?.crm.masterSource === "crm" ? "CRM Momentum" : "Nexo ERP"}</p>
+            <span className="font-medium">{tenant?.name ?? "—"}</span>
+            <p className="text-xs text-muted-foreground mt-1">Los datos de CRM no se mezclan entre empresas.</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground font-medium">Sincronización</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground font-medium">Última sincronización</CardTitle>
           </CardHeader>
           <CardContent>
-            <Button size="sm" onClick={runTestSync} disabled={syncing} data-testid="crm-sync">
-              {syncing ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-1" />}
-              Sincronizar prueba
-            </Button>
+            <span className="font-medium">{lastSync ?? "Sin sincronizar aún"}</span>
+            <p className="text-xs text-muted-foreground mt-1">
+              {log.length ? `${log.length} en el historial reciente` : "Pulsa “Sincronizar prueba” para probar el flujo"}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-muted-foreground font-medium">Modo</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Badge variant={currentMode === "production" ? "default" : "secondary"}>{modeLabel[currentMode]}</Badge>
+            <p className="text-xs text-muted-foreground mt-1">Fuente principal: {tenant?.crm.masterSource === "crm" ? "CRM Momentum" : "Nexo ERP"}</p>
           </CardContent>
         </Card>
       </div>
@@ -230,35 +256,37 @@ export default function CrmPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Historial de sincronización</CardTitle>
-          <CardDescription>Últimas sincronizaciones de prueba de esta empresa.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {log.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">
-              Sin sincronizaciones. Pulsa &quot;Sincronizar prueba&quot; para probar el flujo.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {log.map((entry, index) => (
-                <div key={index} className="flex items-center justify-between rounded-lg border p-3 text-sm">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    <span>{new Date(entry.at).toLocaleString("es-MX")}</span>
+      {showHistory && (
+        <Card data-testid="crm-history-panel">
+          <CardHeader>
+            <CardTitle>Historial de sincronización</CardTitle>
+            <CardDescription>Últimas sincronizaciones de prueba de esta empresa.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {log.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">
+                Sin sincronizaciones. Pulsa &quot;Sincronizar prueba&quot; para probar el flujo.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {log.map((entry, index) => (
+                  <div key={index} className="flex items-center justify-between rounded-lg border p-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      <span>{new Date(entry.at).toLocaleString("es-MX")}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Badge variant="secondary">{entry.summary.pulled} recibidos</Badge>
+                      <Badge variant="outline">{entry.summary.created} creados</Badge>
+                      <Badge variant="outline">{entry.summary.deduplicated} duplicados</Badge>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Badge variant="secondary">{entry.summary.pulled} recibidos</Badge>
-                    <Badge variant="outline">{entry.summary.created} creados</Badge>
-                    <Badge variant="outline">{entry.summary.deduplicated} duplicados</Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

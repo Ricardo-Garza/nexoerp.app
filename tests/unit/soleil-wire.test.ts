@@ -164,7 +164,7 @@ describe("Menú por empresa y módulos combinados", () => {
     const names = principal.items.map((i) => i.name)
     expect(names).toEqual([
       "Dashboard",
-      "Clientes / CRM",
+      "CRM Momentum",
       "Ventas",
       "Facturación y Remisiones",
       "Productos y Precios",

@@ -27,7 +27,7 @@ export const MODULE_CATALOG: ModuleDefinition[] = [
   { id: "accounting", name: "Contabilidad", description: "Catálogo de cuentas y pólizas", href: "/dashboard/accounting", group: "administracion", maturity: "beta" },
   { id: "payroll", name: "Nómina / RRHH", description: "Empleados, vacaciones e incidencias", href: "/dashboard/payroll", group: "administracion", maturity: "beta" },
   { id: "bi", name: "Business Intelligence", description: "Reportes y analítica", href: "/dashboard/business-intelligence", group: "analitica", maturity: "beta" },
-  { id: "crm", name: "CRM Momentum", description: "Integración con CRM Momentum por tenant", href: "/dashboard/crm", group: "expansion", maturity: "beta" },
+  { id: "crm", name: "CRM Momentum", description: "Clientes, contactos, prospectos y oportunidades por empresa", href: "/dashboard/crm", group: "principal", maturity: "beta" },
   { id: "webMobile", name: "ERP Web / Móvil", description: "Vista previa de la experiencia móvil", href: "/dashboard/web-mobile", group: "expansion", maturity: "planned" },
   { id: "ecommerce", name: "E-Commerce", description: "Canal de venta en línea (previo)", href: "/dashboard/ecommerce", group: "expansion", maturity: "planned" },
 ]
@@ -38,10 +38,15 @@ export function getModule(id: ModuleId): ModuleDefinition | undefined {
   return BY_ID.get(id)
 }
 
-/** Módulos activos por defecto para un tenant nuevo (los estables + beta core). */
+/**
+ * Módulos activos por defecto para un tenant nuevo (los estables + beta core).
+ * "clients" (Clientes / CRM) no se incluye a propósito: CRM Momentum ("crm")
+ * es la única puerta de entrada comercial visible; la ruta /dashboard/clients
+ * sigue existiendo como soporte interno pero no se muestra en el menú.
+ */
 export const DEFAULT_TENANT_MODULES: ModuleId[] = [
   "dashboard",
-  "clients",
+  "crm",
   "sales",
   "invoicing",
   "suppliers",
@@ -51,7 +56,6 @@ export const DEFAULT_TENANT_MODULES: ModuleId[] = [
   "lots",
   "banking",
   "service",
-  "crm",
   "imports",
 ]
 
@@ -63,8 +67,13 @@ export const COMBINED_MODULE_IDS: ModuleId[] = MODULE_CATALOG.filter((m) => m.co
  * Excluye los módulos combinados: una empresa los activa explícitamente y
  * entonces sustituyen a los módulos que cubren.
  */
+/**
+ * "clients" (Clientes / CRM) se excluye del conjunto activo por defecto:
+ * CRM Momentum ("crm") es la única puerta de entrada comercial visible en
+ * el menú. La ruta /dashboard/clients sigue existiendo como soporte interno.
+ */
 export const ALL_MODULE_IDS: ModuleId[] = MODULE_CATALOG.filter(
-  (m) => !["productsPricing", "inventoryStock", "warehouse"].includes(m.id),
+  (m) => !["clients", "productsPricing", "inventoryStock", "warehouse"].includes(m.id),
 ).map((m) => m.id)
 
 /**
@@ -74,7 +83,7 @@ export const ALL_MODULE_IDS: ModuleId[] = MODULE_CATALOG.filter(
  */
 export const DISTRIBUTION_TENANT_MODULES: ModuleId[] = [
   "dashboard",
-  "clients",
+  "crm",
   "sales",
   "invoicing",
   "productsPricing",
@@ -84,6 +93,5 @@ export const DISTRIBUTION_TENANT_MODULES: ModuleId[] = [
   "accounting",
   "bi",
   "service",
-  "crm",
   "imports",
 ]
