@@ -18,6 +18,7 @@ export default function CrmEmbedPage() {
   const { activeTenantId } = usePlatform()
   const [url, setUrl] = useState("https://crm-momentum.vercel.app")
   const [blocked, setBlocked] = useState(false)
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     getTenant(activeTenantId).then((t) => t?.crm.baseUrl && setUrl(t.crm.baseUrl))
@@ -49,11 +50,27 @@ export default function CrmEmbedPage() {
       </div>
 
       <div className="flex-1 relative">
+        {!loaded && !blocked && (
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background"
+            data-testid="crm-embed-skeleton"
+          >
+            <div className="w-10 h-10 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+            <p className="text-sm text-muted-foreground">Cargando CRM Momentum…</p>
+            <div className="w-64 space-y-2">
+              <div className="h-2.5 rounded-full bg-muted animate-pulse" />
+              <div className="h-2.5 rounded-full bg-muted animate-pulse w-4/5 mx-auto" />
+            </div>
+          </div>
+        )}
         <iframe
           src={url}
           title="CRM Momentum"
           className="w-full h-full border-0"
-          onLoad={() => setBlocked(false)}
+          onLoad={() => {
+            setBlocked(false)
+            setLoaded(true)
+          }}
         />
         {blocked && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/95 p-6">

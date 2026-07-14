@@ -116,6 +116,76 @@ test("Centro de Importación: prueba previa valida y confirma una carga CSV", as
   expect(criticalErrors()).toEqual([])
 })
 
+test("Configurar dashboard: sin scroll horizontal y secciones claras", async ({ page }) => {
+  await login(page, "operaciones@nexo.com")
+  await page.getByTestId("configure-dashboard").click()
+  const dialog = page.getByTestId("dashboard-editor-dialog")
+  await expect(dialog).toBeVisible()
+  await expect(page.getByText("Bloques activos")).toBeVisible()
+  await expect(page.getByText("Disponibles para agregar")).toBeVisible()
+  await expect(page.getByText("Vista previa")).toBeVisible()
+
+  const overflow = await dialog.evaluate((el) => el.scrollWidth > el.clientWidth + 1)
+  expect(overflow).toBe(false)
+  expect(criticalErrors()).toEqual([])
+})
+
+test("Configurar dashboard: cambiar tamaño, guardar y persistir", async ({ page }) => {
+  await login(page, "operaciones@nexo.com")
+  await page.getByTestId("configure-dashboard").click()
+  const firstRowSize = page.getByRole("combobox").first()
+  await firstRowSize.click()
+  await page.getByRole("option", { name: "Grande" }).click()
+  await page.getByRole("button", { name: "Guardar configuración" }).click()
+  await expect(page.getByTestId("dashboard-editor-dialog")).toBeHidden()
+
+  // Reabrir y confirmar que el tamaño se conservó (persistido, no solo en memoria)
+  await page.getByTestId("configure-dashboard").click()
+  await expect(page.getByRole("combobox").first()).toContainText("Grande")
+})
+
+test("Configurar dashboard: Cancelar no guarda cambios", async ({ page }) => {
+  await login(page, "operaciones@nexo.com")
+  await page.getByTestId("configure-dashboard").click()
+  const countBefore = await page.getByTestId("dashboard-visible-count").textContent()
+  await page.getByRole("switch").first().click()
+  await page.getByRole("button", { name: "Cancelar" }).click()
+  await expect(page.getByTestId("dashboard-editor-dialog")).toBeHidden()
+
+  await page.getByTestId("configure-dashboard").click()
+  await expect(page.getByTestId("dashboard-visible-count")).toHaveText(countBefore ?? "")
+})
+
+test("Configurar dashboard: no deja activar más de 12 bloques", async ({ page }) => {
+  await login(page, "operaciones@nexo.com")
+  await page.getByTestId("configure-dashboard").click()
+
+  for (let i = 0; i < 20; i++) {
+    const addButtons = page.getByRole("button", { name: "Agregar" })
+    if ((await addButtons.count()) === 0) break
+    const warningVisible = await page.getByTestId("dashboard-limit-warning").isVisible().catch(() => false)
+    if (warningVisible) break
+    await addButtons.first().click()
+  }
+
+  const addButtons = page.getByRole("button", { name: "Agregar" })
+  if ((await addButtons.count()) > 0) {
+    await addButtons.first().click()
+    await expect(page.getByTestId("dashboard-limit-warning")).toBeVisible()
+  }
+  await expect(page.getByTestId("dashboard-visible-count")).toContainText("12 de 12")
+})
+
+test("Configurar dashboard: Restaurar predeterminado vuelve al set inicial", async ({ page }) => {
+  await login(page, "operaciones@nexo.com")
+  await page.getByTestId("configure-dashboard").click()
+  const countBefore = await page.getByTestId("dashboard-visible-count").textContent()
+  await page.getByRole("button", { name: "Agregar" }).first().click()
+  await expect(page.getByTestId("dashboard-visible-count")).not.toHaveText(countBefore ?? "")
+  await page.getByRole("button", { name: "Restaurar predeterminado" }).click()
+  await expect(page.getByTestId("dashboard-visible-count")).toHaveText(countBefore ?? "")
+})
+
 test("CRM Momentum: configuración visible, sincronización de prueba y regreso a Nexo", async ({ page }) => {
   await login(page, "operaciones@nexo.com")
   await page.goto("/dashboard/crm")

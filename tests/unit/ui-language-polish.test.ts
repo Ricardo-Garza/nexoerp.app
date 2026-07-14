@@ -70,4 +70,21 @@ describe("UI language polish", () => {
     expect(privacy).not.toContain("?ltima")
     expect(privacy).not.toMatch(/c\?mo|protecci\?n|M\?xico|informaci\?n/)
   })
+
+  it("dashboard chart tooltips never leak the raw 'value' dataKey as a label", () => {
+    const dashboard = read("components/dashboard/customizable-dashboard.tsx")
+
+    // Bar/Line usan dataKey="value": sin name="Valor" o formatter, Recharts
+    // muestra literal "value" en el tooltip.
+    expect(dashboard).not.toMatch(/<ChartTooltip\s*\/>/)
+    expect(dashboard).toContain('name="Valor"')
+    expect(dashboard).not.toMatch(/>\s*value\s*</)
+  })
+
+  it("dashboard config modal avoids fixed-width columns that force horizontal scroll", () => {
+    const dashboard = read("components/dashboard/customizable-dashboard.tsx")
+
+    expect(dashboard).not.toMatch(/grid-cols-\[[0-9]+px/)
+    expect(dashboard).toContain("overflow-x-hidden")
+  })
 })

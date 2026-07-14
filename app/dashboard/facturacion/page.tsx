@@ -1,7 +1,8 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Eye, FileText, Pencil, Plus, Search, Trash2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Eye, FileText, MessageSquare, Pencil, Plus, Search, Trash2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -58,6 +59,7 @@ const statusLabels: Record<string, string> = {
 }
 
 export default function FacturacionPage() {
+  const router = useRouter()
   const { items: cfdis, loading, create, update, remove } = useFirestore<CfdiDoc>(COLLECTIONS.cfdi, [], true)
   const { items: customers } = useFirestore<Customer>(COLLECTIONS.customers, [], true)
   const [activeTab, setActiveTab] = useState<CfdiDoc["tipo"]>("factura")
@@ -340,8 +342,18 @@ export default function FacturacionPage() {
       </Tabs>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
           <CardTitle>Historial por cliente</CardTitle>
+          {clienteFilter && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-primary"
+              onClick={() => router.push("/dashboard/crm")}
+            >
+              <MessageSquare className="h-3.5 w-3.5 mr-1" /> Ver cliente en CRM
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="space-y-3">
           {clienteFilter ? (
