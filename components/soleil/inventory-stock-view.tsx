@@ -393,7 +393,7 @@ export function InventoryStockView({ tenantName, embedded = false }: { tenantNam
       <Tabs defaultValue="existencias" className="space-y-4">
         <TabsList>
           <TabsTrigger value="existencias">Existencias</TabsTrigger>
-          <TabsTrigger value="movimientos">Movimientos y trazabilidad</TabsTrigger>
+          <TabsTrigger value="movimientos">Movimientos</TabsTrigger>
         </TabsList>
 
         <TabsContent value="existencias">
@@ -433,7 +433,7 @@ export function InventoryStockView({ tenantName, embedded = false }: { tenantNam
         <TabsContent value="movimientos">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle>Movimientos</CardTitle>
+              <CardTitle>Historial y trazabilidad</CardTitle>
               <CardDescription>
                 Historial completo: quién movió qué, cuándo, en qué almacén y por qué. Filtra por SKU o bobina/serie
                 para seguir la trazabilidad.

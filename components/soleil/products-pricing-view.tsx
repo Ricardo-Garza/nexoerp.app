@@ -15,11 +15,15 @@ import { useAuth } from "@/hooks/use-auth"
 import { usePlatform } from "@/contexts/platform-context"
 import { appendAudit, bulkInsert, listAudit } from "@/lib/platform/tenant-store"
 import {
+  buildStockPositions,
+  loadSoleilInventory,
+  loadSoleilMovements,
   loadSoleilPriceEntries,
   loadSoleilProducts,
+  type SoleilStockMovement,
 } from "@/lib/domain/soleilwire/client-data"
 import { SOLEIL_TENANT_ID, getSoleilSeed, type SoleilPriceEntry, type SoleilProduct } from "@/lib/domain/soleilwire"
-import { Boxes, Grid3X3, List, PencilLine, Table2 } from "lucide-react"
+import { Boxes, Download, FileClock, Grid3X3, History, Import, List, PencilLine, Table2 } from "lucide-react"
 
 /**
  * Módulo combinado "Productos y Precios": catálogo + lista de precios en una
@@ -27,7 +31,7 @@ import { Boxes, Grid3X3, List, PencilLine, Table2 } from "lucide-react"
  * y la captura manual queda auditada por registro.
  */
 
-type CatalogViewMode = "tabla" | "tarjetas" | "lista"
+type CatalogViewMode = "tabla" | "tarjetas" | "lista" | "comercial" | "operativa"
 
 interface ProductRow extends SoleilProduct {
   precioLista: number | null
@@ -71,6 +75,9 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
   const [products, setProducts] = useState<SoleilProduct[]>([])
   const [priceEntries, setPriceEntries] = useState<SoleilPriceEntry[]>([])
   const [recentChanges, setRecentChanges] = useState<RecentChange[]>([])
+  const [inventoryAvailable, setInventoryAvailable] = useState<Map<string, number>>(new Map())
+  const [recentMovements, setRecentMovements] = useState<SoleilStockMovement[]>([])
+  const [activeTab, setActiveTab] = useState("catalogo")
   const [viewMode, setViewMode] = useState<CatalogViewMode>("tabla")
   const [columnPreset, setColumnPreset] = useState<"comercial" | "tecnica" | "precios">("comercial")
   const [cardsWithImage, setCardsWithImage] = useState(true)
@@ -78,6 +85,7 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
   const [cardFamily, setCardFamily] = useState<string>("todas")
   const [cardSort, setCardSort] = useState<"nombre" | "precio-desc" | "precio-asc">("nombre")
   const [priceDialog, setPriceDialog] = useState<ProductRow | null>(null)
+  const [productDialog, setProductDialog] = useState<ProductRow | null>(null)
   const [priceValue, setPriceValue] = useState("")
   const [wholesaleValue, setWholesaleValue] = useState("")
 
@@ -88,6 +96,15 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
   useEffect(() => {
     setProducts(loadSoleilProducts(activeTenantId))
     setPriceEntries(loadSoleilPriceEntries(activeTenantId))
+    const movements = loadSoleilMovements(activeTenantId)
+    const positions = buildStockPositions(loadSoleilInventory(activeTenantId), movements)
+    const available = new Map<string, number>()
+    for (const position of positions) {
+      if (!position.capturado) continue
+      available.set(position.sku, (available.get(position.sku) ?? 0) + position.disponible)
+    }
+    setInventoryAvailable(available)
+    setRecentMovements(movements.slice(0, 20))
     listAudit(activeTenantId, 30)
       .then((records) =>
         setRecentChanges(
@@ -437,8 +454,16 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
     "Captura el precio con el lápiz de cada fila; queda registrado en el historial.",
     "Importa precios masivos desde el Centro de Importación (plantilla Listas de precios).",
     "Exporta la vista actual a CSV/XLSX respetando filtros y columnas visibles.",
-    "Cambia entre vista tabla, tarjetas o lista según lo que necesites.",
+    "Cambia entre vista tabla, tarjetas, lista, comercial u operativa según lo que necesites.",
   ]
+
+  const openPriceDialog = useCallback((row: ProductRow) => {
+    setPriceDialog(row)
+    setPriceValue(row.precioLista !== null ? String(row.precioLista) : "")
+    setWholesaleValue(row.precioMayoreo !== null ? String(row.precioMayoreo) : "")
+  }, [])
+
+  const productsInSelectedFamily = cardFamily === "todas" ? rows : rows.filter((r) => r.familia === cardFamily)
 
   return (
     <div className="space-y-6">
@@ -462,23 +487,27 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
         </div>
       </div>
 
-      <Tabs defaultValue="catalogo" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="catalogo">Catálogo</TabsTrigger>
           <TabsTrigger value="precios">Lista de precios</TabsTrigger>
           <TabsTrigger value="familias">Familias</TabsTrigger>
+          <TabsTrigger value="importacion">Importación</TabsTrigger>
+          <TabsTrigger value="historial">Historial</TabsTrigger>
         </TabsList>
 
         <TabsContent value="catalogo" className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex rounded-lg border border-border p-0.5">
-              {(
-                [
-                  { mode: "tabla" as const, icon: Table2, label: "Tabla" },
-                  { mode: "tarjetas" as const, icon: Grid3X3, label: "Tarjetas" },
-                  { mode: "lista" as const, icon: List, label: "Lista" },
-                ]
-              ).map(({ mode, icon: Icon, label }) => (
+                  {(
+                    [
+                      { mode: "tabla" as const, icon: Table2, label: "Tabla" },
+                      { mode: "tarjetas" as const, icon: Grid3X3, label: "Tarjetas" },
+                      { mode: "lista" as const, icon: List, label: "Lista" },
+                      { mode: "comercial" as const, icon: Download, label: "Vista comercial" },
+                      { mode: "operativa" as const, icon: FileClock, label: "Vista operativa" },
+                    ]
+                  ).map(({ mode, icon: Icon, label }) => (
                 <Button
                   key={mode}
                   size="sm"
@@ -505,12 +534,23 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
             )}
           </div>
 
+          {cardFamily !== "todas" && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/40 px-4 py-3 text-sm">
+              <span>
+                Familia <strong>{cardFamily}</strong>: {productsInSelectedFamily.length} productos encontrados.
+              </span>
+              <Button size="sm" variant="outline" onClick={() => setCardFamily("todas")}>
+                Volver a todas las familias
+              </Button>
+            </div>
+          )}
+
           {viewMode === "tabla" ? (
             <DataTablePro
               key={`soleil-productos-${columnPreset}`}
               tableId={`soleil-productos-${columnPreset}`}
               columns={baseColumns}
-              rows={rows}
+              rows={productsInSelectedFamily}
               getRowId={(r) => r.sku}
               moduleName="Productos y Precios"
               tenantName={tenantName}
@@ -525,16 +565,16 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
                   size="sm"
                   variant="ghost"
                   title="Capturar precio"
-                  onClick={() => {
-                    setPriceDialog(r)
-                    setPriceValue(r.precioLista !== null ? String(r.precioLista) : "")
-                    setWholesaleValue(r.precioMayoreo !== null ? String(r.precioMayoreo) : "")
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    openPriceDialog(r)
                   }}
                   data-testid={`soleil-capture-price-${r.sku}`}
                 >
                   <PencilLine className="w-4 h-4" />
                 </Button>
               )}
+              onRowClick={setProductDialog}
               recentChanges={recentChanges}
               helpItems={helpItems}
               importHref="/dashboard/import?entity=productos"
@@ -583,10 +623,68 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
                 <span className="text-sm text-muted-foreground ml-auto">{cardRows.length} productos</span>
               </div>
 
-              {viewMode === "tarjetas" ? (
+              {viewMode === "comercial" ? (
+                <div className="grid gap-3 lg:grid-cols-2">
+                  {cardRows.map((r) => (
+                    <button
+                      key={r.sku}
+                      type="button"
+                      onClick={() => setProductDialog(r)}
+                      className="rounded-lg border bg-card p-4 text-left transition-colors hover:border-primary"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-mono text-xs text-muted-foreground">{r.sku}</p>
+                          <p className="mt-1 line-clamp-2 text-sm font-semibold">{r.producto}</p>
+                          <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{r.usoAplicacion ?? "Aplicación pendiente de capturar"}</p>
+                        </div>
+                        {r.precioLista === null ? (
+                          <Badge variant="outline" className="border-amber-400/60 text-amber-600 dark:text-amber-300">
+                            Sin precio
+                          </Badge>
+                        ) : (
+                          <span className="font-mono text-sm font-semibold">{money(r.precioLista, r.moneda)}</span>
+                        )}
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Badge variant="outline">{r.familia}</Badge>
+                        <Badge variant="secondary">{r.unidadVenta}</Badge>
+                        <Badge variant="outline">{r.activo ? "Activo" : "Inactivo"}</Badge>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : viewMode === "operativa" ? (
+                <Card>
+                  <CardContent className="p-0 divide-y divide-border">
+                    {cardRows.map((r) => (
+                      <button
+                        key={r.sku}
+                        type="button"
+                        onClick={() => setProductDialog(r)}
+                        className="grid w-full grid-cols-1 gap-2 px-4 py-3 text-left transition-colors hover:bg-muted/50 md:grid-cols-[12rem_1fr_8rem_8rem_9rem]"
+                      >
+                        <span className="font-mono text-xs text-muted-foreground">{r.sku}</span>
+                        <span className="min-w-0 truncate text-sm" title={r.producto}>
+                          {r.producto}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{r.familia}</span>
+                        <span className="font-mono text-sm">
+                          {inventoryAvailable.has(r.sku)
+                            ? inventoryAvailable.get(r.sku)?.toLocaleString("es-MX")
+                            : "Pendiente"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {recentMovements.some((m) => m.sku === r.sku) ? "Con movimientos" : "Sin movimientos"}
+                        </span>
+                      </button>
+                    ))}
+                  </CardContent>
+                </Card>
+              ) : viewMode === "tarjetas" ? (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {cardRows.map((r) => (
-                    <Card key={r.sku} className="overflow-hidden">
+                    <Card key={r.sku} className="overflow-hidden cursor-pointer transition-colors hover:border-primary" onClick={() => setProductDialog(r)}>
                       {cardsWithImage && (
                         <div
                           className={`h-24 bg-gradient-to-br ${familyTone(r.familia)} flex items-center justify-center`}
@@ -621,7 +719,7 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
                 <Card>
                   <CardContent className="p-0 divide-y divide-border">
                     {cardRows.map((r) => (
-                      <div key={r.sku} className="flex items-center gap-4 px-4 py-2.5">
+                      <button key={r.sku} type="button" onClick={() => setProductDialog(r)} className="flex w-full items-center gap-4 px-4 py-2.5 text-left transition-colors hover:bg-muted/50">
                         <span className="font-mono text-xs text-muted-foreground w-52 shrink-0 truncate">{r.sku}</span>
                         <span className="text-sm flex-1 truncate" title={r.producto}>
                           {r.producto}
@@ -636,7 +734,7 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
                             money(r.precioLista, r.moneda)
                           )}
                         </span>
-                      </div>
+                      </button>
                     ))}
                     {cardRows.length === 0 && (
                       <p className="px-4 py-8 text-sm text-muted-foreground text-center">Sin resultados con esos filtros.</p>
@@ -706,6 +804,7 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
                     onClick={() => {
                       setViewMode("tarjetas")
                       setCardFamily(f.nombre)
+                      setActiveTab("catalogo")
                     }}
                   >
                     Ver productos
@@ -714,6 +813,65 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
               </Card>
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="importacion" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Importación de productos y precios</CardTitle>
+              <CardDescription>
+                Usa plantillas para cargar catálogo o listas de precios. La validación muestra errores por fila antes de guardar.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3 md:grid-cols-2">
+              <div className="rounded-lg border p-4">
+                <Import className="mb-2 h-5 w-5 text-primary" />
+                <p className="font-medium">Catálogo de productos</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Columnas mínimas: SKU, producto, familia, unidad, aplicación y estado.
+                </p>
+                <Button className="mt-3" size="sm" variant="outline" onClick={() => window.location.assign("/dashboard/import?entity=productos")}>
+                  Importar productos
+                </Button>
+              </div>
+              <div className="rounded-lg border p-4">
+                <Download className="mb-2 h-5 w-5 text-primary" />
+                <p className="font-medium">Lista de precios</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  No se inventan precios: si falta precio queda como “Sin precio” hasta capturarlo o importarlo.
+                </p>
+                <Button className="mt-3" size="sm" variant="outline" onClick={() => window.location.assign("/dashboard/import?entity=precios")}>
+                  Importar precios
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="historial" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Últimos cambios</CardTitle>
+              <CardDescription>Actividad reciente de productos y precios para la empresa activa.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {recentChanges.length === 0 ? (
+                <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                  Sin cambios registrados todavía. Se activa al capturar precios, importar productos o actualizar información.
+                </p>
+              ) : (
+                recentChanges.map((change) => (
+                  <div key={change.id} className="rounded-lg border bg-muted/30 p-3">
+                    <p className="text-sm font-medium">{change.title}</p>
+                    {change.description && <p className="text-xs text-muted-foreground">{change.description}</p>}
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      {[change.actor, change.at].filter(Boolean).join(" · ")}
+                    </p>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
@@ -766,6 +924,156 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={productDialog !== null} onOpenChange={(open) => !open && setProductDialog(null)}>
+        <DialogContent className="max-h-[88vh] max-w-3xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{productDialog?.producto ?? "Ficha de producto"}</DialogTitle>
+            <DialogDescription>
+              {productDialog?.sku} · {productDialog?.familia ?? "Sin familia"}
+            </DialogDescription>
+          </DialogHeader>
+
+          {productDialog && (
+            <div className="space-y-5">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <InfoTile label="SKU" value={productDialog.sku} mono />
+                <InfoTile label="Familia" value={productDialog.familia} />
+                <InfoTile label="Unidad" value={productDialog.unidadVenta} />
+                <InfoTile label="Aplicación" value={productDialog.usoAplicacion ?? "Pendiente de capturar"} />
+                <InfoTile
+                  label="Estado del precio"
+                  value={productDialog.precioLista === null ? "Sin precio" : "Precio capturado"}
+                />
+                <InfoTile label="Precio" value={productDialog.precioLista === null ? "Sin precio" : money(productDialog.precioLista, productDialog.moneda)} mono />
+                <InfoTile
+                  label="Inventario disponible"
+                  value={
+                    inventoryAvailable.has(productDialog.sku)
+                      ? `${inventoryAvailable.get(productDialog.sku)?.toLocaleString("es-MX")} ${productDialog.unidadVenta}`
+                      : "Pendiente de capturar"
+                  }
+                  mono
+                />
+                <InfoTile label="Material" value={productDialog.material ?? "Sin dato"} />
+                <InfoTile label="Norma" value={productDialog.norma ?? "Sin dato"} />
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-2">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Movimientos recientes</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {recentMovements.filter((m) => m.sku === productDialog.sku).length === 0 ? (
+                      <p className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">Sin movimientos todavía.</p>
+                    ) : (
+                      recentMovements
+                        .filter((m) => m.sku === productDialog.sku)
+                        .slice(0, 5)
+                        .map((movement) => (
+                          <div key={`${movement.sku}-${movement.at}-${movement.tipo}`} className="rounded-lg border p-3 text-sm">
+                            <div className="flex justify-between gap-3">
+                              <span className="font-medium">{movement.tipo}</span>
+                              <span className="font-mono">{movement.cantidad.toLocaleString("es-MX")} {movement.unidad}</span>
+                            </div>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {[movement.almacen, movement.almacenDestino, movement.motivo].filter(Boolean).join(" · ") || "Sin referencia"}
+                            </p>
+                          </div>
+                        ))
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Últimos cambios</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {recentChanges.filter((change) => change.description?.includes(productDialog.sku)).length === 0 ? (
+                      <p className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">Sin cambios recientes para este SKU.</p>
+                    ) : (
+                      recentChanges
+                        .filter((change) => change.description?.includes(productDialog.sku))
+                        .slice(0, 5)
+                        .map((change) => (
+                          <div key={change.id} className="rounded-lg border p-3 text-sm">
+                            <p className="font-medium">{change.title}</p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {[change.actor, change.at].filter(Boolean).join(" · ")}
+                            </p>
+                          </div>
+                        ))
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:justify-between">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                onClick={() =>
+                  toast({
+                    title: "Preparado para configurar",
+                    description: "La edición completa de producto se conectará a datos reales.",
+                  })
+                }
+              >
+                Editar
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (!productDialog) return
+                  openPriceDialog(productDialog)
+                  setProductDialog(null)
+                }}
+              >
+                <PencilLine className="mr-2 h-4 w-4" />
+                Cargar precio
+              </Button>
+              <Button variant="outline" onClick={() => {
+                setProductDialog(null)
+                window.location.assign("/dashboard/import?entity=precios")
+              }}>
+                <Import className="mr-2 h-4 w-4" />
+                Importar
+              </Button>
+              <Button variant="outline" onClick={() => {
+                setActiveTab("catalogo")
+                setViewMode("tabla")
+                setProductDialog(null)
+              }}>
+                <Download className="mr-2 h-4 w-4" />
+                Exportar tabla
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={() => {
+                setActiveTab("historial")
+                setProductDialog(null)
+              }}>
+                <History className="mr-2 h-4 w-4" />
+                Ver historial
+              </Button>
+              <Button onClick={() => setProductDialog(null)}>Cerrar</Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
+
+function InfoTile({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="rounded-lg border bg-muted/30 p-3">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className={`mt-1 text-sm font-medium ${mono ? "font-mono" : ""}`}>{value}</p>
     </div>
   )
 }

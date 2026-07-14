@@ -124,6 +124,10 @@ test("Configurar dashboard: sin scroll horizontal y secciones claras", async ({ 
   await expect(page.getByText("Bloques activos")).toBeVisible()
   await expect(page.getByText("Disponibles para agregar")).toBeVisible()
   await expect(page.getByText("Vista previa")).toBeVisible()
+  await expect(dialog).toContainText("Personalizar panel de control")
+  await expect(dialog).not.toContainText("value")
+  await expect(dialog).not.toContainText("Por conectar")
+  await expect(dialog).not.toContainText("Personalizar dashboard")
 
   const overflow = await dialog.evaluate((el) => el.scrollWidth > el.clientWidth + 1)
   expect(overflow).toBe(false)

@@ -18,7 +18,7 @@ export const DASHBOARD_INDICATOR_CATALOG: DashboardIndicatorDefinition[] = [
   { id: "ventasMes", name: "Ventas del mes", description: "Importe vendido en el mes en curso", source: "Ventas" },
   { id: "ventasPorCobrar", name: "Ventas por cobrar", description: "Saldo pendiente de cobro", source: "Facturación" },
   { id: "cotizacionesAbiertas", name: "Cotizaciones abiertas", description: "Cotizaciones sin cerrar", source: "Ventas" },
-  { id: "oportunidadesCrm", name: "Oportunidades CRM", description: "Oportunidades activas en el embudo", source: "Clientes / CRM" },
+  { id: "oportunidadesCrm", name: "Oportunidades CRM", description: "Oportunidades activas en el embudo", source: "CRM Momentum" },
   { id: "margenBruto", name: "Margen bruto", description: "Margen estimado con base en costos capturados", source: "Ventas" },
   { id: "productosSinPrecio", name: "Productos sin precio", description: "SKUs activos sin precio capturado", source: "Productos y Precios" },
   { id: "stockBajo", name: "Stock bajo", description: "SKUs por debajo de su mínimo", source: "Inventario y Almacén" },
@@ -29,7 +29,7 @@ export const DASHBOARD_INDICATOR_CATALOG: DashboardIndicatorDefinition[] = [
   { id: "movimientosBancarios", name: "Movimientos bancarios", description: "Movimientos del periodo", source: "Bancos / Tesorería" },
   { id: "topProductos", name: "Top productos", description: "Productos con más venta", source: "Reportes / BI" },
   { id: "topClientes", name: "Top clientes", description: "Clientes con más compra", source: "Reportes / BI" },
-  { id: "actividadComercial", name: "Actividad comercial", description: "Clientes, prospectos y seguimiento", source: "Clientes / CRM" },
+  { id: "actividadComercial", name: "Actividad comercial", description: "Clientes, prospectos y seguimiento", source: "CRM Momentum" },
   { id: "alertas", name: "Alertas", description: "Avisos que requieren atención", source: "Sistema" },
 ]
 
