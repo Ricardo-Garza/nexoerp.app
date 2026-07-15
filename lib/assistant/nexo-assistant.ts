@@ -144,7 +144,7 @@ const SCREEN_ACTIONS: Record<ScreenKey, AssistantSuggestion[]> = {
     { label: "Ver inventario bajo", href: "/dashboard/inventory" },
     { label: "Ver facturas pendientes", href: "/dashboard/facturacion" },
     { label: "Ver cobranza", href: "/dashboard/banking" },
-    { label: "Configurar dashboard", href: "/dashboard?configurar=1" },
+    { label: "Configurar panel", href: "/dashboard?configurar=1" },
     { label: "Importar datos", href: "/dashboard/import", permission: "import" },
     { label: "Exportar indicadores", href: "/dashboard/reports", permission: "export" },
   ],
@@ -232,7 +232,7 @@ const SCREEN_ACTIONS: Record<ScreenKey, AssistantSuggestion[]> = {
     { label: "Ver stock bajo", href: "/dashboard/inventory" },
     { label: "Ver existencias disponibles", href: "/dashboard/inventory" },
     { label: "Registrar entrada o salida", href: "/dashboard/inventory" },
-    { label: "Ver movimientos y trazabilidad", href: "/dashboard/inventory" },
+    { label: "Ver movimientos", href: "/dashboard/inventory" },
     { label: "Importar inventario inicial", href: "/dashboard/import?entity=inventario-inicial", permission: "import" },
     { label: "Exportar inventario", href: "/dashboard/inventory", permission: "export" },
   ],
@@ -500,12 +500,12 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
       suggestions: allowedActions("service", context),
     }
   }
-  if (/configurar dashboard|personalizar dashboard|cambiar (el )?dashboard|agregar (un )?indicador|agregar (una )?grafica|quitar indicador|mover (el )?bloque|orden(ar)? (el )?dashboard|tablero/.test(query)) {
+  if (/configurar dashboard|configurar panel|personalizar dashboard|personalizar panel|cambiar (el )?dashboard|cambiar (el )?panel|agregar (un )?indicador|agregar (una )?grafica|quitar indicador|mover (el )?bloque|orden(ar)? (el )?dashboard|orden(ar)? (el )?panel|tablero/.test(query)) {
     return {
       text: en
-        ? "You can choose which indicators to show, reorder them and change their size from \"Configurar dashboard\"."
-        : "Puedes elegir qué indicadores mostrar, cambiar su orden y ajustar su tamaño desde \"Configurar dashboard\".",
-      suggestions: allowedActions("dashboard", context).filter((a) => a.label === "Configurar dashboard"),
+        ? "You can choose which indicators to show, reorder them and change their size from \"Configurar panel\"."
+        : "Puedes elegir qué indicadores mostrar, cambiar su orden y ajustar su tamaño desde \"Configurar panel\".",
+      suggestions: allowedActions("dashboard", context).filter((a) => a.label === "Configurar panel"),
     }
   }
   if (/cliente|contacto|crm|prospecto|oportunidad|actividad comercial|seguimiento comercial/.test(query)) {

@@ -6,12 +6,12 @@ import type { ModuleDefinition, ModuleId } from "./types"
  * `maturity` evita vender humo: un módulo "planned" se muestra deshabilitado.
  */
 export const MODULE_CATALOG: ModuleDefinition[] = [
-  { id: "dashboard", name: "Dashboard", description: "Panel de indicadores de la empresa", href: "/dashboard", group: "principal", maturity: "stable" },
+  { id: "dashboard", name: "Tablero", description: "Panel de indicadores de la empresa", href: "/dashboard", group: "principal", maturity: "stable" },
   { id: "clients", name: "Clientes / CRM", description: "Cartera de clientes, contactos y saldos", href: "/dashboard/clients", group: "principal", maturity: "stable" },
   { id: "sales", name: "Ventas", description: "Órdenes de venta, cotizaciones y remisiones", href: "/dashboard/ventas/ordenes", group: "principal", maturity: "beta" },
   { id: "invoicing", name: "Facturación", description: "Facturas, complementos y notas de crédito", href: "/dashboard/facturacion", group: "principal", maturity: "beta" },
   { id: "suppliers", name: "Proveedores", description: "Padrón de proveedores y compras", href: "/dashboard/suppliers", group: "principal", maturity: "stable" },
-  { id: "inventory", name: "Inventario y Almacén", description: "Existencias, almacenes, movimientos, transferencias, conteos y reportes", href: "/dashboard/inventory", group: "principal", maturity: "stable", combines: ["inventoryStock", "warehouse"] },
+  { id: "inventory", name: "Inventario y Almacén", description: "Existencias, almacenes, movimientos, transferencias, conteos y reportes", href: "/dashboard/inventory", group: "principal", maturity: "stable", combines: ["inventoryStock", "warehouse", "lots"] },
   { id: "catalog", name: "Catálogo", description: "Presentaciones normalizadas por marca/familia", href: "/dashboard/catalogo", group: "principal", maturity: "stable" },
   { id: "priceLists", name: "Listas de Precios", description: "Menudeo, mayoreo y reglas comerciales", href: "/dashboard/listas-precios", group: "principal", maturity: "stable" },
   { id: "productsPricing", name: "Productos y Precios", description: "Catálogo y listas de precios unificados en un solo módulo", href: "/dashboard/productos-precios", group: "principal", maturity: "stable", combines: ["catalog", "priceLists"] },
@@ -26,7 +26,7 @@ export const MODULE_CATALOG: ModuleDefinition[] = [
   { id: "imports", name: "Centro de Importación", description: "Cargas masivas Excel/CSV con validación", href: "/dashboard/import", group: "administracion", maturity: "stable" },
   { id: "accounting", name: "Contabilidad", description: "Catálogo de cuentas y pólizas", href: "/dashboard/accounting", group: "administracion", maturity: "beta" },
   { id: "payroll", name: "Nómina / RRHH", description: "Empleados, vacaciones e incidencias", href: "/dashboard/payroll", group: "administracion", maturity: "beta" },
-  { id: "bi", name: "Business Intelligence", description: "Reportes y analítica", href: "/dashboard/business-intelligence", group: "analitica", maturity: "beta" },
+  { id: "bi", name: "Reportes / BI", description: "Reportes e indicadores", href: "/dashboard/business-intelligence", group: "analitica", maturity: "beta" },
   { id: "crm", name: "CRM Momentum", description: "Clientes, contactos, prospectos y oportunidades por empresa", href: "/dashboard/crm", group: "principal", maturity: "beta" },
   { id: "webMobile", name: "ERP Web / Móvil", description: "Vista previa de la experiencia móvil", href: "/dashboard/web-mobile", group: "expansion", maturity: "planned" },
   { id: "ecommerce", name: "E-Commerce", description: "Canal de venta en línea (previo)", href: "/dashboard/ecommerce", group: "expansion", maturity: "planned" },
@@ -50,10 +50,8 @@ export const DEFAULT_TENANT_MODULES: ModuleId[] = [
   "sales",
   "invoicing",
   "suppliers",
+  "productsPricing",
   "inventory",
-  "catalog",
-  "priceLists",
-  "lots",
   "banking",
   "service",
   "imports",
@@ -73,7 +71,7 @@ export const COMBINED_MODULE_IDS: ModuleId[] = MODULE_CATALOG.filter((m) => m.co
  * el menú. La ruta /dashboard/clients sigue existiendo como soporte interno.
  */
 export const ALL_MODULE_IDS: ModuleId[] = MODULE_CATALOG.filter(
-  (m) => !["clients", "productsPricing", "inventoryStock", "warehouse"].includes(m.id),
+  (m) => !["clients", "catalog", "priceLists", "inventoryStock", "lots", "warehouse"].includes(m.id),
 ).map((m) => m.id)
 
 /**

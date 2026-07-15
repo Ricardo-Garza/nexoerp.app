@@ -115,7 +115,7 @@ function defaultWidgets(tenant: Tenant | null): DashboardWidgetConfig[] {
         kind: "kpi" as const,
         indicatorId: id,
         title: def?.name ?? id,
-        description: def?.description ?? "Indicador del dashboard",
+        description: def?.description ?? "Indicador del panel de control",
         size: "small" as const,
         visible: true,
         metric: "auto" as const,
@@ -164,10 +164,10 @@ export function CustomizableDashboard({ tenant }: { tenant: Tenant | null }) {
       tenantId: tenant?.id ?? "demo",
       actorEmail: user?.email ?? "usuario@empresa",
       actorRole: "usuario",
-      action: "dashboard_config_updated",
-      entityType: "dashboard",
+      action: "panel.configuracion.actualizada",
+      entityType: "panel",
       entityId: key,
-      summary: `Configuración de dashboard actualizada: ${after.length} bloques visibles`,
+      summary: `Configuración del panel actualizada: ${after.length} bloques visibles`,
       before: { widgets: before },
       after: { widgets: after },
       source: "ui",
@@ -178,14 +178,14 @@ export function CustomizableDashboard({ tenant }: { tenant: Tenant | null }) {
     <div className="space-y-5" data-testid="custom-dashboard">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{tenant?.name ?? "Dashboard"}</h1>
+          <h1 className="text-2xl font-bold">{tenant?.name ?? "Panel de control"}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {tenant?.contact?.businessLine ?? "Indicadores principales de la empresa"}
           </p>
         </div>
         <Button onClick={() => setOpen(true)} data-testid="configure-dashboard">
           <Settings2 className="mr-2 h-4 w-4" />
-          Configurar dashboard
+          Configurar panel
         </Button>
       </div>
 
@@ -205,14 +205,16 @@ export function CustomizableDashboard({ tenant }: { tenant: Tenant | null }) {
         )}
       </div>
 
-      <DashboardEditor
-        open={open}
-        savedWidgets={widgets}
-        defaults={defaultWidgets(tenant)}
-        values={values}
-        onOpenChange={setOpen}
-        onSave={save}
-      />
+      {open && (
+        <DashboardEditor
+          open={open}
+          savedWidgets={widgets}
+          defaults={defaultWidgets(tenant)}
+          values={values}
+          onOpenChange={setOpen}
+          onSave={save}
+        />
+      )}
     </div>
   )
 }
@@ -225,7 +227,7 @@ function KpiWidget({ widget, value }: { widget: DashboardWidgetConfig; value?: R
           <p className="text-xs font-medium text-muted-foreground">{widget.title}</p>
           {value?.pending && (
             <Badge variant="outline" className="text-[10px]">
-              Por conectar
+              Pendiente de datos
             </Badge>
           )}
         </div>
@@ -322,21 +324,13 @@ function DashboardEditor({
   onOpenChange: (open: boolean) => void
   onSave: (widgets: DashboardWidgetConfig[]) => void
 }) {
-  const [draft, setDraft] = useState<DashboardWidgetConfig[]>(() => buildCatalog(savedWidgets))
-  const [focusedId, setFocusedId] = useState<string | null>(null)
+  const initialDraft = useMemo(() => buildCatalog(savedWidgets), [savedWidgets])
+  const [draft, setDraft] = useState<DashboardWidgetConfig[]>(() => initialDraft)
+  const [focusedId, setFocusedId] = useState<string | null>(() => initialDraft.find((w) => w.visible)?.id ?? null)
   const [limitWarning, setLimitWarning] = useState(false)
 
-  // El borrador se reinicia cada vez que se abre el modal, a partir de lo
   // último guardado. "Cancelar" simplemente cierra sin tocar savedWidgets:
   // nada se persiste hasta presionar "Guardar configuración".
-  useEffect(() => {
-    if (!open) return
-    const catalog = buildCatalog(savedWidgets)
-    setDraft(catalog)
-    setFocusedId(catalog.find((w) => w.visible)?.id ?? null)
-    setLimitWarning(false)
-  }, [open, savedWidgets])
-
   const valueById = useMemo(() => new Map(values.map((v) => [v.id, v])), [values])
   const active = draft.filter((w) => w.visible)
   const available = draft.filter((w) => !w.visible)
@@ -391,20 +385,23 @@ function DashboardEditor({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-h-[85vh] w-[95vw] max-w-5xl overflow-y-auto overflow-x-hidden p-0"
+        className="flex max-h-[92vh] w-[calc(100vw-2rem)] !max-w-[calc(100vw-2rem)] grid-rows-none flex-col gap-0 overflow-hidden p-0 sm:w-[min(1180px,calc(100vw-2rem))] sm:!max-w-[min(1180px,calc(100vw-2rem))] xl:!max-w-6xl"
         data-testid="dashboard-editor-dialog"
       >
-        <DialogHeader className="px-6 pt-6">
-          <DialogTitle>Personalizar dashboard</DialogTitle>
-          <DialogDescription>
-            Elige los indicadores que quieres ver en el inicio de esta empresa. Actívalos, ordénalos y ajusta su tamaño.
+        <DialogHeader className="border-b px-6 pb-4 pt-6 pr-12 sm:px-8">
+          <DialogTitle>Personalizar panel de control</DialogTitle>
+          <DialogDescription className="max-w-3xl">
+            Elige los indicadores visibles, ordénalos y ajusta el tamaño de cada bloque. Los cambios se aplican
+            hasta presionar Guardar configuración.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-6 px-6 py-4 lg:grid-cols-[1.6fr_1fr]">
-          <div className="min-w-0 space-y-5">
-            <div className="rounded-lg border bg-muted/40 px-3 py-2 text-sm" data-testid="dashboard-visible-count">
-              <strong>{Math.min(visibleCount, MAX_VISIBLE_WIDGETS)}</strong> de {MAX_VISIBLE_WIDGETS} bloques visibles.
+        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-6 py-5 sm:px-8">
+          <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.75fr)_minmax(320px,0.9fr)]">
+          <div className="min-w-0 space-y-5 overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/40 px-4 py-3 text-sm" data-testid="dashboard-visible-count">
+              <span><strong>{Math.min(visibleCount, MAX_VISIBLE_WIDGETS)}</strong> de {MAX_VISIBLE_WIDGETS} bloques visibles</span>
+              <span className="text-xs text-muted-foreground">Máximo recomendado para mantener el panel claro.</span>
             </div>
 
             {limitWarning && (
@@ -416,12 +413,17 @@ function DashboardEditor({
               </div>
             )}
 
-            <section className="space-y-2">
-              <h3 className="text-sm font-semibold text-muted-foreground">Bloques activos</h3>
-              <div className="space-y-2">
+            <section className="space-y-3">
+              <div>
+                <h3 className="text-sm font-semibold">Bloques activos</h3>
+                <p className="text-xs text-muted-foreground">
+                  Estos bloques aparecen en el inicio. Puedes cambiar su orden, tamaño y periodo.
+                </p>
+              </div>
+              <div className="space-y-3">
                 {active.length === 0 && (
                   <p className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
-                    No tienes bloques activos. Agrega uno desde &quot;Disponibles para agregar&quot;.
+                    No tienes bloques activos. Agrega uno desde la sección de disponibles.
                   </p>
                 )}
                 {active.map((widget, index) => (
@@ -439,17 +441,22 @@ function DashboardEditor({
               </div>
             </section>
 
-            <section className="space-y-2">
-              <h3 className="text-sm font-semibold text-muted-foreground">Disponibles para agregar</h3>
-              <div className="space-y-1.5">
+            <section className="space-y-3">
+              <div>
+                <h3 className="text-sm font-semibold">Disponibles para agregar</h3>
+                <p className="text-xs text-muted-foreground">
+                  Agrega indicadores o gráficos cuando aporten información real al panel.
+                </p>
+              </div>
+              <div className="grid min-w-0 gap-2 md:grid-cols-2">
                 {available.length === 0 && (
                   <p className="text-sm text-muted-foreground">Ya activaste todos los indicadores disponibles.</p>
                 )}
                 {available.map((widget) => (
-                  <div key={widget.id} className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2">
+                  <div key={widget.id} className="flex min-w-0 items-start justify-between gap-3 overflow-hidden rounded-lg border px-4 py-3">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{widget.title}</p>
-                      <p className="truncate text-xs text-muted-foreground">{widget.description}</p>
+                      <p className="text-sm font-medium leading-snug" title={widget.title}>{widget.title}</p>
+                      <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{widget.description}</p>
                     </div>
                     <Button size="sm" variant="outline" className="shrink-0" onClick={() => toggleVisible(widget.id, true)}>
                       Agregar
@@ -460,14 +467,16 @@ function DashboardEditor({
             </section>
           </div>
 
-          <div className="min-w-0 space-y-3 lg:border-l lg:pl-6">
-            <h3 className="text-sm font-semibold text-muted-foreground">Vista previa</h3>
+          <div className="min-w-0 space-y-4 rounded-lg border bg-muted/20 p-4 xl:sticky xl:top-0 xl:self-start">
+            <div>
+              <h3 className="text-sm font-semibold">Vista previa</h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Selecciona un bloque activo para revisar cómo se verá antes de guardar.
+              </p>
+            </div>
             {focused ? (
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">
-                  Así se vería este bloque. Los cambios no se guardan hasta presionar &quot;Guardar configuración&quot;.
-                </p>
-                <div className="max-w-xs">
+              <div className="space-y-3">
+                <div className="w-full min-w-0">
                   {focused.kind === "kpi" ? (
                     <KpiWidget widget={focused} value={focused.indicatorId ? valueById.get(focused.indicatorId) : undefined} />
                   ) : (
@@ -475,34 +484,40 @@ function DashboardEditor({
                   )}
                 </div>
                 {focused.kind === "kpi" && (focused.metric ?? "auto") !== "auto" && (
-                  <p className="text-xs text-muted-foreground">
-                    Por conectar: el cálculo por métrica y período personalizado llega en una próxima entrega. Por ahora el bloque
-                    sigue mostrando su valor automático.
+                  <p className="rounded-lg border bg-background px-3 py-2 text-xs text-muted-foreground">
+                    Pendiente de datos: el cálculo por métrica y periodo personalizado se calculará al registrar operaciones suficientes.
                   </p>
                 )}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">Activa un bloque para ver su vista previa.</p>
+              <p className="rounded-lg border border-dashed bg-background px-3 py-6 text-center text-sm text-muted-foreground">
+                Activa un bloque para ver su vista previa.
+              </p>
             )}
+          </div>
           </div>
         </div>
 
-        <DialogFooter className="gap-2 border-t px-6 py-4 sm:justify-between">
-          <Button variant="outline" onClick={handleReset}>
-            <RotateCcw className="mr-2 h-4 w-4" />
-            Restaurar predeterminado
-          </Button>
-          <div className="flex flex-wrap gap-2">
+        <DialogFooter className="border-t bg-background px-6 py-4 sm:justify-between sm:px-8">
+          <div className="flex flex-col-reverse gap-2 sm:flex-row">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
+            <Button variant="outline" onClick={handleReset}>
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Restaurar predeterminado
+            </Button>
+          </div>
+          <div className="flex flex-col gap-1 sm:items-end">
             <Button
+              className="w-full sm:w-auto"
               onClick={handleSave}
               disabled={visibleCount === 0}
               title={visibleCount === 0 ? "Activa al menos un bloque para guardar" : undefined}
             >
               Guardar configuración
             </Button>
+            {visibleCount === 0 && <span className="text-xs text-muted-foreground">Activa al menos un bloque para guardar.</span>}
           </div>
         </DialogFooter>
       </DialogContent>
@@ -527,22 +542,22 @@ function WidgetRow({
   onToggle: (checked: boolean) => void
   onMove: (dir: -1 | 1) => void
 }) {
-  const source = widget.indicatorId ? getIndicatorDefinition(widget.indicatorId)?.source : "Panel"
+  const source = displaySource(widget.indicatorId ? getIndicatorDefinition(widget.indicatorId)?.source : "Panel")
 
   return (
-    <div className={`rounded-lg border p-3 transition-colors ${focused ? "border-primary/50 bg-primary/5" : ""}`}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <div className={`min-w-0 overflow-hidden rounded-lg border bg-card p-4 transition-colors ${focused ? "border-primary/50 bg-primary/5" : ""}`}>
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             {widget.kind === "chart" ? chartIcon(widget.chartKind) : <Settings2 className="h-4 w-4 shrink-0 text-muted-foreground" />}
-            <p className="truncate text-sm font-medium">{widget.title}</p>
+            <p className="min-w-0 break-words text-sm font-medium leading-snug" title={widget.title}>{widget.title}</p>
             <Badge variant="outline" className="shrink-0 text-[10px] font-normal text-muted-foreground">
               {source ?? "Panel"}
             </Badge>
           </div>
           <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{widget.description}</p>
         </div>
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center justify-end gap-1">
           <Switch checked={widget.visible} onCheckedChange={onToggle} aria-label={`Mostrar ${widget.title}`} />
           {widget.visible ? <Eye className="h-4 w-4 text-muted-foreground" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
           <Button size="icon" variant="ghost" disabled={index === 0} onClick={() => onMove(-1)} aria-label={`Mover arriba ${widget.title}`} title="Mover arriba">
@@ -554,11 +569,11 @@ function WidgetRow({
         </div>
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <div className="min-w-0 space-y-1">
           <label className="text-[11px] font-medium text-muted-foreground">Tamaño del bloque</label>
           <Select value={widget.size} onValueChange={(value: WidgetSize) => onUpdate({ size: value })}>
-            <SelectTrigger className="h-8 text-xs">
+            <SelectTrigger className="h-9 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -573,7 +588,7 @@ function WidgetRow({
           <div className="min-w-0 space-y-1">
             <label className="text-[11px] font-medium text-muted-foreground">Tipo de gráfica</label>
             <Select value={widget.chartKind} onValueChange={(value: ChartKind) => onUpdate({ chartKind: value })}>
-              <SelectTrigger className="h-8 text-xs">
+              <SelectTrigger className="h-9 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -588,7 +603,7 @@ function WidgetRow({
             <div className="min-w-0 space-y-1">
               <label className="text-[11px] font-medium text-muted-foreground">Métrica</label>
               <Select value={widget.metric ?? "auto"} onValueChange={(value: WidgetMetric) => onUpdate({ metric: value })}>
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-9 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -603,7 +618,7 @@ function WidgetRow({
             <div className="min-w-0 space-y-1">
               <label className="text-[11px] font-medium text-muted-foreground">Período</label>
               <Select value={widget.period ?? "auto"} onValueChange={(value: WidgetPeriod) => onUpdate({ period: value })}>
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-9 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -654,4 +669,11 @@ function chartIcon(kind?: ChartKind) {
   if (kind === "line") return <LineChartIcon className="h-4 w-4 text-muted-foreground" />
   if (kind === "donut") return <PieChartIcon className="h-4 w-4 text-muted-foreground" />
   return <BarChart3 className="h-4 w-4 text-muted-foreground" />
+}
+
+function displaySource(source?: string) {
+  if (!source) return "Panel"
+  if (source === "Clientes / CRM") return "CRM Momentum"
+  if (source === "Sistema") return "Panel de control"
+  return source
 }

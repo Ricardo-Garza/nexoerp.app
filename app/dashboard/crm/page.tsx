@@ -68,7 +68,7 @@ export default function CrmPage() {
   async function runTestSync() {
     setSyncing(true)
     try {
-      // Contactos ficticios acordes al giro de la empresa activa (modo de prueba).
+      // Contactos de ejemplo acordes al giro de la empresa activa.
       const sandboxContacts =
         activeTenantId === SOLEIL_TENANT_ID
           ? getSoleilClients().map((c, i) => ({
@@ -106,16 +106,16 @@ export default function CrmPage() {
         action: "crm.sync.test",
         entityType: "crm",
         entityId: "momentum-sandbox",
-        summary: `Sincronización de prueba CRM: ${summary.pulled} recibidos, ${summary.created} creados`,
+        summary: `Datos de prueba CRM: ${summary.pulled} recibidos, ${summary.created} creados`,
         before: null,
         after: { ...summary },
         source: "integration",
       })
-      toast.success(`Sincronización de prueba: ${summary.pulled} contactos`, {
+      toast.success(`Datos de prueba cargados: ${summary.pulled} contactos`, {
         description: `${summary.created} creados, ${summary.deduplicated} duplicados`,
       })
     } catch {
-      toast.error("Error en la sincronización de prueba")
+      toast.error("No se pudieron cargar los datos de prueba")
     } finally {
       setSyncing(false)
     }
@@ -148,7 +148,7 @@ export default function CrmPage() {
           </Button>
           <Button variant="outline" onClick={runTestSync} disabled={syncing} data-testid="crm-sync">
             {syncing ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-1" />}
-            Sincronizar prueba
+            Cargar datos de prueba
           </Button>
           <Button variant="outline" onClick={() => setShowHistory((v) => !v)} data-testid="crm-toggle-history">
             <History className="w-4 h-4 mr-1" /> {showHistory ? "Ocultar historial" : "Ver historial"}
@@ -181,7 +181,7 @@ export default function CrmPage() {
           <CardContent>
             <div className="flex items-center gap-2">
               <span className={`w-2.5 h-2.5 rounded-full ${health?.ok ? "bg-emerald-500" : "bg-muted"}`} />
-              <span className="font-medium">{health?.ok ? "Conectado en modo de prueba" : "Verificando..."}</span>
+              <span className="font-medium">{health?.ok ? "Preparado para conectar CRM Momentum" : "Verificando..."}</span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">{health?.detail}</p>
           </CardContent>
@@ -199,12 +199,12 @@ export default function CrmPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground font-medium">Última sincronización</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground font-medium">Última carga</CardTitle>
           </CardHeader>
           <CardContent>
-            <span className="font-medium">{lastSync ?? "Sin sincronizar aún"}</span>
+            <span className="font-medium">{lastSync ?? "Sin datos cargados aún"}</span>
             <p className="text-xs text-muted-foreground mt-1">
-              {log.length ? `${log.length} en el historial reciente` : "Pulsa “Sincronizar prueba” para probar el flujo"}
+              {log.length ? `${log.length} en el historial reciente` : "Pulsa “Cargar datos de prueba” para revisar el flujo"}
             </p>
           </CardContent>
         </Card>
@@ -224,7 +224,7 @@ export default function CrmPage() {
           <CardTitle className="flex items-center gap-2">
             <ArrowLeftRight className="w-5 h-5 text-primary" /> Mapeo de entidades
           </CardTitle>
-          <CardDescription>Correspondencia entre Nexo ERP y CRM Momentum basada en el esquema real de auto-crm.</CardDescription>
+          <CardDescription>Correspondencia preparada entre Nexo ERP y CRM Momentum para clientes, contactos y oportunidades.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="rounded-lg border overflow-x-auto">
@@ -259,13 +259,13 @@ export default function CrmPage() {
       {showHistory && (
         <Card data-testid="crm-history-panel">
           <CardHeader>
-            <CardTitle>Historial de sincronización</CardTitle>
-            <CardDescription>Últimas sincronizaciones de prueba de esta empresa.</CardDescription>
+            <CardTitle>Historial comercial</CardTitle>
+            <CardDescription>Últimas cargas de datos de prueba de esta empresa.</CardDescription>
           </CardHeader>
           <CardContent>
             {log.length === 0 ? (
               <p className="text-sm text-muted-foreground py-6 text-center">
-                Sin sincronizaciones. Pulsa &quot;Sincronizar prueba&quot; para probar el flujo.
+                Sin datos todavía. Pulsa &quot;Cargar datos de prueba&quot; para revisar el flujo.
               </p>
             ) : (
               <div className="space-y-2">

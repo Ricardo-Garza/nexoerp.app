@@ -136,17 +136,20 @@ describe("Menú por empresa y módulos combinados", () => {
     expect(effective).toContain("inventory")
     expect(effective).not.toContain("catalog")
     expect(effective).not.toContain("priceLists")
+    expect(effective).not.toContain("lots")
     expect(effective).not.toContain("inventoryStock")
     expect(effective).not.toContain("warehouse")
   })
 
   it("DELAR conserva su menú clásico sin módulos combinados", () => {
     const effective = resolveTenantModules(delar)
-    expect(effective).toContain("catalog")
-    expect(effective).toContain("priceLists")
-    expect(effective).toContain("lots")
-    expect(effective).not.toContain("productsPricing")
+    expect(effective).toContain("productsPricing")
+    expect(effective).toContain("inventory")
+    expect(effective).not.toContain("catalog")
+    expect(effective).not.toContain("priceLists")
+    expect(effective).not.toContain("lots")
     expect(effective).not.toContain("inventoryStock")
+    expect(effective).not.toContain("warehouse")
     expect(effective).toEqual(ALL_MODULE_IDS)
   })
 
@@ -163,7 +166,7 @@ describe("Menú por empresa y módulos combinados", () => {
     const principal = menu.find((s) => s.title === "MODULOS PRINCIPALES")!
     const names = principal.items.map((i) => i.name)
     expect(names).toEqual([
-      "Dashboard",
+      "Tablero",
       "CRM Momentum",
       "Ventas",
       "Facturación y Remisiones",
@@ -181,8 +184,11 @@ describe("Menú por empresa y módulos combinados", () => {
   it("el fallback sin tenant usa el conjunto clásico (sin combinados)", () => {
     const menu = buildTenantMenu(null)
     const all = menu.flatMap((s) => s.items.map((i) => i.moduleId))
-    expect(all).toContain("catalog")
-    expect(all).not.toContain("productsPricing")
+    expect(all).toContain("productsPricing")
+    expect(all).toContain("inventory")
+    expect(all).not.toContain("catalog")
+    expect(all).not.toContain("priceLists")
+    expect(all).not.toContain("lots")
   })
 
   it("DISTRIBUTION_TENANT_MODULES coincide con el menú pedido para el giro", () => {

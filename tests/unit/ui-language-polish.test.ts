@@ -86,5 +86,8 @@ describe("UI language polish", () => {
 
     expect(dashboard).not.toMatch(/grid-cols-\[[0-9]+px/)
     expect(dashboard).toContain("overflow-x-hidden")
+    expect(dashboard).toContain("Personalizar panel de control")
+    expect(dashboard).not.toContain("Personalizar dashboard")
+    expect(dashboard).not.toContain("Por conectar")
   })
 })
