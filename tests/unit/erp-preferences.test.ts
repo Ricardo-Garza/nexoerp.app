@@ -4,6 +4,7 @@ import {
   mergeErpPreferences,
   normalizeLocale,
 } from "@/lib/platform/preferences";
+import { getUiText } from "@/lib/i18n/erp-ui";
 
 describe("ERP preferences", () => {
   it("defaults to Spanish, dark theme and MXN formatting", () => {
@@ -29,5 +30,12 @@ describe("ERP preferences", () => {
     expect(normalizeLocale("en-US")).toBe("en");
     expect(normalizeLocale("es-MX")).toBe("es");
     expect(normalizeLocale("fr-FR")).toBe("es");
+  });
+
+  it("provides Spanish and English copy from the shared ERP dictionary", () => {
+    expect(getUiText("es").dashboard.title).toBe("Personalizar panel de control");
+    expect(getUiText("es").nav.modules.productsPricing).toBe("Productos y Precios");
+    expect(getUiText("en").dashboard.title).toBe("Customize dashboard");
+    expect(getUiText("en").nav.modules.productsPricing).toBe("Products and Pricing");
   });
 });

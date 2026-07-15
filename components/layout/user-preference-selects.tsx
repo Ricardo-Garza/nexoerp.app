@@ -1,8 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { Languages, MonitorCog, Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
 import {
   Select,
   SelectContent,
@@ -16,8 +14,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { normalizeLocale, type ErpLanguage, type ErpTheme } from "@/lib/platform/preferences"
-import { readErpPreferences, writeErpPreferences } from "@/lib/platform/user-preferences-storage"
+import { useErpPreferences } from "@/hooks/use-erp-preferences"
+import { getUiText } from "@/lib/i18n/erp-ui"
+import { type ErpLanguage, type ErpTheme } from "@/lib/platform/preferences"
 import { cn } from "@/lib/utils"
 
 interface UserPreferenceSelectsProps {
@@ -26,23 +25,9 @@ interface UserPreferenceSelectsProps {
 }
 
 export function UserPreferenceSelects({ compact = false, className }: UserPreferenceSelectsProps) {
-  const { theme, setTheme } = useTheme()
-  const [language, setLanguage] = useState<ErpLanguage>("es")
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    const nextLanguage = normalizeLocale(readErpPreferences().language || navigator.language)
-    setLanguage(nextLanguage)
-    document.documentElement.lang = nextLanguage
-  }, [])
-
-  function changeLanguage(value: ErpLanguage) {
-    setLanguage(value)
-    writeErpPreferences({ language: value })
-    document.documentElement.lang = value
-  }
-
-  const themeValue = (theme ?? "dark") as ErpTheme
+  const { language, theme, updatePreferences } = useErpPreferences()
+  const text = getUiText(language)
+  const themeValue = theme as ErpTheme
 
   return (
     <TooltipProvider>
@@ -56,31 +41,33 @@ export function UserPreferenceSelects({ compact = false, className }: UserPrefer
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="shrink-0">
-              <Select value={language} onValueChange={(value) => changeLanguage(value as ErpLanguage)}>
+              <Select value={language} onValueChange={(value) => updatePreferences({ language: value as ErpLanguage })}>
                 <SelectTrigger
                   className={cn("h-10", compact ? "w-full" : "w-[142px]")}
                   data-testid="language-select"
+                  title={text.language.label}
                 >
                   <Languages className="mr-2 h-4 w-4 shrink-0" />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="es">Español</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="es">{text.language.spanish}</SelectItem>
+                  <SelectItem value="en">{text.language.english}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </TooltipTrigger>
-          <TooltipContent>Idioma de la interfaz. Inglés queda preparado por módulo.</TooltipContent>
+          <TooltipContent>{text.language.tooltip}</TooltipContent>
         </Tooltip>
 
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="shrink-0">
-              <Select value={themeValue} onValueChange={(value) => setTheme(value)}>
+              <Select value={themeValue} onValueChange={(value) => updatePreferences({ theme: value as ErpTheme })}>
                 <SelectTrigger
                   className={cn("h-10", compact ? "w-full" : "w-[142px]")}
                   data-testid="theme-select"
+                  title={text.theme.label}
                 >
                   {themeValue === "light" ? (
                     <Sun className="mr-2 h-4 w-4 shrink-0" />
@@ -92,14 +79,14 @@ export function UserPreferenceSelects({ compact = false, className }: UserPrefer
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="dark">Oscuro</SelectItem>
-                  <SelectItem value="light">Claro</SelectItem>
-                  <SelectItem value="system">Sistema</SelectItem>
+                  <SelectItem value="dark">{text.theme.dark}</SelectItem>
+                  <SelectItem value="light">{text.theme.light}</SelectItem>
+                  <SelectItem value="system">{text.theme.system}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </TooltipTrigger>
-          <TooltipContent>Tema visual guardado para este usuario.</TooltipContent>
+          <TooltipContent>{text.theme.tooltip}</TooltipContent>
         </Tooltip>
       </div>
     </TooltipProvider>

@@ -134,6 +134,41 @@ test("Configurar dashboard: sin scroll horizontal y secciones claras", async ({ 
   expect(criticalErrors()).toEqual([])
 })
 
+test("Preferencias: idioma y tema se aplican y persisten", async ({ page }) => {
+  await login(page, "operaciones@nexo.com")
+  await page.goto("/dashboard/configuracion")
+  await expect(page.getByTestId("user-preferences-card")).toBeVisible()
+
+  await page.getByTestId("pref-theme").click()
+  await page.getByRole("option", { name: "Claro" }).click()
+  await expect(page.locator("html")).not.toHaveClass(/dark/)
+  await page.reload()
+  await expect(page.getByTestId("user-preferences-card")).toBeVisible()
+  await expect(page.locator("html")).not.toHaveClass(/dark/)
+
+  await page.getByTestId("pref-theme").click()
+  await page.getByRole("option", { name: "Oscuro" }).click()
+  await expect(page.locator("html")).toHaveClass(/dark/)
+  await page.reload()
+  await expect(page.getByTestId("user-preferences-card")).toBeVisible()
+  await expect(page.locator("html")).toHaveClass(/dark/)
+
+  await page.getByTestId("pref-language").click()
+  await page.getByRole("option", { name: "English" }).click()
+  await expect(page.getByRole("main").getByRole("heading", { level: 1, name: "Settings" })).toBeVisible()
+  await page.goto("/dashboard")
+  await expect(page.getByTestId("configure-dashboard")).toContainText("Configure")
+  await page.reload()
+  await expect(page.getByTestId("configure-dashboard")).toContainText("Configure")
+
+  await page.goto("/dashboard/configuracion")
+  await page.getByTestId("pref-language").click()
+  await page.getByRole("option", { name: "Spanish" }).click()
+  await page.goto("/dashboard")
+  await expect(page.getByTestId("configure-dashboard")).toContainText("Configurar")
+  expect(criticalErrors()).toEqual([])
+})
+
 test("Configurar dashboard: cambiar tamaño, guardar y persistir", async ({ page }) => {
   await login(page, "operaciones@nexo.com")
   await page.getByTestId("configure-dashboard").click()
@@ -193,7 +228,7 @@ test("Configurar dashboard: Restaurar predeterminado vuelve al set inicial", asy
 test("CRM Momentum: configuración visible, sincronización de prueba y regreso a Nexo", async ({ page }) => {
   await login(page, "operaciones@nexo.com")
   await page.goto("/dashboard/crm")
-  await expect(page.getByRole("heading", { name: "CRM Momentum" })).toBeVisible()
+  await expect(page.getByRole("main").getByRole("heading", { level: 1, name: "CRM Momentum" })).toBeVisible()
 
   await page.getByTestId("crm-sync").click()
   await expect(page.getByText(/recibidos/)).toBeVisible()

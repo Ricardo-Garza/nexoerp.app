@@ -160,7 +160,7 @@ const SCREEN_ACTIONS: Record<ScreenKey, AssistantSuggestion[]> = {
   ],
   invoicing: [
     { label: "Buscar factura", href: "/dashboard/facturacion" },
-    { label: "Nueva factura", href: "/dashboard/facturacion" },
+    { label: "Crear factura", href: "/dashboard/facturacion" },
     { label: "Facturas pendientes", href: "/dashboard/facturacion" },
     { label: "Registrar pago", href: "/dashboard/banking" },
     { label: "Ver notas de crédito", href: "/dashboard/facturacion" },
@@ -221,17 +221,23 @@ const SCREEN_ACTIONS: Record<ScreenKey, AssistantSuggestion[]> = {
     { label: "Exportar catálogo", href: "/dashboard/catalogo", permission: "export" },
   ],
   productsPricing: [
+    { label: "Crear producto", href: "/dashboard/productos-precios?accion=crear" },
     { label: "Ver productos sin precio", href: "/dashboard/productos-precios" },
+    { label: "Completar precios", href: "/dashboard/productos-precios?accion=precios-faltantes" },
     { label: "Ver productos activos", href: "/dashboard/productos-precios" },
     { label: "Ver lista de precios", href: "/dashboard/productos-precios" },
+    { label: "Importar catálogo", href: "/dashboard/import?entity=productos", permission: "import" },
     { label: "Importar precios", href: "/dashboard/import?entity=precios", permission: "import" },
-    { label: "Importar productos", href: "/dashboard/import?entity=productos", permission: "import" },
     { label: "Exportar catálogo", href: "/dashboard/productos-precios", permission: "export" },
   ],
   inventoryStock: [
     { label: "Ver stock bajo", href: "/dashboard/inventory" },
     { label: "Ver existencias disponibles", href: "/dashboard/inventory" },
-    { label: "Registrar entrada o salida", href: "/dashboard/inventory" },
+    { label: "Registrar entrada", href: "/dashboard/inventory?accion=entrada" },
+    { label: "Registrar salida", href: "/dashboard/inventory?accion=salida" },
+    { label: "Apartar inventario", href: "/dashboard/inventory?accion=apartar" },
+    { label: "Liberar apartado", href: "/dashboard/inventory?accion=liberar" },
+    { label: "Crear almacén", href: "/dashboard/inventory?tab=almacenes" },
     { label: "Ver movimientos", href: "/dashboard/inventory" },
     { label: "Importar inventario inicial", href: "/dashboard/import?entity=inventario-inicial", permission: "import" },
     { label: "Exportar inventario", href: "/dashboard/inventory", permission: "export" },
@@ -335,6 +341,54 @@ export function buildAssistantReply(context: AssistantContext): AssistantReply {
   const en = context.language === "en"
 
   if (isHelpIntent(query)) return { text: screenHelp(screen, context), suggestions: allowedActions(screen, context) }
+  if (/crear producto|nuevo producto|agrega.*producto|agrega.*cable|alta.*producto|captura.*producto/.test(query)) {
+    return {
+      text: en
+        ? "I can guide you to create the product. The form asks for SKU, name, family, unit, application, status, supplier, cost, price and image reference. Confirm before saving."
+        : "Puedo guiarte para crear el producto. El formulario pide SKU, nombre, familia, unidad, aplicacion, estado, proveedor, costo, precio y referencia de imagen. Confirma antes de guardar.",
+      suggestions: allowedActions("productsPricing", context).filter((a) =>
+        ["Crear producto", "Importar catálogo", "Ver productos sin precio"].includes(a.label),
+      ),
+    }
+  }
+  if (/importar catalogo|importar catálogo|cargo catalogo|cargar catalogo|como importo catalogo|subir catalogo/.test(query)) {
+    return permissionReply(context, "Importar catálogo", "/dashboard/import?entity=productos", "import")
+  }
+  if (/importar precios|subir precios|cargar precios|como importo precios/.test(query)) {
+    return permissionReply(context, "Importar precios", "/dashboard/import?entity=precios", "import")
+  }
+  if (/crea.*almacen|crear.*almacen|nuevo.*almacen|registrar entrada|registra entrada|registrar salida|registra salida|aparta producto|apartar producto|libera pedido|liberar apartado/.test(query)) {
+    return {
+      text: en
+        ? "I can guide you to Inventory and Warehouse. Open the action, review the data and confirm before saving."
+        : "Puedo guiarte a Inventario y Almacen. Abre la accion, revisa los datos y confirma antes de guardar.",
+      suggestions: allowedActions("inventoryStock", context),
+    }
+  }
+  if (/haz una venta|crear venta|crea venta|nueva venta|crear cotizacion|crea cotizacion/.test(query)) {
+    return {
+      text: en
+        ? "I can take you to Sales. Create the quote or order there and confirm before saving."
+        : "Puedo llevarte a Ventas. Crea la cotizacion o pedido ahi y confirma antes de guardar.",
+      suggestions: allowedActions("sales", context),
+    }
+  }
+  if (/crea factura|crear factura|crea remision|crear remision/.test(query)) {
+    return {
+      text: en
+        ? "I can take you to Invoices and Delivery Notes. Review the customer and source order before saving."
+        : "Puedo llevarte a Facturacion y Remisiones. Revisa el cliente y el pedido origen antes de guardar.",
+      suggestions: allowedActions("invoicing", context),
+    }
+  }
+  if (/registra gasto|crear gasto|nuevo gasto/.test(query)) {
+    return {
+      text: en
+        ? "I can guide you to Banking and Treasury. Register the expense there and confirm before saving."
+        : "Puedo guiarte a Bancos y Tesoreria. Registra el gasto ahi y confirma antes de guardar.",
+      suggestions: allowedActions("banking", context),
+    }
+  }
   // Exportar se evalúa antes que importar: "exportar excel/csv" no debe caer en importación.
   if (isExportIntent(query)) return permissionReply(context, "Exportar información", context.pathname, "export")
   if (isImportIntent(query)) return permissionReply(context, "Centro de Importación", "/dashboard/import", "import")

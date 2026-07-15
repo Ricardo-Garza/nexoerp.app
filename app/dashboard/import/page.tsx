@@ -39,7 +39,7 @@ function ImportCenterContent() {
           <Upload className="w-7 h-7 text-primary" /> Centro de Importación
         </h1>
         <p className="text-muted-foreground mt-1">
-          Carga masiva de datos con plantillas, mapeo automático, validación, dry-run y auditoría. Pensado para usarse
+          Carga masiva de datos con plantillas, mapeo automático, validación, prueba previa y auditoría. Pensado para usarse
           sin conocimientos técnicos.
         </p>
       </div>

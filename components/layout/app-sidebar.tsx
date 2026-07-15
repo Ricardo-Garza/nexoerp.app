@@ -3,38 +3,40 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { useAuth } from "@/hooks/use-auth"
 import {
-  LayoutDashboard,
+  BarChart3,
   BookOpen,
-  Tags,
   Boxes,
   Building2,
-  Settings,
-  Users,
-  Package,
-  Warehouse,
   Calculator,
   Cog,
-  Wrench,
+  FileText,
   Headphones,
-  UserCog,
-  BarChart3,
+  LayoutDashboard,
+  MessageSquare,
+  Package,
+  Settings,
+  Shield,
+  ShoppingBasket,
   ShoppingCart,
   Smartphone,
-  ShoppingBasket,
   Store,
-  FileText,
+  Tags,
   Upload,
-  MessageSquare,
-  Shield,
+  UserCog,
+  Users,
+  Warehouse,
+  Wrench,
   type LucideIcon,
 } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { useAuth } from "@/hooks/use-auth"
+import { useErpPreferences } from "@/hooks/use-erp-preferences"
 import { usePlatform } from "@/contexts/platform-context"
 import { NexoLogo } from "@/components/brand/nexo-logo"
 import { buildTenantMenu, type TenantMenuSection } from "@/lib/platform/menu"
 import { getTenant } from "@/lib/platform/tenant-store"
+import { getUiText } from "@/lib/i18n/erp-ui"
 import type { ModuleId, Tenant } from "@/lib/platform/types"
 
 const MODULE_ICONS: Record<ModuleId, LucideIcon> = {
@@ -68,6 +70,8 @@ export function AppSidebar() {
   const pathname = usePathname()
   const { user } = useAuth()
   const { isPlatformAdmin, activeTenantId } = usePlatform()
+  const { language } = useErpPreferences()
+  const text = getUiText(language)
   const [tenant, setTenant] = useState<Tenant | null>(null)
 
   useEffect(() => {
@@ -87,55 +91,86 @@ export function AppSidebar() {
   const sections: TenantMenuSection[] = buildTenantMenu(tenant)
 
   const isRouteActive = (href: string) => {
-    if (href === "/dashboard") {
-      return pathname === "/dashboard"
-    }
-    if (href === "/dashboard/ventas/ordenes") {
-      return pathname.startsWith("/dashboard/ventas")
-    }
+    if (href === "/dashboard") return pathname === "/dashboard"
+    if (href === "/dashboard/ventas/ordenes") return pathname.startsWith("/dashboard/ventas")
     return pathname === href || pathname.startsWith(href + "/")
   }
 
+  const sectionLabel = (title: string) => {
+    if (title === "MODULOS PRINCIPALES") return text.nav.sections.main
+    if (title === "OPERACIONES") return text.nav.sections.operations
+    if (title === "ADMINISTRACION") return text.nav.sections.administration
+    if (title === "ANALITICA") return text.nav.sections.analytics
+    if (title === "DIGITAL") return text.nav.sections.digital
+    return title
+  }
+
+  const moduleLabel = (item: TenantMenuSection["items"][number]) => {
+    const labels: Partial<Record<ModuleId, string>> = {
+      dashboard: text.nav.modules.dashboard,
+      crm: text.nav.modules.crm,
+      sales: text.nav.modules.sales,
+      invoicing: text.nav.modules.invoicing,
+      suppliers: text.nav.modules.suppliers,
+      inventory: text.nav.modules.inventory,
+      productsPricing: text.nav.modules.productsPricing,
+      pos: text.nav.modules.pos,
+      banking: text.nav.modules.banking,
+      production: text.nav.modules.production,
+      maintenance: text.nav.modules.maintenance,
+      service: text.nav.modules.service,
+      accounting: text.nav.modules.accounting,
+      payroll: text.nav.modules.payroll,
+      bi: text.nav.modules.bi,
+      imports: text.nav.modules.imports,
+      webMobile: text.nav.modules.webMobile,
+      ecommerce: text.nav.modules.ecommerce,
+    }
+    return labels[item.moduleId] ?? item.name
+  }
+
   return (
-    <aside className="app-sidebar w-72 shrink-0 border-r border-border bg-card flex flex-col overflow-y-auto">
-      <div className="app-sidebar-surface p-6 border-b border-border sticky top-0 bg-card z-10">
+    <aside className="app-sidebar w-72 shrink-0 overflow-y-auto border-r border-border bg-card">
+      <div className="app-sidebar-surface sticky top-0 z-10 border-b border-border bg-card p-6">
         <Link href="/dashboard" className="flex items-center gap-3">
           <NexoLogo label={tenant?.branding.logoText ?? "Nexo ERP"} />
         </Link>
       </div>
 
-      <nav className="flex-1 p-4 space-y-6">
+      <nav className="flex-1 space-y-6 p-4">
         {isPlatformAdmin && (
           <div className="space-y-1">
-            <p className="text-xs font-semibold text-muted-foreground px-3 mb-2">NEXO PLATAFORMA</p>
+            <p className="mb-2 px-3 text-xs font-semibold text-muted-foreground">{text.nav.platform}</p>
             <Link
               href="/admin"
               data-testid="sidebar-control-plane"
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                 pathname.startsWith("/admin")
                   ? "bg-primary text-primary-foreground shadow-md"
                   : "bg-primary/10 text-primary hover:bg-primary/20",
               )}
             >
-              <Shield className="w-4 h-4 flex-shrink-0" />
-              <span className="truncate">Administración Nexo</span>
+              <Shield className="h-4 w-4 shrink-0" />
+              <span className="truncate">{text.nav.administration}</span>
             </Link>
           </div>
         )}
+
         {sections.map((section) => {
           const extraItems =
             section.title === "ADMINISTRACION"
               ? [
-                  { name: "Configuracion", href: "/dashboard/configuracion", icon: Settings },
+                  { name: text.nav.settings, href: "/dashboard/configuracion", icon: Settings },
                   ...(user?.role === "admin"
-                    ? [{ name: "Usuarios y permisos", href: "/dashboard/admin/users", icon: Users }]
+                    ? [{ name: text.nav.usersPermissions, href: "/dashboard/admin/users", icon: Users }]
                     : []),
                 ]
               : []
+
           return (
             <div key={section.title} className="space-y-1">
-              <p className="text-xs font-semibold text-muted-foreground px-3 mb-2">{section.title}</p>
+              <p className="mb-2 px-3 text-xs font-semibold text-muted-foreground">{sectionLabel(section.title)}</p>
               {section.items.map((item) => {
                 const Icon = MODULE_ICONS[item.moduleId] ?? Package
                 const isActive = isRouteActive(item.href)
@@ -145,17 +180,18 @@ export function AppSidebar() {
                     href={item.href}
                     data-testid={`sidebar-module-${item.moduleId}`}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                       isActive
                         ? "bg-primary text-primary-foreground shadow-md"
                         : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                     )}
                   >
-                    <Icon className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">{item.name}</span>
+                    <Icon className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{moduleLabel(item)}</span>
                   </Link>
                 )
               })}
+
               {extraItems.map((item) => {
                 const isActive = isRouteActive(item.href)
                 return (
@@ -163,13 +199,13 @@ export function AppSidebar() {
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                       isActive
                         ? "bg-primary text-primary-foreground shadow-md"
                         : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                     )}
                   >
-                    <item.icon className="w-4 h-4 flex-shrink-0" />
+                    <item.icon className="h-4 w-4 shrink-0" />
                     <span className="truncate">{item.name}</span>
                   </Link>
                 )
@@ -179,10 +215,10 @@ export function AppSidebar() {
         })}
       </nav>
 
-      <div className="app-sidebar-surface p-4 border-t border-border sticky bottom-0 bg-card">
-        <div className="px-3 py-3 rounded-lg bg-muted/50">
-          <p className="text-xs font-medium text-muted-foreground">Version</p>
-          <p className="text-sm font-semibold mt-1">{tenant?.version ?? "—"}</p>
+      <div className="app-sidebar-surface sticky bottom-0 border-t border-border bg-card p-4">
+        <div className="rounded-lg bg-muted/50 px-3 py-3">
+          <p className="text-xs font-medium text-muted-foreground">{text.nav.version}</p>
+          <p className="mt-1 text-sm font-semibold">{tenant?.version ?? "-"}</p>
         </div>
       </div>
     </aside>
