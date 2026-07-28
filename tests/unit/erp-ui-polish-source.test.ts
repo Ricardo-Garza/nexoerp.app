@@ -29,11 +29,13 @@ describe("ERP UI polish source checks", () => {
   it("header uses roomy controls for language, theme and company", () => {
     const header = read("components/layout/app-header.tsx")
     const preferences = read("components/layout/user-preference-selects.tsx")
+    const dictionary = read("lib/i18n/erp-ui.ts")
 
     expect(header).toContain("min-h-[76px]")
     expect(header).toContain("gap-3")
     expect(preferences).toContain("w-[142px]")
-    expect(preferences).toContain("Español")
+    expect(preferences).toContain("getUiText")
+    expect(dictionary).toContain("Español")
   })
 
   it("assistant has specific inventory lot actions", () => {
@@ -42,5 +44,15 @@ describe("ERP UI polish source checks", () => {
     expect(source).toContain("Buscar lote")
     expect(source).toContain("Ver últimos movimientos")
     expect(source).not.toMatch(/Ã|Â|â/)
+  })
+  it("products and pricing exposes real product capture, family filter and price completion actions", () => {
+    const source = read("components/soleil/products-pricing-view.tsx")
+
+    expect(source).toContain('data-testid="soleil-new-product"')
+    expect(source).toContain('data-testid="product-form-dialog"')
+    expect(source).toContain("Completar precios faltantes")
+    expect(source).toContain("setCardFamily(f.nombre)")
+    expect(source).toContain("appendAudit")
+    expect(source).not.toContain("La edición completa de producto se conectará a datos reales")
   })
 })

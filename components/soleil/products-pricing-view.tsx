@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
 import { DataTablePro, type ProColumn, type RecentChange } from "@/components/ui/data-table-pro"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
@@ -23,7 +25,8 @@ import {
   type SoleilStockMovement,
 } from "@/lib/domain/soleilwire/client-data"
 import { SOLEIL_TENANT_ID, getSoleilSeed, type SoleilPriceEntry, type SoleilProduct } from "@/lib/domain/soleilwire"
-import { Boxes, Download, FileClock, Grid3X3, History, Import, List, PencilLine, Table2 } from "lucide-react"
+import { downloadBlob } from "@/lib/import/engine"
+import { BadgeDollarSign, Boxes, Download, FileClock, Grid3X3, History, Import, List, PencilLine, Plus, Table2 } from "lucide-react"
 
 /**
  * Módulo combinado "Productos y Precios": catálogo + lista de precios en una
@@ -36,6 +39,22 @@ type CatalogViewMode = "tabla" | "tarjetas" | "lista" | "comercial" | "operativa
 interface ProductRow extends SoleilProduct {
   precioLista: number | null
   canal: string | null
+}
+
+interface ProductFormState {
+  sku: string
+  producto: string
+  familia: string
+  subfamilia: string
+  unidadVenta: string
+  descripcion: string
+  usoAplicacion: string
+  activo: "activo" | "inactivo"
+  proveedor: string
+  costoEstimado: string
+  precioBase: string
+  moneda: string
+  imagenId: string
 }
 
 const FAMILY_TONES = [
@@ -71,6 +90,7 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
   const { toast } = useToast()
   const { user } = useAuth()
   const { activeTenantId } = usePlatform()
+  const searchParams = useSearchParams()
   const [refreshKey, setRefreshKey] = useState(0)
   const [products, setProducts] = useState<SoleilProduct[]>([])
   const [priceEntries, setPriceEntries] = useState<SoleilPriceEntry[]>([])
@@ -86,6 +106,9 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
   const [cardSort, setCardSort] = useState<"nombre" | "precio-desc" | "precio-asc">("nombre")
   const [priceDialog, setPriceDialog] = useState<ProductRow | null>(null)
   const [productDialog, setProductDialog] = useState<ProductRow | null>(null)
+  const [productEditor, setProductEditor] = useState<ProductRow | "new" | null>(null)
+  const [productForm, setProductForm] = useState<ProductFormState>(() => emptyProductForm())
+  const [handledAction, setHandledAction] = useState<string | null>(null)
   const [priceValue, setPriceValue] = useState("")
   const [wholesaleValue, setWholesaleValue] = useState("")
 
@@ -122,6 +145,14 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
       )
       .catch(() => setRecentChanges([]))
   }, [activeTenantId, refreshKey])
+
+  useEffect(() => {
+    const action = searchParams.get("accion")
+    if (!action || handledAction === action) return
+    setHandledAction(action)
+    if (action === "crear") openProductEditor("new")
+    if (action === "precios-faltantes") openFirstMissingPrice()
+  }, [handledAction, searchParams])
 
   const rows = useMemo<ProductRow[]>(() => {
     const priceBySku = new Map(priceEntries.map((e) => [e.sku, e]))
@@ -463,6 +494,165 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
     setWholesaleValue(row.precioMayoreo !== null ? String(row.precioMayoreo) : "")
   }, [])
 
+  const openProductEditor = useCallback((row: ProductRow | "new") => {
+    setProductDialog(null)
+    setProductEditor(row)
+    setProductForm(row === "new" ? emptyProductForm() : productToForm(row))
+  }, [])
+
+  const openFirstMissingPrice = useCallback(() => {
+    const missing = rows.find((r) => r.activo && r.precioLista === null)
+    setActiveTab("catalogo")
+    setViewMode("tabla")
+    if (!missing) {
+      toast({ title: "No hay precios pendientes", description: "Todos los productos activos tienen precio capturado." })
+      return
+    }
+    openPriceDialog(missing)
+  }, [openPriceDialog, rows, toast])
+
+  const updateProductForm = useCallback(
+    <K extends keyof ProductFormState,>(field: K, value: ProductFormState[K]) => {
+      setProductForm((current) => ({ ...current, [field]: value }))
+    },
+    [],
+  )
+
+  const exportPriceList = useCallback(() => {
+    const header = ["sku", "producto", "lista", "canal", "moneda", "precio_unitario", "unidad", "precio_mayoreo"]
+    const csv = [
+      header.join(","),
+      ...priceRows.map((row) =>
+        [
+          row.sku,
+          row.producto,
+          row.lista,
+          row.canal ?? "",
+          row.moneda,
+          row.precioUnitario ?? "",
+          row.unidad,
+          row.precioMayoreo ?? "",
+        ]
+          .map(csvCell)
+          .join(","),
+      ),
+    ].join("\n")
+    downloadBlob(new Blob([csv], { type: "text/csv;charset=utf-8" }), `lista-precios-${priceList.id}.csv`)
+    toast({ title: "Lista de precios exportada", description: `${priceRows.length} registros incluidos.` })
+  }, [priceList.id, priceRows, toast])
+
+  const exportCatalog = useCallback(() => {
+    const header = ["sku", "producto", "familia", "categoria", "unidad", "aplicacion", "estado", "proveedor", "precio", "moneda"]
+    const csv = [
+      header.join(","),
+      ...rows.map((row) =>
+        [
+          row.sku,
+          row.producto,
+          row.familia,
+          row.subfamilia ?? "",
+          row.unidadVenta,
+          row.usoAplicacion ?? "",
+          row.activo ? "Activo" : "Inactivo",
+          row.proveedor ?? "",
+          row.precioLista ?? "",
+          row.moneda,
+        ]
+          .map(csvCell)
+          .join(","),
+      ),
+    ].join("\n")
+    downloadBlob(new Blob([csv], { type: "text/csv;charset=utf-8" }), "catalogo-productos.csv")
+    toast({ title: "Catalogo exportado", description: `${rows.length} productos incluidos.` })
+  }, [rows, toast])
+
+  const saveProduct = useCallback(async () => {
+    const sku = productForm.sku.trim().toUpperCase()
+    const name = productForm.producto.trim()
+    const family = productForm.familia.trim()
+    const unit = productForm.unidadVenta.trim()
+    if (!sku || !name || !family || !unit) {
+      toast({ title: "Faltan datos obligatorios", description: "Captura SKU, nombre, familia y unidad.", variant: "destructive" })
+      return
+    }
+    const existing = rows.find((r) => r.sku === sku)
+    if (productEditor === "new" && existing) {
+      toast({ title: "El SKU ya existe", description: "Abre la ficha del producto para editarlo.", variant: "destructive" })
+      return
+    }
+    if (typeof window !== "undefined" && !window.confirm("Guardar cambios del producto?")) {
+      return
+    }
+    const price = toNumberOrNull(productForm.precioBase)
+    const cost = toNumberOrNull(productForm.costoEstimado)
+    const before = productEditor === "new" ? null : productEditor
+
+    await bulkInsert(activeTenantId, "products", [
+      {
+        sku,
+        nombre: name,
+        categoria: family,
+        subfamilia: productForm.subfamilia.trim(),
+        descripcion: productForm.descripcion.trim(),
+        usoAplicacion: productForm.usoAplicacion.trim(),
+        unidad: unit,
+        moneda: productForm.moneda,
+        precio: price,
+        costo: cost,
+        proveedor: productForm.proveedor.trim(),
+        imagenId: productForm.imagenId.trim(),
+        activo: productForm.activo === "activo",
+        notas: productEditor === "new" ? "Alta manual desde Productos y Precios" : "Edicion manual desde Productos y Precios",
+      },
+    ])
+
+    if (price !== null) {
+      await bulkInsert(activeTenantId, "priceEntries", [
+        {
+          sku,
+          lista: priceList.id,
+          canal: "General",
+          moneda: productForm.moneda,
+          precioUnitario: price,
+          unidad: unit,
+          activo: true,
+          notas: "Precio capturado desde ficha de producto",
+        },
+      ])
+    }
+
+    await appendAudit({
+      tenantId: activeTenantId,
+      actorEmail,
+      actorRole: "usuario",
+      action: productEditor === "new" ? "producto.creado" : "producto.actualizado",
+      entityType: "producto",
+      entityId: sku,
+      summary: productEditor === "new" ? `Producto ${sku} creado` : `Producto ${sku} actualizado`,
+      before: before
+        ? {
+            nombre: before.producto,
+            familia: before.familia,
+            unidad: before.unidadVenta,
+            precio: before.precioLista,
+            activo: before.activo,
+          }
+        : null,
+      after: {
+        nombre: name,
+        familia: family,
+        unidad: unit,
+        precio: price,
+        activo: productForm.activo === "activo",
+      },
+      source: "ui",
+    })
+
+    toast({ title: productEditor === "new" ? "Producto creado" : "Producto actualizado", description: sku })
+    setProductEditor(null)
+    refresh()
+  }, [activeTenantId, actorEmail, priceList.id, productEditor, productForm, refresh, rows, toast])
+
   const productsInSelectedFamily = cardFamily === "todas" ? rows : rows.filter((r) => r.familia === cardFamily)
 
   return (
@@ -476,6 +666,25 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button size="sm" onClick={() => openProductEditor("new")} data-testid="soleil-new-product">
+            <Plus className="mr-2 h-4 w-4" />
+            Crear producto
+          </Button>
+          <Button size="sm" variant="outline" onClick={openFirstMissingPrice}>
+            Completar precios faltantes
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => window.location.assign("/dashboard/import?entity=productos")}>
+            <Import className="mr-2 h-4 w-4" />
+            Importar catalogo
+          </Button>
+          <Button size="sm" variant="outline" onClick={exportPriceList}>
+            <Download className="mr-2 h-4 w-4" />
+            Exportar lista de precios
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setActiveTab("historial")}>
+            <History className="mr-2 h-4 w-4" />
+            Ver cambios recientes
+          </Button>
           <Badge variant="secondary">{activos} activos</Badge>
           <Badge
             variant="outline"
@@ -561,18 +770,32 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
                 { label: "Inactivos", predicate: (r) => !r.activo },
               ]}
               rowActions={(r) => (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  title="Capturar precio"
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    openPriceDialog(r)
-                  }}
-                  data-testid={`soleil-capture-price-${r.sku}`}
-                >
-                  <PencilLine className="w-4 h-4" />
-                </Button>
+                <div className="flex justify-end gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    title="Editar producto"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      openProductEditor(r)
+                    }}
+                    data-testid={`soleil-edit-product-${r.sku}`}
+                  >
+                    <PencilLine className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    title="Capturar precio"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      openPriceDialog(r)
+                    }}
+                    data-testid={`soleil-capture-price-${r.sku}`}
+                  >
+                    <BadgeDollarSign className="w-4 h-4" />
+                  </Button>
+                </div>
               )}
               onRowClick={setProductDialog}
               recentChanges={recentChanges}
@@ -875,6 +1098,184 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
         </TabsContent>
       </Tabs>
 
+      <Dialog open={productEditor !== null} onOpenChange={(open) => !open && setProductEditor(null)}>
+        <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{productEditor === "new" ? "Crear producto" : "Editar producto"}</DialogTitle>
+            <DialogDescription>
+              Captura la ficha comercial y operativa. Si no hay precio, el producto queda marcado como pendiente.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5" data-testid="product-form-dialog">
+            <datalist id="soleil-family-options">
+              {families.map((family) => (
+                <option key={family} value={family} />
+              ))}
+            </datalist>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="product-sku-input">SKU</Label>
+                <Input
+                  id="product-sku-input"
+                  data-testid="product-sku-input"
+                  value={productForm.sku}
+                  onChange={(event) => updateProductForm("sku", event.target.value)}
+                  disabled={productEditor !== "new"}
+                  placeholder="SW-ARM-001"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-name-input">Nombre</Label>
+                <Input
+                  id="product-name-input"
+                  data-testid="product-name-input"
+                  value={productForm.producto}
+                  onChange={(event) => updateProductForm("producto", event.target.value)}
+                  placeholder="Cable armado"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-family-input">Familia</Label>
+                <Input
+                  id="product-family-input"
+                  list="soleil-family-options"
+                  value={productForm.familia}
+                  onChange={(event) => updateProductForm("familia", event.target.value)}
+                  placeholder="Armados"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-category-input">Categoria</Label>
+                <Input
+                  id="product-category-input"
+                  value={productForm.subfamilia}
+                  onChange={(event) => updateProductForm("subfamilia", event.target.value)}
+                  placeholder="Uso industrial"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-unit-input">Unidad</Label>
+                <Input
+                  id="product-unit-input"
+                  value={productForm.unidadVenta}
+                  onChange={(event) => updateProductForm("unidadVenta", event.target.value)}
+                  placeholder="m, pieza, rollo"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-status-input">Estado</Label>
+                <Select value={productForm.activo} onValueChange={(value) => updateProductForm("activo", value as ProductFormState["activo"])}>
+                  <SelectTrigger id="product-status-input">
+                    <SelectValue placeholder="Selecciona estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="activo">Activo</SelectItem>
+                    <SelectItem value="inactivo">Inactivo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-provider-input">Proveedor sugerido</Label>
+                <Input
+                  id="product-provider-input"
+                  value={productForm.proveedor}
+                  onChange={(event) => updateProductForm("proveedor", event.target.value)}
+                  placeholder="Pendiente de capturar"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-currency-input">Moneda</Label>
+                <Select value={productForm.moneda} onValueChange={(value) => updateProductForm("moneda", value)}>
+                  <SelectTrigger id="product-currency-input">
+                    <SelectValue placeholder="Selecciona moneda" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="MXN">MXN</SelectItem>
+                    <SelectItem value="USD">USD</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-cost-input">Costo estimado</Label>
+                <Input
+                  id="product-cost-input"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={productForm.costoEstimado}
+                  onChange={(event) => updateProductForm("costoEstimado", event.target.value)}
+                  placeholder="Pendiente de capturar"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-price-input">Precio de venta</Label>
+                <Input
+                  id="product-price-input"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={productForm.precioBase}
+                  onChange={(event) => updateProductForm("precioBase", event.target.value)}
+                  placeholder="Sin precio"
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="product-image-input">Imagen del producto</Label>
+                <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+                  <Input
+                    id="product-image-input"
+                    value={productForm.imagenId}
+                    onChange={(event) => updateProductForm("imagenId", event.target.value)}
+                    placeholder="URL o nombre de archivo"
+                  />
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    className="sm:max-w-60"
+                    onChange={(event) => updateProductForm("imagenId", event.target.files?.[0]?.name ?? productForm.imagenId)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-description-input">Descripcion</Label>
+                <Textarea
+                  id="product-description-input"
+                  value={productForm.descripcion}
+                  onChange={(event) => updateProductForm("descripcion", event.target.value)}
+                  placeholder="Datos comerciales del producto"
+                  className="min-h-28"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-application-input">Aplicacion</Label>
+                <Textarea
+                  id="product-application-input"
+                  value={productForm.usoAplicacion}
+                  onChange={(event) => updateProductForm("usoAplicacion", event.target.value)}
+                  placeholder="Uso recomendado o industria"
+                  className="min-h-28"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
+              Los campos SKU, nombre, familia y unidad son obligatorios. Cada alta o cambio queda registrado en Ultimos cambios.
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setProductEditor(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={saveProduct} data-testid="product-save">
+              Guardar producto
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={priceDialog !== null} onOpenChange={(open) => !open && setPriceDialog(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -1016,13 +1417,9 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
             <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
-                onClick={() =>
-                  toast({
-                    title: "Preparado para configurar",
-                    description: "La edición completa de producto se conectará a datos reales.",
-                  })
-                }
+                onClick={() => productDialog && openProductEditor(productDialog)}
               >
+                <PencilLine className="mr-2 h-4 w-4" />
                 Editar
               </Button>
               <Button
@@ -1044,8 +1441,7 @@ export function ProductsPricingView({ tenantName }: { tenantName: string }) {
                 Importar
               </Button>
               <Button variant="outline" onClick={() => {
-                setActiveTab("catalogo")
-                setViewMode("tabla")
+                exportCatalog()
                 setProductDialog(null)
               }}>
                 <Download className="mr-2 h-4 w-4" />
@@ -1076,4 +1472,52 @@ function InfoTile({ label, value, mono = false }: { label: string; value: string
       <p className={`mt-1 text-sm font-medium ${mono ? "font-mono" : ""}`}>{value}</p>
     </div>
   )
+}
+
+function emptyProductForm(): ProductFormState {
+  return {
+    sku: "",
+    producto: "",
+    familia: "",
+    subfamilia: "",
+    unidadVenta: "m",
+    descripcion: "",
+    usoAplicacion: "",
+    activo: "activo",
+    proveedor: "",
+    costoEstimado: "",
+    precioBase: "",
+    moneda: "MXN",
+    imagenId: "",
+  }
+}
+
+function productToForm(product: ProductRow): ProductFormState {
+  return {
+    sku: product.sku,
+    producto: product.producto,
+    familia: product.familia,
+    subfamilia: product.subfamilia ?? "",
+    unidadVenta: product.unidadVenta,
+    descripcion: product.descripcion ?? "",
+    usoAplicacion: product.usoAplicacion ?? "",
+    activo: product.activo ? "activo" : "inactivo",
+    proveedor: product.proveedor ?? "",
+    costoEstimado: product.costoEstimado === null ? "" : String(product.costoEstimado),
+    precioBase: product.precioLista === null ? "" : String(product.precioLista),
+    moneda: product.moneda,
+    imagenId: product.imagenId ?? "",
+  }
+}
+
+function toNumberOrNull(value: string): number | null {
+  if (value.trim() === "") return null
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+function csvCell(value: unknown): string {
+  const text = String(value ?? "")
+  if (/[",\n]/.test(text)) return `"${text.replace(/"/g, '""')}"`
+  return text
 }

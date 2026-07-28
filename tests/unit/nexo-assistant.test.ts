@@ -57,6 +57,28 @@ describe("Nexo assistant", () => {
     expect(reply.suggestions.map((suggestion) => suggestion.href)).toContain("/dashboard/import")
   })
 
+  it("guides common ERP operation phrases to real modules", () => {
+    const base = {
+      pathname: "/dashboard/productos-precios",
+      isNexoAdmin: false,
+      canImport: true,
+      canExport: true,
+    }
+
+    const product = buildAssistantReply({ ...base, input: "crear producto" })
+    expect(product.text).toContain("Puedo guiarte")
+    expect(product.suggestions.map((suggestion) => suggestion.label)).toContain("Crear producto")
+
+    const prices = buildAssistantReply({ ...base, input: "importar precios" })
+    expect(prices.suggestions.map((suggestion) => suggestion.href)).toContain("/dashboard/import?entity=precios")
+
+    const inventory = buildAssistantReply({ ...base, input: "registra entrada de inventario", pathname: "/dashboard/inventory" })
+    expect(inventory.suggestions.map((suggestion) => suggestion.label)).toContain("Registrar entrada")
+
+    const invoice = buildAssistantReply({ ...base, input: "crea factura", pathname: "/dashboard/facturacion" })
+    expect(invoice.suggestions.map((suggestion) => suggestion.label)).toContain("Crear factura")
+  })
+
   it("omits actions when the user lacks permission", () => {
     const reply = buildAssistantReply({
       input: "quiero exportar",

@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { usePlatform } from "@/contexts/platform-context"
 import { buildAssistantReply, type AssistantSuggestion } from "@/lib/assistant/nexo-assistant"
-import { readErpPreferences } from "@/lib/platform/user-preferences-storage"
+import { useErpPreferences } from "@/hooks/use-erp-preferences"
+import { getUiText } from "@/lib/i18n/erp-ui"
 
 interface Suggestion extends AssistantSuggestion {
   action: () => void
@@ -25,18 +26,12 @@ export function FloatingAssistant() {
   const router = useRouter()
   const pathname = usePathname()
   const { isPlatformAdmin } = usePlatform()
+  const { language } = useErpPreferences()
+  const text = getUiText(language)
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
-  const [language, setLanguage] = useState<"es" | "en">("es")
   const endRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const sync = () => setLanguage(readErpPreferences().language)
-    sync()
-    window.addEventListener("nexo-preferences-changed", sync)
-    return () => window.removeEventListener("nexo-preferences-changed", sync)
-  }, [])
 
   const go = useCallback(
     (href: string) => () => {
@@ -91,7 +86,7 @@ export function FloatingAssistant() {
       <button
         onClick={() => setOpen((o) => !o)}
         data-testid="assistant-toggle"
-        aria-label="Asistente Nexo"
+        aria-label={text.assistant.aria}
         className={cn(
           "fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all",
           "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground hover:scale-105",
@@ -110,8 +105,8 @@ export function FloatingAssistant() {
               <Bot className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <p className="text-sm font-semibold">Asistente Nexo</p>
-              <p className="text-xs text-muted-foreground">Ayuda para navegar y operar mejor</p>
+              <p className="text-sm font-semibold">{text.assistant.title}</p>
+              <p className="text-xs text-muted-foreground">{text.assistant.subtitle}</p>
             </div>
           </div>
 
@@ -150,7 +145,7 @@ export function FloatingAssistant() {
 
           <div className="border-t p-3">
             <Badge variant="outline" className="mb-2 text-[10px]">
-              Guía integrada
+              {text.assistant.guide}
             </Badge>
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -159,7 +154,7 @@ export function FloatingAssistant() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && submit()}
-                  placeholder="Pregunta o busca una acción..."
+                  placeholder={text.assistant.placeholder}
                   className="h-9 pl-8"
                   data-testid="assistant-input"
                 />

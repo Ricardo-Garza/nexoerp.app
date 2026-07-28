@@ -145,9 +145,9 @@
     "semantic_hash": "9f45acb0f857c8a5a3621e9a9ddc61d2"
   },
   "app/dashboard/crm/page.tsx": {
-    "mtime": 1784069959.0997524,
-    "ast_hash": "2dd849f31fa0651dc128adc2bb13214e",
-    "semantic_hash": "2dd849f31fa0651dc128adc2bb13214e"
+    "mtime": 1784072360.1381052,
+    "ast_hash": "2edad4a963c0d65648ef88f88a7bcf0f",
+    "semantic_hash": ""
   },
   "app/dashboard/ecommerce/loading.tsx": {
     "mtime": 1783360519.4166985,
@@ -590,9 +590,9 @@
     "semantic_hash": "3e5bf97a7e2aa5ac52b8be4f004b35a4"
   },
   "components/dashboard/customizable-dashboard.tsx": {
-    "mtime": 1784069959.1007526,
-    "ast_hash": "5c2e7b8b5804c98d39ffeeb3752fcfb8",
-    "semantic_hash": "5c2e7b8b5804c98d39ffeeb3752fcfb8"
+    "mtime": 1784072360.1391037,
+    "ast_hash": "40b38bd3e685ac518e077056bea3f71d",
+    "semantic_hash": ""
   },
   "components/dashboard/dashboard-stats.tsx": {
     "mtime": 1783360519.4496977,
@@ -1055,14 +1055,14 @@
     "semantic_hash": "684bb428fcd5b3539fb96678417f8081"
   },
   "components/soleil/inventory-stock-view.tsx": {
-    "mtime": 1783464963.3213115,
-    "ast_hash": "47908307e68842bc53c4efbf8caecf90",
-    "semantic_hash": "47908307e68842bc53c4efbf8caecf90"
+    "mtime": 1784072360.1401043,
+    "ast_hash": "e501adab31c2690126b917308da4922a",
+    "semantic_hash": ""
   },
   "components/soleil/products-pricing-view.tsx": {
-    "mtime": 1783459418.0012984,
-    "ast_hash": "5a2123d2c0fba2087f42d1cb957f4a74",
-    "semantic_hash": "5a2123d2c0fba2087f42d1cb957f4a74"
+    "mtime": 1784072360.141104,
+    "ast_hash": "7835301510f9fc389baa314ac87b00b6",
+    "semantic_hash": ""
   },
   "components/suppliers/documents-tab.tsx": {
     "mtime": 1783360519.4807994,
@@ -1420,9 +1420,9 @@
     "semantic_hash": "cbb98cf3a9ba0298a3d27f68d1c64d2d"
   },
   "lib/assistant/nexo-assistant.ts": {
-    "mtime": 1784069959.1027527,
-    "ast_hash": "6baf5881d1d5c275ee6c2b8cc4787f09",
-    "semantic_hash": "6baf5881d1d5c275ee6c2b8cc4787f09"
+    "mtime": 1784072360.1629498,
+    "ast_hash": "72d859570c53f2f475e7204ebf589ae8",
+    "semantic_hash": ""
   },
   "lib/auth-demo.ts": {
     "mtime": 1783360519.5132093,
@@ -1575,9 +1575,9 @@
     "semantic_hash": "da4ca9c9417a4f0c634f9a2a84274a59"
   },
   "lib/platform/indicators.ts": {
-    "mtime": 1783464963.322348,
-    "ast_hash": "9ce9808cd69acf5dd31c4a2e5e2d2cea",
-    "semantic_hash": "9ce9808cd69acf5dd31c4a2e5e2d2cea"
+    "mtime": 1784072360.164461,
+    "ast_hash": "dfc293c348e38379dfdd1039f29c274e",
+    "semantic_hash": ""
   },
   "lib/platform/menu.ts": {
     "mtime": 1783459418.0092988,
@@ -1585,9 +1585,9 @@
     "semantic_hash": "2477bb4920a87b79e824924926a5ff6d"
   },
   "lib/platform/modules.ts": {
-    "mtime": 1784069959.1037524,
-    "ast_hash": "3977b4bcd3126ba135a3493546ff7c8d",
-    "semantic_hash": "3977b4bcd3126ba135a3493546ff7c8d"
+    "mtime": 1784072360.166476,
+    "ast_hash": "d51afbbfe536ed3b54898807f9d265d4",
+    "semantic_hash": ""
   },
   "lib/platform/platform-admin.ts": {
     "mtime": 1783360519.528293,
@@ -1765,9 +1765,9 @@
     "semantic_hash": "9eea1a43388b3ec8a09c46364f79b97f"
   },
   "tests/e2e/nexo-control-plane.spec.ts": {
-    "mtime": 1784069959.1047554,
-    "ast_hash": "06391bd6f10bb711fb517d7dfe8578c5",
-    "semantic_hash": "06391bd6f10bb711fb517d7dfe8578c5"
+    "mtime": 1784072360.167467,
+    "ast_hash": "fdfd61546e5b163beee1ac57408a7994",
+    "semantic_hash": ""
   },
   "tests/stubs/server-only.ts": {
     "mtime": 1783360519.6253228,
@@ -1830,14 +1830,14 @@
     "semantic_hash": "5dc3249875843026b3370c70abf52774"
   },
   "tests/unit/soleil-wire.test.ts": {
-    "mtime": 1784069959.105757,
-    "ast_hash": "8ef1fb348e67e514ee7047090704363f",
-    "semantic_hash": "8ef1fb348e67e514ee7047090704363f"
+    "mtime": 1784072360.1692843,
+    "ast_hash": "91c69ee3f1d906a56114d79b3a87774e",
+    "semantic_hash": ""
   },
   "tests/unit/ui-language-polish.test.ts": {
-    "mtime": 1784069959.105757,
-    "ast_hash": "ed60dd764dab838c8d1135e6526c690f",
-    "semantic_hash": "ed60dd764dab838c8d1135e6526c690f"
+    "mtime": 1784072360.1692843,
+    "ast_hash": "22fd9a8198f8f71180054512adbf3131",
+    "semantic_hash": ""
   },
   "tests/unit/uom.test.ts": {
     "mtime": 1783360519.6253228,
@@ -1853,5 +1853,975 @@
     "mtime": 1783360519.6253228,
     "ast_hash": "9180cee2882d928c5fa2bc5110c3cd7d",
     "semantic_hash": "9180cee2882d928c5fa2bc5110c3cd7d"
+  },
+  "ACCOUNTING_MODULE_COMPLETE.md": {
+    "mtime": 1783360519.395716,
+    "ast_hash": "727523e6385e795e05206540847b62ef",
+    "semantic_hash": ""
+  },
+  "ADVANCED_MODULES_FOUNDATION.md": {
+    "mtime": 1783360519.395716,
+    "ast_hash": "0f18e49ba2309ddd8d70e9082e12424a",
+    "semantic_hash": ""
+  },
+  "ATTRIBUTES_MODULE_COMPLETE.md": {
+    "mtime": 1783360519.3966982,
+    "ast_hash": "5673162f4a1ec89f65b8575b049a5974",
+    "semantic_hash": ""
+  },
+  "ERP_2026_2027_ARCHITECTURE.md": {
+    "mtime": 1783360519.3966982,
+    "ast_hash": "4c167dda4740aafdc09dc0c6c6c16939",
+    "semantic_hash": ""
+  },
+  "ERP_2026_2027_FINAL_DOCUMENTATION.md": {
+    "mtime": 1783360519.3966982,
+    "ast_hash": "6776f262ebf1409c4913bdde4c56adab",
+    "semantic_hash": ""
+  },
+  "FIELD_SERVICES_MODULE_COMPLETE.md": {
+    "mtime": 1783360519.3976982,
+    "ast_hash": "0aaa8a19a901f5a1a9b0f3f9a2c7c88d",
+    "semantic_hash": ""
+  },
+  "FIREBASE_IMPLEMENTATION_COMPLETE.md": {
+    "mtime": 1783360519.3976982,
+    "ast_hash": "db3d0f338ba14c503e68d6168561a6f5",
+    "semantic_hash": ""
+  },
+  "FIREBASE_SETUP.md": {
+    "mtime": 1783360519.3976982,
+    "ast_hash": "758a009fa0190c9a09ca9c556be187a5",
+    "semantic_hash": ""
+  },
+  "FIRESTORE_MIGRATION_GUIDE.md": {
+    "mtime": 1783360519.398698,
+    "ast_hash": "d95a9fc01e5793b3e64f6e32f32530b8",
+    "semantic_hash": ""
+  },
+  "FIRESTORE_SETUP.md": {
+    "mtime": 1783360519.398698,
+    "ast_hash": "dfac8151886f1b627cd158adf62fcc14",
+    "semantic_hash": ""
+  },
+  "INTEGRATION_FIXED.md": {
+    "mtime": 1783360519.398698,
+    "ast_hash": "586e00a944744fd20851f27049d1a67f",
+    "semantic_hash": ""
+  },
+  "MAINTENANCE_MODULE_COMPLETE.md": {
+    "mtime": 1783360519.398698,
+    "ast_hash": "9a82b6aa161b799f4e61c5d7a24e61f1",
+    "semantic_hash": ""
+  },
+  "PAYROLL_MODULE_COMPLETE.md": {
+    "mtime": 1783360519.3996973,
+    "ast_hash": "af2993db1e2747322111b0d9e273d123",
+    "semantic_hash": ""
+  },
+  "PRODUCTION_MODULE_COMPLETE.md": {
+    "mtime": 1783360519.3996973,
+    "ast_hash": "3d07cad767811799914d6c0576443836",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1783360519.3996973,
+    "ast_hash": "f2a232b230fc8cae4ddd6eb17434f308",
+    "semantic_hash": ""
+  },
+  "SERVICE_MODULE_COMPLETE.md": {
+    "mtime": 1783360519.400698,
+    "ast_hash": "2bccb6806029e6a9e1d614d5b68ed9a3",
+    "semantic_hash": ""
+  },
+  "WAREHOUSE_INTEGRATION_COMPLETE.md": {
+    "mtime": 1783360519.400698,
+    "ast_hash": "71968f93cd1300a8a8334d166cdafe22",
+    "semantic_hash": ""
+  },
+  "docs/AI_ASSISTANT_AND_BYOK.md": {
+    "mtime": 1783360519.4961107,
+    "ast_hash": "f99c5d5aeb58a5b797d48b8a5937dfcc",
+    "semantic_hash": ""
+  },
+  "docs/AI_PLATFORM_BYOK.md": {
+    "mtime": 1783360519.4961107,
+    "ast_hash": "91a4f2519b04dbe5116b89b5c1918fd4",
+    "semantic_hash": ""
+  },
+  "docs/ASSISTANT_AND_BI_STRATEGY.md": {
+    "mtime": 1783374229.4121783,
+    "ast_hash": "49b067b88eecb7da058026d96dd38643",
+    "semantic_hash": ""
+  },
+  "docs/AUDIT_TRAIL_BY_RECORD.md": {
+    "mtime": 1783360519.4961107,
+    "ast_hash": "6f4ab0ce532072825de9226a578ebe22",
+    "semantic_hash": ""
+  },
+  "docs/BULK_IMPORT_CENTER.md": {
+    "mtime": 1783360519.4971135,
+    "ast_hash": "d0800102cba8a8cd0889b7a6c4565e5b",
+    "semantic_hash": ""
+  },
+  "docs/BULK_IMPORT_GUIDE.md": {
+    "mtime": 1783374229.4121783,
+    "ast_hash": "4aadf3f60c11849b7f968e61f3d47f89",
+    "semantic_hash": ""
+  },
+  "docs/CODEX_ERP_POLISH_AUDIT.md": {
+    "mtime": 1783374229.4131782,
+    "ast_hash": "e199ebb65114769e19cb0eae02309cbc",
+    "semantic_hash": ""
+  },
+  "docs/CRM_MOMENTUM_EMBED_AND_SYNC.md": {
+    "mtime": 1783360519.4971135,
+    "ast_hash": "53b69d045756fb87482b048760891c34",
+    "semantic_hash": ""
+  },
+  "docs/CRM_MOMENTUM_INTEGRATION.md": {
+    "mtime": 1783374229.415179,
+    "ast_hash": "837fafca6cf53c9aa0b797a72cdb894c",
+    "semantic_hash": ""
+  },
+  "docs/CURRENT_STATE_AUDIT.md": {
+    "mtime": 1783360519.4981115,
+    "ast_hash": "0e62b93fd59f37651d03724034651b37",
+    "semantic_hash": ""
+  },
+  "docs/DECISIONS/0001-foundation.md": {
+    "mtime": 1783360519.4981115,
+    "ast_hash": "43a08d195fedf2e06411ffc5b7072399",
+    "semantic_hash": ""
+  },
+  "docs/DECISIONS/0002-data-and-tenancy.md": {
+    "mtime": 1783360519.4981115,
+    "ast_hash": "852a38878baa0ffa1ce9a00afa661b06",
+    "semantic_hash": ""
+  },
+  "docs/ERP_UX_CRITERIA.md": {
+    "mtime": 1783374229.4162083,
+    "ast_hash": "f22be7d7557b59fd6a042dde1419fcac",
+    "semantic_hash": ""
+  },
+  "docs/FIREBASE_DATA_MODEL.md": {
+    "mtime": 1783360519.4991107,
+    "ast_hash": "b6aebbbb9f0bcf4eebabfaf229d71826",
+    "semantic_hash": ""
+  },
+  "docs/FIREBASE_TENANT_DATA_MODEL.md": {
+    "mtime": 1783374229.417202,
+    "ast_hash": "3a878f7ee82efd478b93de87629495cf",
+    "semantic_hash": ""
+  },
+  "docs/FIRESTORE_RULES_SECURITY.md": {
+    "mtime": 1783360519.4991107,
+    "ast_hash": "2349f0a647a166cefe368dd3531559be",
+    "semantic_hash": ""
+  },
+  "docs/IMPLEMENTATION_ROADMAP.md": {
+    "mtime": 1783360519.4991107,
+    "ast_hash": "72ee015845fb704b0b87b8dbabdca321",
+    "semantic_hash": ""
+  },
+  "docs/IMPLEMENTATION_STATUS.md": {
+    "mtime": 1783360519.4991107,
+    "ast_hash": "e3c188311c8bf9720850a2d643803a66",
+    "semantic_hash": ""
+  },
+  "docs/KNOWN_GAPS.md": {
+    "mtime": 1783360519.500209,
+    "ast_hash": "24d182fb704da7a40bd42bbe70bec951",
+    "semantic_hash": ""
+  },
+  "docs/KNOWN_LIMITATIONS.md": {
+    "mtime": 1783374229.417202,
+    "ast_hash": "8a739bed50a4094b954c7e81ab5f52fa",
+    "semantic_hash": ""
+  },
+  "docs/KNOWN_LIMITATIONS_AFTER_FIX.md": {
+    "mtime": 1783360519.500209,
+    "ast_hash": "04ee5c4e51999c6c442515b030d46bac",
+    "semantic_hash": ""
+  },
+  "docs/MODULE_TRACEABILITY_MODEL.md": {
+    "mtime": 1783374229.4181788,
+    "ast_hash": "8d14fa6d1bd1dbed8be91635e0ae12cc",
+    "semantic_hash": ""
+  },
+  "docs/MULTITENANCY_ARCHITECTURE.md": {
+    "mtime": 1783360519.500209,
+    "ast_hash": "ad6859772446f9dca2b14b42db6957f4",
+    "semantic_hash": ""
+  },
+  "docs/NEXO_CONTROL_PLANE.md": {
+    "mtime": 1783360519.500209,
+    "ast_hash": "b640d12d45765c34d12d89bbcdac9c5c",
+    "semantic_hash": ""
+  },
+  "docs/PLUGIN_AND_SKILL_USAGE.md": {
+    "mtime": 1783360519.5012114,
+    "ast_hash": "1a8d387166e50ab6bca765e82f61ce50",
+    "semantic_hash": ""
+  },
+  "docs/PRODUCTION_REALITY_AUDIT.md": {
+    "mtime": 1783360519.5012114,
+    "ast_hash": "665d359f1953100471771039277f3fbe",
+    "semantic_hash": ""
+  },
+  "docs/PRODUCTION_RUNBOOK.md": {
+    "mtime": 1783360519.5012114,
+    "ast_hash": "9aac97de9eb0f2768f9951400c08943d",
+    "semantic_hash": ""
+  },
+  "docs/PRODUCT_ARCHITECTURE_2027.md": {
+    "mtime": 1783360519.5022116,
+    "ast_hash": "73710dc97a68f64be1af3618b13bf6cf",
+    "semantic_hash": ""
+  },
+  "docs/REAL_USER_ACCEPTANCE_TESTS.md": {
+    "mtime": 1783360519.5022116,
+    "ast_hash": "f12b0119ea21e66e8ac5cf1d0a0f1752",
+    "semantic_hash": ""
+  },
+  "docs/REPOSITORY_COMPARISON_AND_PORTING_PLAN.md": {
+    "mtime": 1783360519.5022116,
+    "ast_hash": "3d5117e28e94b17d803ba7a01553a876",
+    "semantic_hash": ""
+  },
+  "docs/ROLE_PERMISSION_MATRIX.md": {
+    "mtime": 1783374229.4191802,
+    "ast_hash": "d24a499e3a11301af3c4476b619436c2",
+    "semantic_hash": ""
+  },
+  "docs/ROLLBACK_PLAN.md": {
+    "mtime": 1783360519.503209,
+    "ast_hash": "a3f4be0e30f26f3949a8da89b9c84fdf",
+    "semantic_hash": ""
+  },
+  "docs/SAP_LIKE_TABLES.md": {
+    "mtime": 1783360519.503209,
+    "ast_hash": "4979d062667d23e112fae57e25aa6df6",
+    "semantic_hash": ""
+  },
+  "docs/SAP_LIKE_TABLES_AND_VARIANTS.md": {
+    "mtime": 1783374229.4191802,
+    "ast_hash": "7eddd0046542adb896a5e7ecfa8b55f5",
+    "semantic_hash": ""
+  },
+  "docs/SAP_REFERENCE_PATTERNS_APPLIED.md": {
+    "mtime": 1783374229.4201787,
+    "ast_hash": "d1948c50a93ca871b191809c71de600d",
+    "semantic_hash": ""
+  },
+  "docs/SECURITY_MODEL.md": {
+    "mtime": 1783360519.503209,
+    "ast_hash": "9c882bad6849905dd958dab570f28f54",
+    "semantic_hash": ""
+  },
+  "docs/TARGET_ARCHITECTURE.md": {
+    "mtime": 1783360519.503209,
+    "ast_hash": "d3bc074c5796922cb8292af64ee977d4",
+    "semantic_hash": ""
+  },
+  "docs/TEST_STRATEGY.md": {
+    "mtime": 1783360519.5042088,
+    "ast_hash": "ea3a99366536f4332feca4f75d7111ae",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/CLAUDE.md": {
+    "mtime": 1783360519.5363736,
+    "ast_hash": "c8a3d861829e446be016f65ad67f4f94",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/DELAR_ERP_CONTEXT_CONSOLIDATED.md": {
+    "mtime": 1783360519.537373,
+    "ast_hash": "e6bea4a61e331c861d9ee1c7b964ffb3",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/MASTER_PROMPT_CLAUDE_CODE.md": {
+    "mtime": 1783360519.537373,
+    "ast_hash": "f86505103e1727a90d4e1689c7ae414a",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/PROMPT_DEFINITIVO_EJECUCION_DELAR_ERP_CON_HERRAMIENTAS.md": {
+    "mtime": 1783360519.5383747,
+    "ast_hash": "b57c19ab0fa3d8079f6cfeb569da2b5c",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/README_FIRST.md": {
+    "mtime": 1783360519.5383747,
+    "ast_hash": "017979e747b37abf7ab60b34b99b65f0",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/SHA256SUMS.txt": {
+    "mtime": 1783360519.5383747,
+    "ast_hash": "994423db8c8056c839a2994877c894e9",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/START_HERE_DELAR_ERP.txt": {
+    "mtime": 1783360519.5393736,
+    "ast_hash": "fee6a62f0e94e1b8481e8ea24c169c47",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/docs/01_PRODUCT_VISION.md": {
+    "mtime": 1783360519.5423753,
+    "ast_hash": "baf9ae6e491b10171055f486051eb910",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/docs/02_BUSINESS_CONTEXT.md": {
+    "mtime": 1783360519.5423753,
+    "ast_hash": "d09ef1319ef40ca24111a697cf03b8a2",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/docs/03_FUNCTIONAL_SCOPE.md": {
+    "mtime": 1783360519.5423753,
+    "ast_hash": "cbc0b7e2bc76b45a98bb46fdb60c675e",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/docs/04_DOMAIN_MODEL.md": {
+    "mtime": 1783360519.543375,
+    "ast_hash": "3f47295e10ff3fa779b9f66fa321802f",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/docs/05_DATABASE_BLUEPRINT.md": {
+    "mtime": 1783360519.543375,
+    "ast_hash": "6dd3a0522215b87b578180f1cec5877b",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/docs/06_WORKFLOWS.md": {
+    "mtime": 1783360519.543375,
+    "ast_hash": "aeabf3e5dbcd4d965c5637ab89aefd37",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/docs/07_RBAC_APPROVALS.md": {
+    "mtime": 1783360519.543375,
+    "ast_hash": "11877cd87886fe6b13631d0b11e19784",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/docs/08_AI_AUTOMATION.md": {
+    "mtime": 1783360519.544373,
+    "ast_hash": "717d37055d8aaf287dccd24442fd8a2c",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/docs/09_UI_UX.md": {
+    "mtime": 1783360519.544373,
+    "ast_hash": "bfa47bfd52598797c5a9ba4d9bbd1e72",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/docs/10_SECURITY_AUDIT.md": {
+    "mtime": 1783360519.544373,
+    "ast_hash": "12427fc19a08545d65a5c410e38baa90",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/docs/11_TESTING_ACCEPTANCE.md": {
+    "mtime": 1783360519.544373,
+    "ast_hash": "4b0146bccda62859866caaa23ef977a7",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/docs/12_ROADMAP.md": {
+    "mtime": 1783360519.5453737,
+    "ast_hash": "f9f55215490ff87df23991572aaa948b",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/docs/13_MIGRATION_DEPLOYMENT.md": {
+    "mtime": 1783360519.5453737,
+    "ast_hash": "01b6428fc1e1107491f610a517349b90",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/docs/14_OPEN_QUESTIONS.md": {
+    "mtime": 1783360519.5453737,
+    "ast_hash": "728b2459117f68ca84b031f32e86bc46",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/docs/15_REFERENCE_EVIDENCE.md": {
+    "mtime": 1783360519.5453737,
+    "ast_hash": "a12dc807a21700851536fd4abe5423d5",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/markdown/README.md": {
+    "mtime": 1783360519.5463738,
+    "ast_hash": "8523494bbb29caa59ac29bfb14bd35a0",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/markdown/SHA256SUMS.md": {
+    "mtime": 1783360519.5463738,
+    "ast_hash": "994423db8c8056c839a2994877c894e9",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/markdown/START_HERE_DELAR_ERP.md": {
+    "mtime": 1783360519.5463738,
+    "ast_hash": "fee6a62f0e94e1b8481e8ea24c169c47",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/markdown/data/brands_seed.md": {
+    "mtime": 1783360519.5473735,
+    "ast_hash": "4ebf5291e21652096ed83cdeccb63440",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/markdown/data/data_quality_issues.md": {
+    "mtime": 1783360519.5473735,
+    "ast_hash": "fc898e7a78a5bbb60322c2c1b6fb5658",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/markdown/data/delivery_and_commercial_rules_seed.md": {
+    "mtime": 1783360519.5473735,
+    "ast_hash": "2d27215a9fec38a5ff21a95308d750c3",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/markdown/data/price_lists_seed.md": {
+    "mtime": 1783360519.5483732,
+    "ast_hash": "b483484deae38d089a9def355f7fef57",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/markdown/data/product_catalog_seed.md": {
+    "mtime": 1783360519.5483732,
+    "ast_hash": "04c48a68101d734019c4a3c0ec610f35",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/markdown/data/uom_seed.md": {
+    "mtime": 1783360519.5483732,
+    "ast_hash": "30a2cbeda3ccd62efc1f2ada9132bcb1",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/markdown/database/000_domain_blueprint.md": {
+    "mtime": 1783360519.5493734,
+    "ast_hash": "d4615d6fa80a410ac9ebec67274fa6cf",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/markdown/reference/source-text/Info para Marketplace.md": {
+    "mtime": 1783360519.5493734,
+    "ast_hash": "e67c0683a11d30f4e78e8c9aea955f13",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/markdown/reference/source-text/Salsas Custom Culinary.md": {
+    "mtime": 1783360519.5503733,
+    "ast_hash": "5c62499f0db8fb47bf29351fcb000ed9",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/markdown/reference/source_files_manifest.md": {
+    "mtime": 1783360519.5503733,
+    "ast_hash": "f1ea3163629b7aab289a4a812474d832",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/markdown/reference/videos_manifest.md": {
+    "mtime": 1783360519.5503733,
+    "ast_hash": "11ec284a7e42ef2da01fcd98b21a1007",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/markdown/scripts/prepare_reference_folders.md": {
+    "mtime": 1783360519.5513735,
+    "ast_hash": "88110cef55cfa23cfd5418f7c3ba3007",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/production-final/PROMPT_DEFINITIVO_NEXO_ERP_PRODUCCION_PLUGINS.md": {
+    "mtime": 1783360519.5513735,
+    "ast_hash": "eb86584ef58fccc140a3f298a0e29fe1",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/production-final/README_EJECUCION_NEXO_ERP_PRODUCCION.md": {
+    "mtime": 1783360519.5513735,
+    "ast_hash": "1a3538ce66ecb09b4fde2b0dc5cca223",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/prompts/01_AUDIT_REPO.md": {
+    "mtime": 1783360519.5523734,
+    "ast_hash": "d48014622282790784ddffc6c9fb9c2b",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/prompts/02_IMPLEMENT_FOUNDATION.md": {
+    "mtime": 1783360519.5523734,
+    "ast_hash": "3ca59766cd3437121c52dd3f6e08394d",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/prompts/03_VALIDATE_WITH_CODEX.md": {
+    "mtime": 1783360519.5523734,
+    "ast_hash": "09cc0c8154e14ed5982fb123036f86d9",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/source-text/Info para Marketplace.txt": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "bff541f35296fa98ed79379a6c490ce8",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/source-text/Salsas Custom Culinary.txt": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "5b88bac982e2d9904323e9e3b389acd1",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/videos/README.txt": {
+    "mtime": 1783360519.6253228,
+    "ast_hash": "7c456a7a4a6736e76c2318ab9fc4a359",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/CLAUDE.md": {
+    "mtime": 1783459418.017303,
+    "ast_hash": "69341d61c17c024a2042605e1842b2e7",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/README.md": {
+    "mtime": 1783459418.017303,
+    "ast_hash": "72e772dae69742430bdc3f7c6ecb5d34",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/markdown/Catalogo_Cables.md": {
+    "mtime": 1783459418.0573256,
+    "ast_hash": "30587cc0b34d11424187294ff2dd524f",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/markdown/Clientes_CRM.md": {
+    "mtime": 1783459418.0573256,
+    "ast_hash": "ce20de33bbc588f09a7682dc5e662695",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/markdown/Inventario_Inicial.md": {
+    "mtime": 1783459418.0573256,
+    "ast_hash": "a7e70917f20996a740dc09a06f045b64",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/markdown/Lista_Precios.md": {
+    "mtime": 1783459418.0573256,
+    "ast_hash": "3efdd1f043e3abca2b78981743f9c389",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/markdown/Oportunidades_CRM.md": {
+    "mtime": 1783459418.0573256,
+    "ast_hash": "fb867b0bf39b58d0eb38675f41eb1d6f",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/markdown/SoleilWire_ERP_Import_Template.md": {
+    "mtime": 1783459418.0573256,
+    "ast_hash": "0a7c82fdc7d2e6eac66420c575bbdf12",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/markdown/manifest_imagenes.md": {
+    "mtime": 1783459418.0573256,
+    "ast_hash": "cf1f473faa309dbf8d2f137626c52eae",
+    "semantic_hash": ""
+  },
+  "app/apple-icon.png": {
+    "mtime": 1783360519.406704,
+    "ast_hash": "4196fa80d1521cbe44fe56336df97086",
+    "semantic_hash": ""
+  },
+  "app/icon.png": {
+    "mtime": 1783360519.433718,
+    "ast_hash": "4196fa80d1521cbe44fe56336df97086",
+    "semantic_hash": ""
+  },
+  "lib/image.png": {
+    "mtime": 1783360519.521292,
+    "ast_hash": "93b43cac80f94f46d4157e1994b06792",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/alpha-proposal/alpha_01.png": {
+    "mtime": 1783360519.560397,
+    "ast_hash": "c88b84090b5317059546493f0c3492d4",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/alpha-proposal/alpha_02.png": {
+    "mtime": 1783360519.5614872,
+    "ast_hash": "c5a0d2bda572810ae1340ce7f5b06a7a",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/alpha-proposal/alpha_03.png": {
+    "mtime": 1783360519.573532,
+    "ast_hash": "039096e5893fd34014efb5c97948bdc9",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/catalog-images/catalog_01.jpeg": {
+    "mtime": 1783360519.5757933,
+    "ast_hash": "76841c70a35b22d6a4ece516fa7458c2",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/catalog-images/catalog_02.jpeg": {
+    "mtime": 1783360519.5757933,
+    "ast_hash": "82f5420e883f51f6e940d415639a039e",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/catalog-images/catalog_03.jpeg": {
+    "mtime": 1783360519.5757933,
+    "ast_hash": "bfc7f8dfdb8de6bc2913666ff5f07669",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/catalog-images/catalog_04.jpeg": {
+    "mtime": 1783360519.5757933,
+    "ast_hash": "945419b553634f689b9bf820f60f435e",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/catalog-images/catalog_05.jpeg": {
+    "mtime": 1783360519.5757933,
+    "ast_hash": "2096ed076081e5189b4ea24507023b72",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/catalog-images/catalog_06.jpeg": {
+    "mtime": 1783360519.5757933,
+    "ast_hash": "181be06c398e26e12e11827623b6d07a",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/catalog-images/catalog_07.jpeg": {
+    "mtime": 1783360519.5757933,
+    "ast_hash": "3358fe3bb4b070a021f3b0a6f627187e",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/catalog-images/catalog_08.png": {
+    "mtime": 1783360519.5757933,
+    "ast_hash": "ca97b6f35a842a66662e97c338b837c6",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/catalog-images/catalog_09.webp": {
+    "mtime": 1783360519.5900855,
+    "ast_hash": "cd12fb5bff67213c3c4c776c7e992efd",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/catalog-images/catalog_10.png": {
+    "mtime": 1783360519.591173,
+    "ast_hash": "bf10559b0097a4a424c0dafc1e2a70d5",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/catalog-images/catalog_11.jpeg": {
+    "mtime": 1783360519.591173,
+    "ast_hash": "a9a4d48ca8097ea54534690016bb0807",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/catalog-images/catalog_12.webp": {
+    "mtime": 1783360519.591173,
+    "ast_hash": "2d22d337fcec52a8f92d185369d52689",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/catalog-images/catalog_13.jpeg": {
+    "mtime": 1783360519.5921226,
+    "ast_hash": "3c19bbff17ab29f723b71f5893012885",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/catalog-images/catalog_14.jpeg": {
+    "mtime": 1783360519.5921226,
+    "ast_hash": "a8430d26ee2547dfdb54d2b2265e8f11",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/catalog-images/catalog_15.png": {
+    "mtime": 1783360519.5932398,
+    "ast_hash": "93a0c4a577e46c2ba852201d1b195cbc",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/catalog-images/catalog_16.png": {
+    "mtime": 1783360519.5943375,
+    "ast_hash": "8c578ec157db77495c97043d12f24df1",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_01.jpeg": {
+    "mtime": 1783360519.5943375,
+    "ast_hash": "a5f97a505dc562c1798b96a1afebca94",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_02.jpeg": {
+    "mtime": 1783360519.595286,
+    "ast_hash": "51d51c105c7273a1b41c3464e66a9aeb",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_03.jpeg": {
+    "mtime": 1783360519.5963407,
+    "ast_hash": "10bb7945089aa319312b4edcc1c8452c",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_04.jpeg": {
+    "mtime": 1783360519.5963407,
+    "ast_hash": "2b0efd64cf2933075f092755648ca587",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_05.jpeg": {
+    "mtime": 1783360519.597241,
+    "ast_hash": "00a4bec6ad9177fae5ca637bf4846c49",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_06.jpeg": {
+    "mtime": 1783360519.597241,
+    "ast_hash": "98bb76d0b0a76ffdee8235f6c6de9e67",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_07.jpeg": {
+    "mtime": 1783360519.59824,
+    "ast_hash": "a1576887a39add504bf14a6afeabd7bf",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_08.jpeg": {
+    "mtime": 1783360519.5992596,
+    "ast_hash": "e5c32975cd34e1080eda6a8fd289fc98",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_09.jpeg": {
+    "mtime": 1783360519.5992596,
+    "ast_hash": "29288002ff978e74d50f6d458f39d6cf",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_10.jpeg": {
+    "mtime": 1783360519.6002405,
+    "ast_hash": "09fff63a5f64b4fa7d6501011057fcc2",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_11.jpeg": {
+    "mtime": 1783360519.6012585,
+    "ast_hash": "e4640fdd6c788789b09599205f2e6ae2",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_12.jpeg": {
+    "mtime": 1783360519.6012585,
+    "ast_hash": "6bb44c3dde8665b9f170c44b60acfac6",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_13.jpeg": {
+    "mtime": 1783360519.6022403,
+    "ast_hash": "09bd7f8c9065b7cfde5c047e80247c76",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_14.jpeg": {
+    "mtime": 1783360519.6032455,
+    "ast_hash": "2248f059e473c6580624dfd22bd8e885",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_15.jpeg": {
+    "mtime": 1783360519.6032455,
+    "ast_hash": "2c42dfcf7cfc0b3bfe5d8f9956aadc1f",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_16.jpeg": {
+    "mtime": 1783360519.6042585,
+    "ast_hash": "c3190b8ea2bcda2179ad2c464f73048d",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_17.jpeg": {
+    "mtime": 1783360519.6042585,
+    "ast_hash": "c44a21d92900e36dd3a485aa0b9cb77a",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_18.jpeg": {
+    "mtime": 1783360519.605259,
+    "ast_hash": "dda8be384fd6ca7e5a0c355f41df48d7",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_19.jpeg": {
+    "mtime": 1783360519.605259,
+    "ast_hash": "f286ec3b561be8c5e3e650fd233ada18",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_20.jpeg": {
+    "mtime": 1783360519.6062407,
+    "ast_hash": "45ce15a988db2a8c2ea5a53b944484eb",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_21.jpeg": {
+    "mtime": 1783360519.6072748,
+    "ast_hash": "d74ad91ef95fb97dabc5b814a92180f8",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_22.jpeg": {
+    "mtime": 1783360519.6072748,
+    "ast_hash": "120e6e7279a3050025f654ab4196551c",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_23.jpeg": {
+    "mtime": 1783360519.6082425,
+    "ast_hash": "655aa5a168d2131ad38cc4f98dcaf816",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_24.jpeg": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "7bbbb23ffd4b72191982bd99d70dae04",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_25.jpeg": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "b18a5c2fb13f21ec47b19290ada4ef9c",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_26.jpeg": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "cd26170bae69cfdd306340b0239b739a",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_27.jpeg": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "0bd230507f362336bb819995733fb77f",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_28.jpeg": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "8ff25bf94fb5ea7ce105322662d36a68",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_29.jpeg": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "07959cc84e6d39212c8a64d4e684b90e",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_30.jpeg": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "efd75c5d7948763f94b2381e0f3f610e",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_31.jpeg": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "92c6e3cecbffa16fb7e9addee6394561",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_32.jpeg": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "bbb8b5f92b284a78fd2dc40ce5d44a14",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_33.jpeg": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "623310ca288f37fec5fedf06d4a1cfdc",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_34.jpeg": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "4f4066812485d6a271590207d3f10183",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_35.jpeg": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "461a3d144a2e7903a1dc0ca094e07abd",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_36.jpeg": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "61f5948772cfd50b20d113d16ea58af8",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_37.jpeg": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "c6dfeb46c5bd138cb0e86a7b2d76be45",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/odoo-screenshots/odoo_38.jpeg": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "ed82f0452a8afe004702fcc3b24b950d",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/video-contact-sheets/v1_contact.jpg": {
+    "mtime": 1783360519.608583,
+    "ast_hash": "84c30d677483021b1b001818d75a2ce4",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/video-contact-sheets/v2_contact.jpg": {
+    "mtime": 1783360519.624423,
+    "ast_hash": "015ca8ebf46a8fbda8feae9cd909858c",
+    "semantic_hash": ""
+  },
+  "project-context/delar-erp/reference/video-contact-sheets/v3_contact.jpg": {
+    "mtime": 1783360519.6253228,
+    "ast_hash": "d82b3c595dac3ab3cceb3f596e25cf8f",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/imagenes_referencia/NEXO-UI-TABLE-REFERENCE__nexo_tabla_referencia_acciones.png": {
+    "mtime": 1783459418.0253,
+    "ast_hash": "076762435844a275a239b24a7fe19916",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/imagenes_referencia/SW-CAT-ALTA-TEMP__alta_temperatura.png": {
+    "mtime": 1783459418.0253,
+    "ast_hash": "0c016d05c416b1924d7f4519c8578a64",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/imagenes_referencia/SW-CAT-ALUMINIO__aluminio.png": {
+    "mtime": 1783459418.0253,
+    "ast_hash": "40c85313220f367f2aa439e2057461f0",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/imagenes_referencia/SW-CAT-ARMADOS__cables_armados.png": {
+    "mtime": 1783459418.0332987,
+    "ast_hash": "23b302c6dc613a91c5ef2df99cacca2d",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/imagenes_referencia/SW-CAT-CONTROL-POTENCIA__control_potencia_multiconductores.png": {
+    "mtime": 1783459418.0332987,
+    "ast_hash": "f9604e93e327af0d53902bf1766072fd",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/imagenes_referencia/SW-CAT-FLEXIBLES__flexibles.png": {
+    "mtime": 1783459418.0332987,
+    "ast_hash": "166f2042f4e608caef3bd4914c9b397e",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/imagenes_referencia/SW-CAT-IEC__norma_iec.png": {
+    "mtime": 1783459418.0332987,
+    "ast_hash": "22f4c4b0ebf08ec799fd95951f526d57",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/imagenes_referencia/SW-CAT-INDUSTRIALES__industriales.png": {
+    "mtime": 1783459418.0332987,
+    "ast_hash": "9c7638855c602ddf05afbba19146aad7",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/imagenes_referencia/SW-CAT-INSTRUMENTACION__instrumentacion.png": {
+    "mtime": 1783459418.0412993,
+    "ast_hash": "799be4207c1cf983ca8d3d5f599bc29f",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/imagenes_referencia/SW-CAT-MEDIO-VOLTAJE__medio_voltaje.png": {
+    "mtime": 1783459418.0412993,
+    "ast_hash": "2c57c2bd59d26e33c9ef0ad4e93f5c51",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/imagenes_referencia/SW-CAT-MINERIA__mineria.png": {
+    "mtime": 1783459418.0412993,
+    "ast_hash": "3f74f502cee4e3c9abcf474b169231e9",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/imagenes_referencia/SW-CAT-MONOPOLARES__monopolares.png": {
+    "mtime": 1783459418.0412993,
+    "ast_hash": "0c2a78017cc662371dbe2b42a5152e02",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/imagenes_referencia/SW-CAT-PLANOS__planos.png": {
+    "mtime": 1783459418.0412993,
+    "ast_hash": "e0a49dbcc862e63f6a24f4f2cb35ae5c",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/imagenes_referencia/SW-CAT-RENOVABLE__energia_renovable.png": {
+    "mtime": 1783459418.0412993,
+    "ast_hash": "30cad6eec8ee1be7cd781a96571b203e",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/imagenes_referencia/SW-REF-001__inicio_portada_inventarios.png": {
+    "mtime": 1783459418.0493011,
+    "ast_hash": "f2a25227dfa34e20341a227eb51ff09e",
+    "semantic_hash": ""
+  },
+  "project-context/soleilwire/imagenes_referencia/SW-REF-002__menu_categorias_cables.png": {
+    "mtime": 1783459418.0573256,
+    "ast_hash": "592f3feb3c8bceb10a4c9168e367df21",
+    "semantic_hash": ""
+  },
+  "public/Logo Nexo ERP (1).png": {
+    "mtime": 1783360519.6253228,
+    "ast_hash": "4196fa80d1521cbe44fe56336df97086",
+    "semantic_hash": ""
+  },
+  "public/Logo Nexo ERP.svg": {
+    "mtime": 1783360519.6253228,
+    "ast_hash": "6cf6e4cd95badb1ac7be1bcd43849b1f",
+    "semantic_hash": ""
+  },
+  "public/apple-icon.png": {
+    "mtime": 1783360519.6253228,
+    "ast_hash": "ddc510bab424b930aba6f0185e4fc5a3",
+    "semantic_hash": ""
+  },
+  "public/placeholder-user.jpg": {
+    "mtime": 1783360519.6253228,
+    "ast_hash": "7ee6562646feae6d6d77e2c72e204591",
+    "semantic_hash": ""
+  },
+  "public/placeholder.jpg": {
+    "mtime": 1783360519.6253228,
+    "ast_hash": "1e533b7b4545d1d605144ce893afc601",
+    "semantic_hash": ""
+  },
+  "public/placeholder.svg": {
+    "mtime": 1783360519.6253228,
+    "ast_hash": "35707bd9960ba5281c72af927b79291f",
+    "semantic_hash": ""
   }
 }

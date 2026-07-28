@@ -1,7 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useTheme } from "next-themes"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import {
@@ -11,81 +9,70 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { DEFAULT_ERP_PREFERENCES, type ErpPreferences } from "@/lib/platform/preferences"
-import { readErpPreferences, writeErpPreferences } from "@/lib/platform/user-preferences-storage"
+import { useErpPreferences } from "@/hooks/use-erp-preferences"
+import { getUiText } from "@/lib/i18n/erp-ui"
+import type { ErpPreferences } from "@/lib/platform/preferences"
 
 export function UserPreferencesCard() {
-  const { setTheme } = useTheme()
-  const [prefs, setPrefs] = useState<ErpPreferences>(DEFAULT_ERP_PREFERENCES)
-  const [ready, setReady] = useState(false)
-
-  useEffect(() => {
-    setPrefs(readErpPreferences())
-    setReady(true)
-  }, [])
-
-  function update(partial: Partial<ErpPreferences>) {
-    const next = writeErpPreferences(partial)
-    setPrefs(next)
-    if (partial.theme) setTheme(partial.theme)
-  }
+  const { preferences, ready, language, updatePreferences } = useErpPreferences()
+  const text = getUiText(language)
 
   if (!ready) return null
 
   return (
     <Card data-testid="user-preferences-card">
       <CardHeader>
-        <CardTitle>Mis preferencias</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Idioma, tema y densidad de tablas. Se guardan para ti en este navegador.
-        </p>
+        <CardTitle>{text.settings.preferencesTitle}</CardTitle>
+        <p className="text-sm text-muted-foreground">{text.settings.preferencesDescription}</p>
       </CardHeader>
       <CardContent>
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-1.5">
-            <Label htmlFor="pref-language">Idioma</Label>
+            <Label htmlFor="pref-language">{text.language.label}</Label>
             <Select
-              value={prefs.language}
-              onValueChange={(value) => update({ language: value as ErpPreferences["language"] })}
+              value={preferences.language}
+              onValueChange={(value) => updatePreferences({ language: value as ErpPreferences["language"] })}
             >
               <SelectTrigger id="pref-language" data-testid="pref-language">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="es">Español</SelectItem>
-                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="es">{text.language.spanish}</SelectItem>
+                <SelectItem value="en">{text.language.english}</SelectItem>
               </SelectContent>
             </Select>
           </div>
+
           <div className="space-y-1.5">
-            <Label htmlFor="pref-theme">Tema</Label>
+            <Label htmlFor="pref-theme">{text.theme.label}</Label>
             <Select
-              value={prefs.theme}
-              onValueChange={(value) => update({ theme: value as ErpPreferences["theme"] })}
+              value={preferences.theme}
+              onValueChange={(value) => updatePreferences({ theme: value as ErpPreferences["theme"] })}
             >
               <SelectTrigger id="pref-theme" data-testid="pref-theme">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="dark">Oscuro</SelectItem>
-                <SelectItem value="light">Claro</SelectItem>
-                <SelectItem value="system">Según el sistema</SelectItem>
+                <SelectItem value="dark">{text.theme.dark}</SelectItem>
+                <SelectItem value="light">{text.theme.light}</SelectItem>
+                <SelectItem value="system">{text.theme.systemLong}</SelectItem>
               </SelectContent>
             </Select>
           </div>
+
           <div className="space-y-1.5">
-            <Label htmlFor="pref-density">Densidad de tablas</Label>
+            <Label htmlFor="pref-density">{text.density.label}</Label>
             <Select
-              value={prefs.tableDensity}
-              onValueChange={(value) => update({ tableDensity: value as ErpPreferences["tableDensity"] })}
+              value={preferences.tableDensity}
+              onValueChange={(value) => updatePreferences({ tableDensity: value as ErpPreferences["tableDensity"] })}
             >
               <SelectTrigger id="pref-density" data-testid="pref-density">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="comfortable">Cómoda</SelectItem>
-                <SelectItem value="medium">Normal</SelectItem>
-                <SelectItem value="compact">Compacta</SelectItem>
+                <SelectItem value="comfortable">{text.density.comfortable}</SelectItem>
+                <SelectItem value="medium">{text.density.medium}</SelectItem>
+                <SelectItem value="compact">{text.density.compact}</SelectItem>
               </SelectContent>
             </Select>
           </div>

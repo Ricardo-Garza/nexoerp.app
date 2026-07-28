@@ -28,7 +28,9 @@ import { DASHBOARD_INDICATOR_CATALOG, getIndicatorDefinition } from "@/lib/platf
 import type { DashboardIndicatorId, Tenant } from "@/lib/platform/types"
 import { useIndicatorValues } from "@/components/dashboard/tenant-indicators"
 import { useAuth } from "@/hooks/use-auth"
+import { useErpPreferences } from "@/hooks/use-erp-preferences"
 import { appendAudit } from "@/lib/platform/tenant-store"
+import { getUiText } from "@/lib/i18n/erp-ui"
 
 type WidgetSize = "small" | "medium" | "large"
 type WidgetKind = "kpi" | "chart"
@@ -132,6 +134,8 @@ function storageKey(tenant: Tenant | null, userId?: string) {
 
 export function CustomizableDashboard({ tenant }: { tenant: Tenant | null }) {
   const { user } = useAuth()
+  const { language } = useErpPreferences()
+  const uiText = getUiText(language)
   const searchParams = useSearchParams()
   const values = useIndicatorValues(tenant)
   const [open, setOpen] = useState(() => searchParams.get("configurar") === "1")
@@ -185,7 +189,7 @@ export function CustomizableDashboard({ tenant }: { tenant: Tenant | null }) {
         </div>
         <Button onClick={() => setOpen(true)} data-testid="configure-dashboard">
           <Settings2 className="mr-2 h-4 w-4" />
-          Configurar panel
+          {uiText.dashboard.configure}
         </Button>
       </div>
 
@@ -211,6 +215,7 @@ export function CustomizableDashboard({ tenant }: { tenant: Tenant | null }) {
           savedWidgets={widgets}
           defaults={defaultWidgets(tenant)}
           values={values}
+          copy={uiText.dashboard}
           onOpenChange={setOpen}
           onSave={save}
         />
@@ -314,6 +319,7 @@ function DashboardEditor({
   savedWidgets,
   defaults,
   values,
+  copy,
   onOpenChange,
   onSave,
 }: {
@@ -321,6 +327,7 @@ function DashboardEditor({
   savedWidgets: DashboardWidgetConfig[]
   defaults: DashboardWidgetConfig[]
   values: ReturnType<typeof useIndicatorValues>
+  copy: ReturnType<typeof getUiText>["dashboard"]
   onOpenChange: (open: boolean) => void
   onSave: (widgets: DashboardWidgetConfig[]) => void
 }) {
@@ -389,11 +396,8 @@ function DashboardEditor({
         data-testid="dashboard-editor-dialog"
       >
         <DialogHeader className="border-b px-6 pb-4 pt-6 pr-12 sm:px-8">
-          <DialogTitle>Personalizar panel de control</DialogTitle>
-          <DialogDescription className="max-w-3xl">
-            Elige los indicadores visibles, ordénalos y ajusta el tamaño de cada bloque. Los cambios se aplican
-            hasta presionar Guardar configuración.
-          </DialogDescription>
+          <DialogTitle>{copy.title}</DialogTitle>
+          <DialogDescription className="max-w-3xl">{copy.description}</DialogDescription>
         </DialogHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-6 py-5 sm:px-8">
@@ -415,7 +419,7 @@ function DashboardEditor({
 
             <section className="space-y-3">
               <div>
-                <h3 className="text-sm font-semibold">Bloques activos</h3>
+                <h3 className="text-sm font-semibold">{copy.activeBlocks}</h3>
                 <p className="text-xs text-muted-foreground">
                   Estos bloques aparecen en el inicio. Puedes cambiar su orden, tamaño y periodo.
                 </p>
@@ -443,7 +447,7 @@ function DashboardEditor({
 
             <section className="space-y-3">
               <div>
-                <h3 className="text-sm font-semibold">Disponibles para agregar</h3>
+                <h3 className="text-sm font-semibold">{copy.availableBlocks}</h3>
                 <p className="text-xs text-muted-foreground">
                   Agrega indicadores o gráficos cuando aporten información real al panel.
                 </p>
@@ -469,7 +473,7 @@ function DashboardEditor({
 
           <div className="min-w-0 space-y-4 rounded-lg border bg-muted/20 p-4 xl:sticky xl:top-0 xl:self-start">
             <div>
-              <h3 className="text-sm font-semibold">Vista previa</h3>
+              <h3 className="text-sm font-semibold">{copy.preview}</h3>
               <p className="mt-1 text-xs text-muted-foreground">
                 Selecciona un bloque activo para revisar cómo se verá antes de guardar.
               </p>
@@ -485,7 +489,7 @@ function DashboardEditor({
                 </div>
                 {focused.kind === "kpi" && (focused.metric ?? "auto") !== "auto" && (
                   <p className="rounded-lg border bg-background px-3 py-2 text-xs text-muted-foreground">
-                    Pendiente de datos: el cálculo por métrica y periodo personalizado se calculará al registrar operaciones suficientes.
+                    {copy.pendingData}: el calculo por metrica y periodo personalizado se calculara al registrar operaciones suficientes.
                   </p>
                 )}
               </div>
@@ -501,11 +505,11 @@ function DashboardEditor({
         <DialogFooter className="border-t bg-background px-6 py-4 sm:justify-between sm:px-8">
           <div className="flex flex-col-reverse gap-2 sm:flex-row">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
+              {copy.cancel}
             </Button>
             <Button variant="outline" onClick={handleReset}>
               <RotateCcw className="mr-2 h-4 w-4" />
-              Restaurar predeterminado
+              {copy.reset}
             </Button>
           </div>
           <div className="flex flex-col gap-1 sm:items-end">
@@ -515,7 +519,7 @@ function DashboardEditor({
               disabled={visibleCount === 0}
               title={visibleCount === 0 ? "Activa al menos un bloque para guardar" : undefined}
             >
-              Guardar configuración
+              {copy.save}
             </Button>
             {visibleCount === 0 && <span className="text-xs text-muted-foreground">Activa al menos un bloque para guardar.</span>}
           </div>

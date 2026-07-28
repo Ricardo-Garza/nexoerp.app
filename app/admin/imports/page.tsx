@@ -63,7 +63,7 @@ export default function AdminImportsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Corridas ({runs.length})</CardTitle>
-          <CardDescription>Cada corrida (dry-run o confirmada) queda registrada con su resultado.</CardDescription>
+          <CardDescription>Cada corrida (prueba previa o confirmada) queda registrada con su resultado.</CardDescription>
         </CardHeader>
         <CardContent>
           <DataTablePro

@@ -142,9 +142,9 @@ export function ImportWizard({ initialEntity }: { initialEntity?: string }) {
   }
 
   const steps: { id: Step; label: string }[] = [
-    { id: "select", label: "Entidad" },
+    { id: "select", label: "Módulo" },
     { id: "upload", label: "Archivo" },
-    { id: "map", label: "Mapeo" },
+    { id: "map", label: "Columnas" },
     { id: "review", label: "Validación" },
     { id: "done", label: "Resultado" },
   ]
@@ -179,7 +179,7 @@ export function ImportWizard({ initialEntity }: { initialEntity?: string }) {
         <Card>
           <CardHeader>
             <CardTitle>¿Qué quieres importar?</CardTitle>
-            <CardDescription>Elige la entidad. Cada una tiene su plantilla con columnas guiadas.</CardDescription>
+            <CardDescription>Elige el módulo. Cada uno tiene su plantilla con columnas guiadas.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {IMPORT_TEMPLATES.map((t) => (
@@ -294,7 +294,7 @@ export function ImportWizard({ initialEntity }: { initialEntity?: string }) {
       {step === "map" && template && parsed && (
         <Card>
           <CardHeader>
-            <CardTitle>Mapeo de columnas</CardTitle>
+            <CardTitle>Relacionar columnas</CardTitle>
             <CardDescription>
               Detectamos {Object.keys(mapping).length} de {template.fields.length} columnas. Ajusta lo que falte.
             </CardDescription>
@@ -338,11 +338,11 @@ export function ImportWizard({ initialEntity }: { initialEntity?: string }) {
         </Card>
       )}
 
-      {/* STEP: review (dry-run) */}
+      {/* STEP: review (prueba previa) */}
       {step === "review" && template && result && (
         <Card>
           <CardHeader>
-            <CardTitle>Validación (dry-run)</CardTitle>
+            <CardTitle>Validación (prueba previa)</CardTitle>
             <CardDescription>Nada se ha guardado todavía. Revisa el resultado antes de confirmar.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -390,7 +390,7 @@ export function ImportWizard({ initialEntity }: { initialEntity?: string }) {
 
             {result.duplicates.length > 0 && (
               <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                <Copy className="w-3.5 h-3.5" /> {result.duplicates.length} duplicados detectados por clave natural (se omiten).
+                 <Copy className="w-3.5 h-3.5" /> {result.duplicates.length} duplicados detectados por SKU, RFC, nombre o folio segun la plantilla (se omiten).
               </p>
             )}
 
@@ -398,7 +398,7 @@ export function ImportWizard({ initialEntity }: { initialEntity?: string }) {
 
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep("map")}>
-                Ajustar mapeo
+                 Ajustar columnas
               </Button>
               <Button
                 onClick={commit}
