@@ -25,7 +25,7 @@ async function ask(page: Page, text: string) {
   return page.getByTestId("copilot-answer").last()
 }
 
-test("el robot aparece abajo a la derecha y el panel abre con identidad, sugerencias y aviso DEMO", async ({ page }) => {
+test("el robot aparece abajo a la derecha y el panel abre con identidad, sugerencias y aviso discreto", async ({ page }) => {
   await loginAsSoleil(page)
   const toggle = page.getByTestId("assistant-toggle")
   const box = (await toggle.boundingBox())!
@@ -37,7 +37,7 @@ test("el robot aparece abajo a la derecha y el panel abre con identidad, sugeren
   const panel = page.getByTestId("assistant-panel")
   await expect(panel).toBeVisible()
   await expect(panel).toHaveAttribute("data-mode", "copilot")
-  await expect(page.getByTestId("copilot-demo-badge")).toContainText("Demo Soleil Wire")
+  await expect(panel.getByTestId("demo-data-notice")).toContainText("datos simulados")
   await expect(page.getByTestId("copilot-suggestion")).toHaveCount(8)
   await expect(page.getByTestId("assistant-input")).toBeFocused()
 })
@@ -58,7 +58,8 @@ test("una sugerencia ejecuta una consulta real: cifra, KPIs y evidencia de respa
 test("el tablero de Soleil Wire muestra KPIs y gráficas del motor analítico", async ({ page }) => {
   await loginAsSoleil(page)
   await expect(page.getByTestId("soleil-dashboard")).toBeVisible()
-  await expect(page.getByTestId("soleil-dashboard")).toContainText("Ventas del mes", { timeout: 20_000 })
+  await expect(page.getByTestId("soleil-dashboard")).toContainText("Ventas netas del mes", { timeout: 20_000 })
+  await expect(page.getByTestId("soleil-dashboard")).toContainText("Productos vendidos")
   await expect(page.getByTestId("soleil-dashboard")).toContainText("Top 10 clientes")
   await expect(page.getByTestId("soleil-dashboard")).toContainText("Productos más vendidos")
 })
@@ -151,10 +152,10 @@ test("móvil: el panel cabe en la pantalla y es utilizable", async ({ page }, te
   expect(overflow).toBeLessThanOrEqual(2)
 })
 
-test("Explorar Nexo Intelligence: el escenario de Finanzas ejecuta consultas reales", async ({ page }) => {
+test("Nexo Intelligence: el escenario de Finanzas ejecuta consultas reales", async ({ page }) => {
   await loginAsSoleil(page)
   await page.goto("/dashboard/nexo-intelligence")
-  await expect(page.getByTestId("intelligence-demo-badge")).toBeVisible()
+  await expect(page.getByTestId("demo-data-notice")).toContainText("no representan información real")
   await expect(page.getByTestId("intelligence-scenarios").locator("button")).toHaveCount(5)
   await page.getByTestId("scenario-finanzas").click()
   await expect(page.getByTestId("intelligence-answer")).toHaveCount(3, { timeout: 40_000 })
@@ -210,5 +211,5 @@ test("un administrador global puede cambiar a Soleil Wire desde Intelligence", a
   await page.waitForURL("**/dashboard")
   await page.goto("/dashboard/nexo-intelligence")
   await page.getByTestId("select-soleilwire").click()
-  await expect(page.getByTestId("intelligence-demo-badge")).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Nexo Intelligence" })).toBeVisible()
 })

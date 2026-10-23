@@ -51,12 +51,13 @@ async function main() {
 
   let plan
   if (args.command === "tenant") plan = await planTenantClaims(auth, firestore, { email: args.email, expectedUid: args["expected-uid"], tenantId: args.tenant, role: args.role })
-  else plan = await planPlatformAdmin(auth, { email: args.email, expectedUid: args["expected-uid"], action: args.command === "revoke" ? "revoke" : "grant" })
+  else plan = await planPlatformAdmin(auth, { email: args.email, expectedUid: args["expected-uid"], action: args.command })
 
   console.log(`Proyecto: ${projectId}${usingEmulator ? " (EMULADOR)" : ""}`)
   console.log(`Cuenta:   ${plan.user.email} (uid verificado)`)
   console.log(`Claims actuales (solo claves): ${Object.keys(plan.current).sort().join(", ") || "(ninguno)"}`)
-  console.log(`Claims resultantes (solo claves): ${Object.keys(plan.next).sort().join(", ") || "(ninguno)"}`)
+  console.log(`Acceso global: ${plan.current.platformAdmin === true ? "asignado" : "ausente"}`)
+  if (args.command !== "show") console.log(`Claims resultantes (solo claves): ${Object.keys(plan.next).sort().join(", ") || "(ninguno)"}`)
   for (const w of plan.warnings) console.log(`⚠️  ${w}`)
   if (args.command === "show") return
   if (!plan.changed) return console.log("Sin cambios: la cuenta ya tiene esos claims.")

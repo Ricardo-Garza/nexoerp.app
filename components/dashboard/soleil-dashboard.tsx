@@ -3,8 +3,8 @@
 import { useEffect, useState, type ReactNode } from "react"
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { AlertTriangle, BarChart3, Boxes, CircleDollarSign, Users } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { DemoDataNotice } from "@/components/copilot/demo-data-notice"
 import { authService } from "@/lib/auth"
 import type { SoleilDashboardSummary } from "@/lib/copilot/dashboard-summary"
 
@@ -49,9 +49,9 @@ export function SoleilDashboard() {
   if (!summary) {
     return (
       <div className="space-y-4" data-testid="soleil-dashboard">
-        <div className="flex flex-wrap items-center gap-2">
+        <div>
           <h1 className="text-2xl font-bold">Soleil Wire</h1>
-          <Badge variant="outline" className="border-amber-500/50 text-amber-600">DEMO · datos simulados</Badge>
+          <DemoDataNotice className="mt-1" />
         </div>
         <Card><CardContent className="p-5 text-sm text-muted-foreground">{error ? "No fue posible cargar los indicadores analíticos autorizados." : "Calculando indicadores desde el dataset de Soleil Wire…"}</CardContent></Card>
       </div>
@@ -63,16 +63,18 @@ export function SoleilDashboard() {
     <div className="space-y-5" data-testid="soleil-dashboard">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="flex flex-wrap items-center gap-2"><h1 className="text-2xl font-bold">Soleil Wire</h1><Badge variant="outline" className="border-amber-500/50 text-amber-600">DEMO · datos simulados</Badge></div>
+          <h1 className="text-2xl font-bold">Soleil Wire</h1>
           <p className="mt-1 text-sm text-muted-foreground">Indicadores calculados por Nexo Intelligence al {summary.asOf}.</p>
+          <DemoDataNotice className="mt-1.5" />
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Metric label="Ventas del mes" value={money.format(summary.salesMonth)} description={growth} />
+        <Metric label="Ventas netas del mes" value={money.format(summary.salesMonth)} description={growth} />
         <Metric label="Ventas acumuladas" value={money.format(summary.salesYtd)} description="Ejercicio en curso" />
         <Metric label="Comparativo mensual" value={summary.salesChangePct === null ? "—" : `${summary.salesChangePct >= 0 ? "+" : ""}${summary.salesChangePct.toFixed(1)}%`} description="Contra el mismo corte del mes anterior" />
         <Metric label="Clientes activos" value={number.format(summary.activeCustomers)} description="Con compras en los últimos 90 días" />
+        <Metric label="Productos vendidos" value={number.format(summary.soldProducts)} description="SKUs con ventas en el ejercicio" />
         <Metric label="Margen bruto" value={money.format(summary.grossMarginMxn)} description={`${summary.grossMarginPct?.toFixed(1) ?? "—"}% sobre ventas acumuladas`} />
         <Metric label="Inventario disponible" value={number.format(summary.inventoryUnits)} description={`${money.format(summary.inventoryValueMxn)} a costo`} />
         <Metric label="Stock crítico" value={number.format(summary.criticalStock)} description="SKUs bajo su mínimo" />

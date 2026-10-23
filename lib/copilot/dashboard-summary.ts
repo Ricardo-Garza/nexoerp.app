@@ -17,6 +17,7 @@ export interface SoleilDashboardSummary {
   salesYtd: number
   salesChangePct: number | null
   activeCustomers: number
+  soldProducts: number
   grossMarginMxn: number
   grossMarginPct: number | null
   inventoryUnits: number
@@ -43,17 +44,22 @@ export function buildSoleilDashboardSummary(view: DataView): SoleilDashboardSumm
   const previousComparableEnd = `${previousMonthStart.slice(0, 8)}${asOf.slice(8)}`
   const current = totalForFilter(view, { from: currentMonthStart, to: asOf })
   const previous = totalForFilter(view, { from: previousMonthStart, to: previousComparableEnd })
-  const ytd = totalForFilter(view, { from: `${asOf.slice(0, 4)}-01-01`, to: asOf })
+  const ytdFilter = { from: `${asOf.slice(0, 4)}-01-01`, to: asOf }
+  const ytd = totalForFilter(view, ytdFilter)
   const activeCustomers = new Set(
     selectRows(view, { from: addDays(asOf, -90), to: asOf })
       .filter((row) => row.kind === "venta")
       .map((row) => row.customerId),
   ).size
+  const soldProducts = new Set(
+    selectRows(view, ytdFilter)
+      .filter((row) => row.kind === "venta")
+      .map((row) => row.sku),
+  ).size
   const stock = computeStock(view)
   const receivables = summarizeReceivables(openInvoices(view))
   const opportunities = openOpportunities(view)
   const pipeline = pipelineByStage(opportunities)
-  const ytdFilter = { from: `${asOf.slice(0, 4)}-01-01`, to: asOf }
 
   return {
     asOf,
@@ -61,6 +67,7 @@ export function buildSoleilDashboardSummary(view: DataView): SoleilDashboardSumm
     salesYtd: ytd.netMxn,
     salesChangePct: pctChange(current.netMxn, previous.netMxn),
     activeCustomers,
+    soldProducts,
     grossMarginMxn: ytd.marginMxn,
     grossMarginPct: ytd.marginPct,
     inventoryUnits: Math.round(stock.reduce((sum, row) => sum + row.totalQty, 0)),

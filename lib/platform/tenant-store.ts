@@ -26,7 +26,8 @@ import { SEED_TENANTS, findSeedTenant } from "./seed-tenants"
  *  - modo "demo" (local/CI/E2E sin credenciales): localStorage. Permite validar
  *    toda la UI con Playwright sin tocar datos reales.
  *
- * El seed es idempotente en ambos modos (upsert por id).
+ * Los tenants locales solo se usan en el modo demo aislado. En Firebase nunca
+ * se inventan, completan ni sustituyen empresas: la lista refleja Firestore.
  */
 
 const LS_TENANTS = "nexo_tenants"
@@ -57,7 +58,7 @@ function lsWrite<T>(key: string, value: T): void {
   }
 }
 
-/** Siembra idempotente de los tenants fundacionales. */
+/** Siembra idempotente de tenants únicamente en el entorno demo aislado. */
 export async function ensureTenantsSeeded(): Promise<void> {
   if (isDemo()) {
     const existing = lsRead<Tenant[]>(LS_TENANTS, [])
@@ -66,14 +67,8 @@ export async function ensureTenantsSeeded(): Promise<void> {
     lsWrite(LS_TENANTS, [...byId.values()])
     return
   }
-  const db = getFirebaseDb()
-  for (const seed of SEED_TENANTS) {
-    const ref = doc(db, "tenants", seed.id)
-    const snap = await getDoc(ref)
-    if (!snap.exists()) {
-      await setDoc(ref, { ...seed, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
-    }
-  }
+  // En Firebase el alta es una acción administrativa explícita. Nunca se
+  // escriben empresas desde el navegador al iniciar una sesión.
 }
 
 export async function listTenants(): Promise<Tenant[]> {
@@ -83,7 +78,6 @@ export async function listTenants(): Promise<Tenant[]> {
   }
   const db = getFirebaseDb()
   const snap = await getDocs(collection(db, "tenants"))
-  if (snap.empty) return SEED_TENANTS
   return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Tenant, "id">) }))
 }
 
@@ -94,7 +88,7 @@ export async function getTenant(id: string): Promise<Tenant | null> {
   }
   const db = getFirebaseDb()
   const snap = await getDoc(doc(db, "tenants", id))
-  if (!snap.exists()) return findSeedTenant(id) ?? null
+  if (!snap.exists()) return null
   return { id: snap.id, ...(snap.data() as Omit<Tenant, "id">) }
 }
 

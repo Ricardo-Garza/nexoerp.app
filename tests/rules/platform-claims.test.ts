@@ -42,6 +42,14 @@ describe("Asignación segura del claim platformAdmin", () => {
     expect((await auth.getUser(opsUid)).customClaims?.platformAdmin).toBeUndefined()
   })
 
+  it("show refleja el estado actual sin calcular ni sugerir un grant", async () => {
+    await auth.setCustomUserClaims(opsUid, { tema: "oscuro" })
+    const plan = await planPlatformAdmin(auth, { email: "operaciones@nexo.com", expectedUid: opsUid, action: "show" })
+    expect(plan.changed).toBe(false)
+    expect(plan.next).toEqual({ tema: "oscuro" })
+    expect(plan.next.platformAdmin).toBeUndefined()
+  })
+
   it("exige el UID esperado y rechaza una cuenta con otro UID", async () => {
     await expect(planPlatformAdmin(auth, { email: "operaciones@nexo.com", expectedUid: "" })).rejects.toBeInstanceOf(ClaimsError)
     await expect(planPlatformAdmin(auth, { email: "operaciones@nexo.com", expectedUid: "uid-equivocado" })).rejects.toThrow(/no coincide/)
@@ -86,6 +94,9 @@ describe("Asignación segura del claim platformAdmin", () => {
     const env = { ...process.env, FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9199", FIRESTORE_EMULATOR_HOST: "127.0.0.1:8085" }
     const out = execFileSync(process.execPath, ["scripts/platform-admin-claim.mjs", "grant", "--email", "operaciones@nexo.com", "--expected-uid", opsUid, "--project", PROJECT], { env, encoding: "utf8" })
     expect(out).toMatch(/ENSAYO/)
+    const shown = execFileSync(process.execPath, ["scripts/platform-admin-claim.mjs", "show", "--email", "operaciones@nexo.com", "--expected-uid", opsUid, "--project", PROJECT], { env, encoding: "utf8" })
+    expect(shown).toMatch(/Acceso global: ausente/)
+    expect(shown).not.toMatch(/Claims resultantes/)
     expect(() => execFileSync(process.execPath, ["scripts/platform-admin-claim.mjs", "grant", "--email", "operaciones@nexo.com", "--expected-uid", opsUid, "--project", "otro-proyecto-real"], { env, encoding: "utf8", stdio: "pipe" })).toThrow()
   })
 })

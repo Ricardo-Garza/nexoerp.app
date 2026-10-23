@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Play, RotateCcw, Send, ShieldCheck } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -14,6 +13,8 @@ import { MAX_QUESTION_LENGTH } from "@/lib/copilot/schema"
 import { DEMO_SCENARIOS } from "@/lib/copilot/scenarios"
 import { ResultCard } from "@/components/copilot/result-card"
 import { useCopilot } from "@/components/copilot/use-copilot"
+import { DemoDataNotice } from "@/components/copilot/demo-data-notice"
+import { getTenant } from "@/lib/platform/tenant-store"
 
 export default function NexoIntelligencePage() {
   const router = useRouter()
@@ -22,6 +23,8 @@ export default function NexoIntelligencePage() {
   const copilot = useCopilot(COPILOT_TENANT_ID)
   const [running, setRunning] = useState<string | null>(null)
   const [input, setInput] = useState("")
+  const [selectingTenant, setSelectingTenant] = useState(false)
+  const [selectionError, setSelectionError] = useState("")
   const endRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -44,19 +47,33 @@ export default function NexoIntelligencePage() {
     setInput("")
   }
 
+  async function selectSoleilWire() {
+    if (selectingTenant) return
+    setSelectingTenant(true)
+    setSelectionError("")
+    try {
+      const tenant = await getTenant(COPILOT_TENANT_ID)
+      if (!tenant) {
+        setSelectionError("Soleil Wire aún no está registrada entre las empresas disponibles.")
+        return
+      }
+      setActiveTenant(tenant.id)
+      router.replace("/dashboard/nexo-intelligence")
+    } catch {
+      setSelectionError("No fue posible comprobar la empresa. Inténtalo de nuevo.")
+    } finally {
+      setSelectingTenant(false)
+    }
+  }
+
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight">Explorar Nexo Intelligence</h1>
-          <Badge variant="outline" className="border-amber-500/50 text-amber-600 dark:text-amber-400" data-testid="intelligence-demo-badge">
-            Demo · datos simulados
-          </Badge>
-        </div>
+        <h1 className="text-2xl font-semibold tracking-tight">Nexo Intelligence</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          Un copiloto que entiende preguntas en español, consulta los registros relacionados de Soleil Wire, calcula cifras verificables y las muestra con gráficas. Cada escenario ejecuta preguntas reales contra el mismo motor del asistente: no hay respuestas
-          pregrabadas. Es de solo lectura y no usa modelos de IA externos.
+          Consulta ventas, rentabilidad, clientes, productos, inventario, cobranza y CRM en lenguaje natural. Cada respuesta se calcula con el motor analítico y conserva el contexto para preguntas de seguimiento.
         </p>
+        <DemoDataNotice className="mt-2 max-w-3xl" />
       </div>
 
       {!enabled ? (
@@ -64,21 +81,24 @@ export default function NexoIntelligencePage() {
           <CardContent className="flex gap-3 p-5 text-sm">
             <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
             <div>
-              <p className="font-medium">Este demo solo está disponible para la empresa Soleil Wire.</p>
-              <p className="mt-1 text-muted-foreground">Entra con un usuario de Soleil Wire o, como administrador de plataforma, selecciona la empresa Soleil Wire en el selector de empresas. Las demás empresas no tienen un origen de datos conectado a Nexo Intelligence.</p>
+              <p className="font-medium">Selecciona Soleil Wire para abrir Nexo Intelligence.</p>
+              <p className="mt-1 text-muted-foreground">
+                {isPlatformAdmin
+                  ? "Puedes cambiar la empresa activa aquí o desde el selector del encabezado."
+                  : "Tu sesión actual no tiene acceso a la experiencia de Soleil Wire."}
+              </p>
               {isPlatformAdmin && (
                 <Button
                   size="sm"
                   className="mt-3"
-                  onClick={() => {
-                    setActiveTenant(COPILOT_TENANT_ID)
-                    router.replace("/dashboard/nexo-intelligence")
-                  }}
+                  onClick={() => void selectSoleilWire()}
+                  disabled={selectingTenant}
                   data-testid="select-soleilwire"
                 >
-                  Cambiar a Soleil Wire
+                  {selectingTenant ? "Comprobando…" : "Cambiar a Soleil Wire"}
                 </Button>
               )}
+              {selectionError && <p className="mt-2 text-sm text-destructive" role="alert">{selectionError}</p>}
             </div>
           </CardContent>
         </Card>

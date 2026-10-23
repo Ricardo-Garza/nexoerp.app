@@ -23,16 +23,35 @@ import type { Tenant } from "@/lib/platform/types"
 export function TenantIndicator() {
   const { isPlatformAdmin, activeTenantId, setActiveTenant, impersonating } = usePlatform()
   const [tenants, setTenants] = useState<Tenant[]>([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
     let cancelled = false
+    setLoading(true)
+    setLoadError(false)
     // Solo plataforma lista todas las empresas; el resto consulta únicamente la suya (las reglas lo exigen)
     const load = isPlatformAdmin ? listTenants() : getTenant(activeTenantId).then((t) => (t ? [t] : []))
-    load.then((list) => !cancelled && setTenants(list)).catch(() => !cancelled && setTenants([]))
+    load
+      .then((list) => {
+        if (cancelled) return
+        setTenants(list)
+        if (isPlatformAdmin && list.length > 0 && !list.some((tenant) => tenant.id === activeTenantId)) {
+          setActiveTenant(list[0].id)
+        }
+      })
+      .catch(() => {
+        if (cancelled) return
+        setTenants([])
+        setLoadError(true)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
     return () => {
       cancelled = true
     }
-  }, [isPlatformAdmin, activeTenantId])
+  }, [isPlatformAdmin, activeTenantId, setActiveTenant])
 
   const active = tenants.find((tenant) => tenant.id === activeTenantId)
 
@@ -54,9 +73,11 @@ export function TenantIndicator() {
       )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-1.5" data-testid="tenant-switcher">
+          <Button variant="outline" size="sm" className="gap-1.5" data-testid="tenant-switcher" aria-label="Empresa activa">
             <Building2 className="w-4 h-4" />
-            <span className="max-w-[140px] truncate">{active?.name ?? "Selecciona empresa"}</span>
+            <span className="max-w-[160px] truncate">
+              {active?.name ?? (loading ? "Cargando empresas…" : "Selecciona empresa")}
+            </span>
             <ChevronDown className="w-3.5 h-3.5 opacity-60" />
           </Button>
         </DropdownMenuTrigger>
@@ -69,6 +90,10 @@ export function TenantIndicator() {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuLabel className="text-xs text-muted-foreground">Cambiar de empresa</DropdownMenuLabel>
+          {loadError && <DropdownMenuItem disabled>No fue posible cargar las empresas</DropdownMenuItem>}
+          {!loading && !loadError && tenants.length === 0 && (
+            <DropdownMenuItem disabled>No hay empresas registradas</DropdownMenuItem>
+          )}
           {tenants.map((tenant) => (
             <DropdownMenuItem
               key={tenant.id}

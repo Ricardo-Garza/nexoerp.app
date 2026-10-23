@@ -12,6 +12,7 @@ describe("tablero Soleil Wire", () => {
     expect(summary.salesMonth).toBeGreaterThan(0)
     expect(summary.salesYtd).toBeGreaterThan(summary.salesMonth)
     expect(summary.activeCustomers).toBeGreaterThan(0)
+    expect(summary.soldProducts).toBeGreaterThan(0)
     expect(summary.grossMarginMxn).toBeGreaterThan(0)
     expect(summary.inventoryUnits).toBeGreaterThan(0)
     expect(summary.criticalStock).toBeGreaterThan(0)

@@ -81,6 +81,9 @@ test.describe("Autenticación real (sin modo demo)", () => {
 test.describe("Administrador de plataforma (claim platformAdmin) y Control Plane", () => {
   test("accede al Control Plane, ve todas las empresas y cambia entre ellas sin mezclar datos", async ({ page }) => {
     await login(page, "ops")
+    await page.getByTestId("user-menu").click()
+    await expect(page.getByTestId("user-role")).toHaveText("Administrador Nexo")
+    await page.keyboard.press("Escape")
     await page.goto("/admin")
     await expect(page.getByTestId("platform-denied")).toHaveCount(0)
     await page.goto("/dashboard")
@@ -134,6 +137,10 @@ test.describe("Usuarios sin privilegios de plataforma", () => {
 
   test("el administrador de Soleil Wire (claim de empresa) usa el copiloto de SU empresa", async ({ page }) => {
     await login(page, "soleilAdmin")
+    await page.getByTestId("user-menu").click()
+    await expect(page.getByTestId("user-role")).toHaveText("Administrador de empresa")
+    await page.keyboard.press("Escape")
+    await expect(page.getByTestId("tenant-switcher")).toHaveCount(0)
     await page.getByTestId("assistant-toggle").click()
     await expect(page.getByTestId("assistant-panel")).toHaveAttribute("data-mode", "copilot")
     await page.getByTestId("assistant-input").fill("¿Cuánto nos deben los clientes?")

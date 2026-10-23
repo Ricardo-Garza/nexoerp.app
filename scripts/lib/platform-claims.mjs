@@ -40,6 +40,7 @@ async function lookup(auth, email, expectedUid) {
 
 /** Calcula (sin escribir) los claims resultantes de conceder o revocar el rol global. */
 export async function planPlatformAdmin(auth, { email, expectedUid, action = "grant" }) {
+  if (!["show", "grant", "revoke"].includes(action)) throw new ClaimsError("Acción de plataforma inválida.")
   const e = norm(email)
   if (NEVER_PLATFORM_ADMIN.includes(e)) throw new ClaimsError(`${e} no puede recibir privilegios de plataforma.`)
   if (action === "grant" && !PLATFORM_ADMIN_ALLOWLIST.includes(e)) throw new ClaimsError(`${e} no está en la lista autorizada de administradores de plataforma.`)
@@ -47,7 +48,7 @@ export async function planPlatformAdmin(auth, { email, expectedUid, action = "gr
   const current = user.customClaims ?? {}
   const next = { ...current }
   if (action === "grant") next.platformAdmin = true
-  else delete next.platformAdmin
+  else if (action === "revoke") delete next.platformAdmin
   return { user, current, next, changed: JSON.stringify(current) !== JSON.stringify(next), warnings: user.emailVerified ? [] : ["El correo de la cuenta no está verificado en Firebase."] }
 }
 
