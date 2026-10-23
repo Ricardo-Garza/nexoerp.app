@@ -27,6 +27,7 @@ export const MODULE_CATALOG: ModuleDefinition[] = [
   { id: "accounting", name: "Contabilidad", description: "Catálogo de cuentas y pólizas", href: "/dashboard/accounting", group: "administracion", maturity: "beta" },
   { id: "payroll", name: "Nómina / RRHH", description: "Empleados, vacaciones e incidencias", href: "/dashboard/payroll", group: "administracion", maturity: "beta" },
   { id: "bi", name: "Reportes / BI", description: "Reportes e indicadores", href: "/dashboard/business-intelligence", group: "analitica", maturity: "beta" },
+  { id: "intelligence", name: "Nexo Intelligence", description: "Copiloto de consulta de datos en lenguaje natural (demo)", href: "/dashboard/nexo-intelligence", group: "analitica", maturity: "beta" },
   { id: "crm", name: "CRM Momentum", description: "Clientes, contactos, prospectos y oportunidades por empresa", href: "/dashboard/crm", group: "principal", maturity: "beta" },
   { id: "webMobile", name: "ERP Web / Móvil", description: "Vista previa de la experiencia móvil", href: "/dashboard/web-mobile", group: "expansion", maturity: "planned" },
   { id: "ecommerce", name: "E-Commerce", description: "Canal de venta en línea (previo)", href: "/dashboard/ecommerce", group: "expansion", maturity: "planned" },
@@ -71,7 +72,7 @@ export const COMBINED_MODULE_IDS: ModuleId[] = MODULE_CATALOG.filter((m) => m.co
  * el menú. La ruta /dashboard/clients sigue existiendo como soporte interno.
  */
 export const ALL_MODULE_IDS: ModuleId[] = MODULE_CATALOG.filter(
-  (m) => !["clients", "catalog", "priceLists", "inventoryStock", "lots", "warehouse"].includes(m.id),
+  (m) => !["clients", "catalog", "priceLists", "inventoryStock", "lots", "warehouse", "intelligence"].includes(m.id),
 ).map((m) => m.id)
 
 /**
@@ -90,6 +91,7 @@ export const DISTRIBUTION_TENANT_MODULES: ModuleId[] = [
   "banking",
   "accounting",
   "bi",
+  "intelligence",
   "service",
   "imports",
 ]

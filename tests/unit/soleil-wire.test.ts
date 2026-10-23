@@ -178,7 +178,7 @@ describe("Menú por empresa y módulos combinados", () => {
     const operaciones = menu.find((s) => s.title === "OPERACIONES")!
     expect(operaciones.items.map((i) => i.name)).toEqual(["Soporte"])
     const analitica = menu.find((s) => s.title === "ANALITICA")!
-    expect(analitica.items.map((i) => i.name)).toEqual(["Reportes / BI"])
+    expect(analitica.items.map((i) => i.name)).toEqual(["Reportes / BI", "Nexo Intelligence"])
   })
 
   it("el fallback sin tenant usa el conjunto clásico (sin combinados)", () => {

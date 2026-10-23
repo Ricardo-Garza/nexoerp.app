@@ -484,3 +484,34 @@
     position: static !important;
   }
 }
+
+/* Nexo Intelligence: animaciones del asistente (se desactivan con prefers-reduced-motion) */
+@keyframes robot-blink {
+  0%, 100% { transform: scaleY(1); }
+  45%, 55% { transform: scaleY(0.1); }
+}
+@keyframes copilot-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes copilot-out {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(10px) scale(0.97); }
+}
+@keyframes copilot-invite {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes copilot-dot {
+  0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-2px); }
+}
+.copilot-panel[data-state="open"] { animation: copilot-in 0.18s ease-out; }
+.copilot-panel[data-state="closed"] { animation: copilot-out 0.15s ease-in forwards; }
+.copilot-invite { animation: copilot-invite 0.25s ease-out; }
+.copilot-dot { animation: copilot-dot 1.2s ease-in-out infinite; }
+.copilot-dot:nth-child(2) { animation-delay: 0.15s; }
+.copilot-dot:nth-child(3) { animation-delay: 0.3s; }
+@media (prefers-reduced-motion: reduce) {
+  .copilot-panel, .copilot-invite, .copilot-dot { animation: none !important; }
+}
