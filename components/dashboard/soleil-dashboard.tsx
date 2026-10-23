@@ -71,11 +71,13 @@ export function SoleilDashboard() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Metric label="Ventas del mes" value={money.format(summary.salesMonth)} description={growth} />
         <Metric label="Ventas acumuladas" value={money.format(summary.salesYtd)} description="Ejercicio en curso" />
+        <Metric label="Comparativo mensual" value={summary.salesChangePct === null ? "—" : `${summary.salesChangePct >= 0 ? "+" : ""}${summary.salesChangePct.toFixed(1)}%`} description="Contra el mismo corte del mes anterior" />
         <Metric label="Clientes activos" value={number.format(summary.activeCustomers)} description="Con compras en los últimos 90 días" />
         <Metric label="Margen bruto" value={money.format(summary.grossMarginMxn)} description={`${summary.grossMarginPct?.toFixed(1) ?? "—"}% sobre ventas acumuladas`} />
         <Metric label="Inventario disponible" value={number.format(summary.inventoryUnits)} description={`${money.format(summary.inventoryValueMxn)} a costo`} />
         <Metric label="Stock crítico" value={number.format(summary.criticalStock)} description="SKUs bajo su mínimo" />
         <Metric label="Cuentas por cobrar" value={money.format(summary.receivablesMxn)} description={`${number.format(summary.overdueInvoices)} facturas vencidas`} />
+        <Metric label="Facturas vencidas" value={number.format(summary.overdueInvoices)} description={`${money.format(summary.overdueMxn)} con atraso`} />
         <Metric label="Oportunidades CRM" value={number.format(summary.openOpportunities)} description={`${money.format(summary.weightedPipelineMxn)} pipeline ponderado`} />
       </div>
 
