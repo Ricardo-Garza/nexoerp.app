@@ -12,6 +12,8 @@
     "test:e2e": "playwright test",
     "seed:generate": "node scripts/generate-domain-seed.mjs",
     "seed:soleil": "node scripts/generate-soleil-seed.mjs",
+    "copilot:eval": "vitest run tests/unit/copilot-eval.test.ts",
+    "copilot:dataset": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/generate-copilot-dataset.mjs",
     "seed:firebase": "node scripts/seed-firebase.mjs"
   },
   "dependencies": {

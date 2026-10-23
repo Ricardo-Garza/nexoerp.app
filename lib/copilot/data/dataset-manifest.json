@@ -1,0 +1,21 @@
+{
+  "seed": "soleilwire-demo-v1",
+  "referenceDate": "2026-10-23",
+  "schemaVersion": 1,
+  "counts": {
+    "customers": 120,
+    "suppliers": 20,
+    "warehouses": 3,
+    "products": 199,
+    "quotes": 398,
+    "opportunities": 150,
+    "orders": 1348,
+    "orderLines": 4017,
+    "invoices": 1199,
+    "payments": 1111,
+    "creditNotes": 54,
+    "purchaseOrders": 1140,
+    "movements": 5669
+  },
+  "sha256": "82ce40a9f62d261ccbc3ec65ba7bd3a46ba88c95da54f5a9ac1a9dff2fa6a81e"
+}

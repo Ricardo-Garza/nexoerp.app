@@ -30,6 +30,7 @@ export type ModuleId =
   | "accounting"
   | "payroll"
   | "bi"
+  | "intelligence"
   | "crm"
   | "imports"
   | "webMobile"
