@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useRef, useState } from "react"
+import { authService } from "@/lib/auth"
 import type { CopilotResponse, CopilotResult } from "@/lib/copilot/result"
 import { EMPTY_MEMORY, MAX_QUESTION_LENGTH, type SessionMemory } from "@/lib/copilot/schema"
 
@@ -53,9 +54,11 @@ export function useCopilot(tenantId: string, onDelegate?: (question: string) => 
         controller.abort()
       }, REQUEST_TIMEOUT_MS)
       try {
+        // En Firebase la identidad viaja como ID token firmado; el servidor lo verifica (no hay cookie de identidad)
+        const idToken = await authService.getIdToken()
         const res = await fetch("/api/copilot/query", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}) },
           body: JSON.stringify({ question, tenantId, memory: memory.current }),
           signal: controller.signal,
           cache: "no-store",

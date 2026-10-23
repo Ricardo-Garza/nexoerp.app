@@ -10,8 +10,10 @@ import {
 } from "firebase/auth"
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore"
 import { getFirebaseAuth, getFirebaseDb } from "./firebase"
-import { getAuthMode } from "./config/auth-mode"
+import { describeMisconfiguration, getAuthMode } from "./config/auth-mode"
+import { authErrorMessage } from "./auth-errors"
 import type { Role } from "./domain/rbac/roles"
+import type { PlatformRole } from "./platform/types"
 
 export type UserRole = "admin" | "user"
 
@@ -20,10 +22,13 @@ export interface User {
   email: string
   name: string
   role: UserRole
-  /** Rol granular del RBAC de dominio (modo demo / migración futura) */
+  /** Rol granular del RBAC de dominio (solo modo demo aislado) */
   domainRole?: Role
   createdAt?: Date
+  /** Tenant del usuario: custom claim verificado primero; el perfil solo si no hay claim. */
   companyId?: string
+  /** Rol de plataforma. En Firebase proviene EXCLUSIVAMENTE de custom claims del ID token. */
+  platformRole?: PlatformRole
 }
 
 export interface AuthResponse {
@@ -32,190 +37,133 @@ export interface AuthResponse {
   user?: User
 }
 
-// Get or create user profile in Firestore with role lookup
+const CONFIG_ERROR = () => `La autenticación no está configurada correctamente. ${describeMisconfiguration()} Contacta a soporte.`
+
+/** Rol de plataforma a partir de los claims firmados del ID token (nunca de localStorage ni del correo). */
+export function platformRoleFromClaims(claims: Record<string, unknown> | undefined): PlatformRole {
+  if (claims?.platformAdmin === true) return "platform_admin"
+  if (claims?.platformSupport === true) return "platform_support"
+  return "none"
+}
+
+export function tenantFromClaims(claims: Record<string, unknown> | undefined): string | undefined {
+  const raw = claims?.companyId ?? claims?.tenantId
+  return typeof raw === "string" && raw.length > 0 ? raw : undefined
+}
+
+// Perfil en Firestore (nombre, rol de UI) + claims verificados del token (tenant y plataforma).
 async function getUserProfile(firebaseUser: FirebaseUser): Promise<User> {
-  try {
-    const db = getFirebaseDb()
-    const userRef = doc(db, "users", firebaseUser.uid)
-    const userSnap = await getDoc(userRef)
+  const email = firebaseUser.email || ""
+  const emailName = email ? email.split("@")[0] : "Usuario"
+  const tokenResult = await firebaseUser.getIdTokenResult()
+  const platformRole = platformRoleFromClaims(tokenResult.claims)
+  const claimTenant = tenantFromClaims(tokenResult.claims)
 
-    if (userSnap.exists()) {
-      const data = userSnap.data()
-      const email = firebaseUser.email || ""
-      const emailName = email ? email.split("@")[0] : "Usuario"
+  const db = getFirebaseDb()
+  const userRef = doc(db, "users", firebaseUser.uid)
+  const userSnap = await getDoc(userRef)
 
-      return {
-        uid: firebaseUser.uid,
-        email: email,
-        name: data?.name || emailName,
-        role: data?.role || "user",
-        createdAt: data?.createdAt?.toDate(),
-        companyId: data?.companyId,
-      }
-    }
-
-    const email = firebaseUser.email || ""
-    const emailName = email ? email.split("@")[0] : "Usuario"
-
-    // Create new user profile if doesn't exist
-    const newUser: User = {
+  if (userSnap.exists()) {
+    const data = userSnap.data()
+    return {
       uid: firebaseUser.uid,
-      email: email,
-      name: emailName,
-      role: "user", // Default role
-      createdAt: new Date(),
+      email,
+      name: data?.name || emailName,
+      role: data?.role === "admin" ? "admin" : "user",
+      createdAt: data?.createdAt?.toDate?.(),
+      companyId: claimTenant ?? data?.companyId ?? data?.empresaId,
+      platformRole,
     }
-
-    await setDoc(userRef, {
-      email: newUser.email,
-      name: newUser.name,
-      role: newUser.role,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    })
-
-    return newUser
-  } catch (error) {
-    console.error("[Auth] Error getting user profile:", error)
-    throw error
   }
+
+  // Primer ingreso: el perfil se crea SIN rol privilegiado ni empresa (las reglas lo exigen).
+  await setDoc(userRef, {
+    email,
+    name: emailName,
+    role: "user",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  })
+  return { uid: firebaseUser.uid, email, name: emailName, role: "user", createdAt: new Date(), companyId: claimTenant, platformRole }
 }
 
 export const authService = {
-  // Login with Firebase Auth
   login: async (email: string, password: string): Promise<AuthResponse> => {
-    if (getAuthMode() === "demo") {
+    const mode = getAuthMode()
+    if (mode === "demo") {
       const { demoAuthService } = await import("./auth-demo")
       return demoAuthService.login(email, password)
     }
+    if (mode === "misconfigured") return { success: false, message: CONFIG_ERROR() }
     try {
       const auth = getFirebaseAuth()
-      const userCredential = await signInWithEmailAndPassword(auth, email, password)
-      const user = await getUserProfile(userCredential.user)
-
-      return {
-        success: true,
-        user,
-      }
-    } catch (error: any) {
-      console.error("[Auth] Login error:", error)
-
-      let message = "Error al iniciar sesión. Intenta de nuevo."
-
-      if (error.code === "auth/invalid-credential" || error.code === "auth/wrong-password") {
-        message = "Credenciales incorrectas. Verifica tu correo y contraseña."
-      } else if (error.code === "auth/user-not-found") {
-        message = "No existe una cuenta con este correo electrónico."
-      } else if (error.code === "auth/too-many-requests") {
-        message = "Demasiados intentos fallidos. Intenta más tarde."
-      } else if (error.code === "auth/network-request-failed") {
-        message = "Error de conexión. Verifica tu internet."
-      }
-
-      return {
-        success: false,
-        message,
-      }
+      const credential = await signInWithEmailAndPassword(auth, email.trim(), password)
+      const user = await getUserProfile(credential.user)
+      return { success: true, user }
+    } catch (error) {
+      // Solo el código de error: nunca se registran correo, contraseña ni tokens.
+      console.error("[Auth] Login error:", (error as { code?: string })?.code ?? "unknown")
+      return { success: false, message: authErrorMessage(error, "login") }
     }
   },
 
-  // Register new user
   register: async (email: string, password: string, name?: string): Promise<AuthResponse> => {
+    if (getAuthMode() !== "firebase") return { success: false, message: "El registro no está disponible en este entorno." }
     try {
       const auth = getFirebaseAuth()
       const db = getFirebaseDb()
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-
-      const safeEmail = userCredential.user.email || email || ""
+      const credential = await createUserWithEmailAndPassword(auth, email.trim(), password)
+      const safeEmail = credential.user.email || email
       const emailName = safeEmail ? safeEmail.split("@")[0] : "Usuario"
-
-      // Create user profile in Firestore
-      const newUser: User = {
-        uid: userCredential.user.uid,
-        email: safeEmail,
-        name: name || emailName,
+      const profile: User = { uid: credential.user.uid, email: safeEmail, name: name || emailName, role: "user", createdAt: new Date(), platformRole: "none" }
+      await setDoc(doc(db, "users", credential.user.uid), {
+        email: profile.email,
+        name: profile.name,
         role: "user",
-        createdAt: new Date(),
-      }
-
-      await setDoc(doc(db, "users", userCredential.user.uid), {
-        email: newUser.email,
-        name: newUser.name,
-        role: newUser.role,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       })
-
-      return {
-        success: true,
-        user: newUser,
-      }
-    } catch (error: any) {
-      console.error("[Auth] Registration error:", error)
-
-      let message = "Error al crear la cuenta. Intenta de nuevo."
-
-      if (error.code === "auth/email-already-in-use") {
-        message = "Este correo ya está registrado. Intenta iniciar sesión."
-      } else if (error.code === "auth/weak-password") {
-        message = "La contraseña debe tener al menos 6 caracteres."
-      } else if (error.code === "auth/invalid-email") {
-        message = "Correo electrónico inválido."
-      }
-
-      return {
-        success: false,
-        message,
-      }
+      return { success: true, user: profile }
+    } catch (error) {
+      console.error("[Auth] Registration error:", (error as { code?: string })?.code ?? "unknown")
+      return { success: false, message: authErrorMessage(error, "register") }
     }
   },
 
-  // Logout
   logout: async (): Promise<void> => {
+    if (typeof window !== "undefined") {
+      try {
+        // La empresa seleccionada no sobrevive a la sesión
+        window.localStorage.removeItem("nexo_active_tenant")
+      } catch {
+        /* almacenamiento bloqueado */
+      }
+    }
     if (getAuthMode() === "demo") {
       const { demoAuthService } = await import("./auth-demo")
       demoAuthService.logout()
       return
     }
-    try {
-      const auth = getFirebaseAuth()
-      await firebaseSignOut(auth)
-    } catch (error) {
-      console.error("[Auth] Logout error:", error)
-      throw error
-    }
+    if (getAuthMode() === "misconfigured") return
+    await firebaseSignOut(getFirebaseAuth())
   },
 
-  // Send password reset email
   resetPassword: async (email: string): Promise<AuthResponse> => {
+    if (getAuthMode() !== "firebase") return { success: false, message: getAuthMode() === "misconfigured" ? CONFIG_ERROR() : "La recuperación de contraseña no está disponible en este entorno." }
     try {
-      const auth = getFirebaseAuth()
-      await sendPasswordResetEmail(auth, email)
-      return {
-        success: true,
-        message: `Se han enviado las instrucciones de recuperación a ${email}`,
-      }
-    } catch (error: any) {
-      console.error("[Auth] Password reset error:", error)
-
-      let message = "Error al enviar el correo. Intenta de nuevo."
-
-      if (error.code === "auth/user-not-found") {
-        message = "No existe una cuenta con este correo electrónico."
-      } else if (error.code === "auth/invalid-email") {
-        message = "Correo electrónico inválido."
-      }
-
-      return {
-        success: false,
-        message,
-      }
+      await sendPasswordResetEmail(getFirebaseAuth(), email.trim())
+    } catch (error) {
+      const code = (error as { code?: string })?.code
+      console.error("[Auth] Password reset error:", code ?? "unknown")
+      // No se revela si la cuenta existe: solo se informan errores de formato, red o configuración.
+      if (code && code !== "auth/user-not-found") return { success: false, message: authErrorMessage(error, "reset") }
     }
+    return { success: true, message: "Si el correo está registrado, recibirás las instrucciones para restablecer tu contraseña." }
   },
 
-  // Subscribe to auth state changes
   onAuthStateChanged: (callback: (user: User | null) => void) => {
-    if (getAuthMode() === "demo") {
+    const mode = getAuthMode()
+    if (mode === "demo") {
       let unsubscribe: (() => void) | undefined
       let cancelled = false
       import("./auth-demo").then(({ demoAuthService }) => {
@@ -226,37 +174,41 @@ export const authService = {
         unsubscribe?.()
       }
     }
-    const auth = getFirebaseAuth()
-    return onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        try {
-          const user = await getUserProfile(firebaseUser)
-          callback(user)
-        } catch (error) {
-          console.error("[Auth] Error getting user profile:", error)
-          callback(null)
-        }
-      } else {
+    if (mode === "misconfigured") {
+      callback(null)
+      return () => {}
+    }
+    return onAuthStateChanged(getFirebaseAuth(), async (firebaseUser) => {
+      if (!firebaseUser) return callback(null)
+      try {
+        callback(await getUserProfile(firebaseUser))
+      } catch (error) {
+        console.error("[Auth] Error getting user profile:", (error as { code?: string })?.code ?? "unknown")
         callback(null)
       }
     })
   },
 
-  // Get current user
   getCurrentUser: async (): Promise<User | null> => {
-    if (getAuthMode() === "demo") {
+    const mode = getAuthMode()
+    if (mode === "demo") {
       const { demoAuthService } = await import("./auth-demo")
       return demoAuthService.getCurrentUser()
     }
-    const auth = getFirebaseAuth()
-    const firebaseUser = auth.currentUser
+    if (mode === "misconfigured") return null
+    const firebaseUser = getFirebaseAuth().currentUser
     if (!firebaseUser) return null
-
     try {
       return await getUserProfile(firebaseUser)
-    } catch (error) {
-      console.error("[Auth] Error getting current user:", error)
+    } catch {
       return null
     }
+  },
+
+  /** ID token vigente (se renueva solo cuando va a vencer) para llamar a APIs del servidor. */
+  getIdToken: async (forceRefresh = false): Promise<string | null> => {
+    if (getAuthMode() !== "firebase") return null
+    const current = getFirebaseAuth().currentUser
+    return current ? current.getIdToken(forceRefresh) : null
   },
 }

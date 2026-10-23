@@ -17,13 +17,13 @@ npm run copilot:eval         # banco de evaluación con oráculo independiente
 ## Iniciar
 
 ```bash
-NEXT_PUBLIC_AUTH_MODE=demo npm run dev        # http://localhost:3000
+NEXT_PUBLIC_AUTH_MODE=demo npm run dev        # http://localhost:3000 (modo demo SOLO local)
 # producción local (también usada por E2E):
-NEXT_PUBLIC_AUTH_MODE=demo npm run build && NEXT_PUBLIC_AUTH_MODE=demo npm run start -- -p 3100
+NEXT_PUBLIC_AUTH_MODE=demo NEXT_PUBLIC_DEMO_ISOLATED=true npm run build && NEXT_PUBLIC_AUTH_MODE=demo NEXT_PUBLIC_DEMO_ISOLATED=true npm run start -- -p 3100
 npm run test:e2e
 ```
 
-En PowerShell: `$env:NEXT_PUBLIC_AUTH_MODE="demo"; npm run dev`.
+En PowerShell: `$env:NEXT_PUBLIC_AUTH_MODE="demo"; npm run dev`. En un build de producción local el demo exige además `NEXT_PUBLIC_DEMO_ISOLATED=true` y está prohibido en Vercel producción; el despliegue real usa Firebase (`docs/AUTH_AND_TENANCY.md`).
 
 ## Presentar (≈ 10 min)
 

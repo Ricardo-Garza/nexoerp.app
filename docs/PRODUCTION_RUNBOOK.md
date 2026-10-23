@@ -25,7 +25,7 @@ pnpm test:e2e      # 14+ E2E (modo demo)
 
 ## Variables de entorno (nombres, nunca valores)
 
-Ver `.env.example`. Producción requiere las 6 `NEXT_PUBLIC_FIREBASE_*`. Opcionales: `NEXT_PUBLIC_APP_NAME/SHORT_NAME/TAGLINE` (white-label), `NEXT_PUBLIC_AUTH_MODE=demo` (JAMÁS en producción), `MOMENTUM_BASE_URL` (CRM sandbox→real).
+Ver `.env.example`. Producción requiere las 6 `NEXT_PUBLIC_FIREBASE_*`. Opcionales: `NEXT_PUBLIC_APP_NAME/SHORT_NAME/TAGLINE` (white-label), `NEXT_PUBLIC_AUTH_MODE=demo` (JAMÁS en producción: se trata como error de configuración; solo local/aislado con `NEXT_PUBLIC_DEMO_ISOLATED=true`), `MOMENTUM_BASE_URL` (CRM sandbox→real).
 
 ## Incidentes
 

@@ -164,7 +164,7 @@ export function AppHeader() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button aria-label={text.header.openProfile} className="relative h-10 w-10" size="icon" variant="ghost">
+              <Button aria-label={text.header.openProfile} className="relative h-10 w-10" size="icon" variant="ghost" data-testid="user-menu">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="text-xs">{getUserInitials(user?.name || user?.email)}</AvatarFallback>
                 </Avatar>

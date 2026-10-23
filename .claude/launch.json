@@ -7,7 +7,8 @@
       "runtimeArgs": ["run", "dev"],
       "port": 3000,
       "env": {
-        "NEXT_PUBLIC_AUTH_MODE": "demo"
+        "NEXT_PUBLIC_AUTH_MODE": "demo",
+        "NEXT_PUBLIC_DEMO_ISOLATED": "true"
       }
     }
   ]

@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { authService } from "@/lib/auth"
-import { getAuthMode } from "@/lib/config/auth-mode"
+import { describeMisconfiguration, getAuthMode } from "@/lib/config/auth-mode"
 import { DEMO_PASSWORD, DEMO_USERS } from "@/lib/config/demo-users"
 
 export default function LoginPage() {
@@ -21,6 +21,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const authMode = getAuthMode()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -63,7 +64,20 @@ export default function LoginPage() {
             <CardTitle className="text-2xl font-bold">Ingresa a tu cuenta</CardTitle>
             <CardDescription className="text-base">Introduce tus credenciales de acceso</CardDescription>
           </div>
-          {getAuthMode() === "demo" && (
+          {authMode === "misconfigured" && (
+            <div
+              role="alert"
+              data-testid="auth-config-error"
+              className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+            >
+              <p className="font-semibold">Autenticación no configurada</p>
+              <p className="mt-1">
+                Este despliegue no tiene una configuración válida de acceso, por eso no es posible iniciar sesión.
+                Avisa al administrador de la plataforma. <span className="text-xs opacity-80">({describeMisconfiguration()})</span>
+              </p>
+            </div>
+          )}
+          {authMode === "demo" && (
             <div
               data-testid="demo-mode-notice"
               className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 p-3 text-sm text-amber-900 dark:text-amber-200"
@@ -123,7 +137,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading || authMode === "misconfigured"}>
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />

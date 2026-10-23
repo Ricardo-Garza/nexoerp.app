@@ -39,6 +39,7 @@ export const demoAuthService = {
       name: demo.name,
       role: demo.role === "org_admin" ? "admin" : "user",
       domainRole: demo.role,
+      platformRole: demo.role === "super_admin" ? "platform_admin" : "none",
     }
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
     // Cookie legible por server actions para RBAC (no es frontera de seguridad real;

@@ -6,6 +6,8 @@ import { getFirebaseAuth, getFirebaseDb } from "@/lib/firebase"
 import { doc, getDoc } from "firebase/firestore"
 import { authService } from "@/lib/auth"
 import { getAuthMode } from "@/lib/config/auth-mode"
+import { platformRoleFromClaims, tenantFromClaims } from "@/lib/auth"
+import type { PlatformRole } from "@/lib/platform/types"
 
 // Partial<FirebaseUser>: en modo demo el usuario no es un FirebaseUser real;
 // los consumidores solo leen campos planos (uid, email, role, companyId)
@@ -16,6 +18,8 @@ interface AuthUser extends Partial<FirebaseUser> {
   name?: string | null
   companyId?: string
   role?: "admin" | "user"
+  /** Verificado: claims del ID token (Firebase) o usuario demo aislado. */
+  platformRole?: PlatformRole
 }
 
 interface AuthContextType {
@@ -53,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: demoUser.name,
             companyId: demoUser.companyId ?? "org-delar",
             role: demoUser.role,
+            platformRole: demoUser.platformRole ?? "none",
           })
           setCompanyId(demoUser.companyId ?? "org-delar")
         } else {
@@ -64,58 +69,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return () => unsubscribe()
     }
 
+    if (getAuthMode() === "misconfigured") {
+      // Error de configuración controlado: sin autenticación ficticia
+      setUser(null)
+      setCompanyId(null)
+      setLoading(false)
+      return
+    }
+
     const auth = getFirebaseAuth()
     const db = getFirebaseDb()
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        console.log("[v0] [Auth] User authenticated:", firebaseUser.uid)
-
-        let userCompanyId: string | undefined
-        let userRole: "admin" | "user" = "user"
-
-        try {
-          const userDocRef = doc(db, "users", firebaseUser.uid)
-          const userDoc = await getDoc(userDocRef)
-
-          if (userDoc.exists()) {
-            const userData = userDoc.data()
-            userCompanyId = userData.companyId || userData.empresaId
-            userRole = userData.role === "admin" ? "admin" : "user"
-            console.log("[v0] [Auth] CompanyId from profile:", userCompanyId)
-          }
-        } catch (error) {
-          console.error("[v0] [Auth] Error fetching user profile:", error)
-        }
-
-        // Fallback 1: Try custom claims
-        if (!userCompanyId) {
-          try {
-            const tokenResult = await firebaseUser.getIdTokenResult()
-            userCompanyId = tokenResult.claims.companyId as string | undefined
-            console.log("[v0] [Auth] CompanyId from claims:", userCompanyId)
-          } catch (error) {
-            console.error("[v0] [Auth] Error getting token claims:", error)
-          }
-        }
-
-        // Fallback 2: Use uid as companyId for development
-        if (!userCompanyId) {
-          userCompanyId = firebaseUser.uid
-          console.log("[v0] [Auth] Using uid as companyId (fallback):", userCompanyId)
-        }
-
-        setUser({
-          ...firebaseUser,
-          name: firebaseUser.displayName,
-          companyId: userCompanyId,
-          role: userRole,
-        })
-        setCompanyId(userCompanyId)
-      } else {
-        console.log("[v0] [Auth] User logged out")
+      if (!firebaseUser) {
         setUser(null)
         setCompanyId(null)
+        setLoading(false)
+        return
       }
+
+      let userRole: "admin" | "user" = "user"
+      let profileCompanyId: string | undefined
+      let claims: Record<string, unknown> | undefined
+      try {
+        claims = (await firebaseUser.getIdTokenResult()).claims as Record<string, unknown>
+      } catch (error) {
+        console.error("[Auth] Error getting token claims:", (error as { code?: string })?.code ?? "unknown")
+      }
+      try {
+        const userDoc = await getDoc(doc(db, "users", firebaseUser.uid))
+        if (userDoc.exists()) {
+          const data = userDoc.data()
+          profileCompanyId = data.companyId || data.empresaId
+          userRole = data.role === "admin" ? "admin" : "user"
+        }
+      } catch (error) {
+        console.error("[Auth] Error fetching user profile:", (error as { code?: string })?.code ?? "unknown")
+      }
+
+      // Tenant: el claim firmado manda; el perfil solo cuando no hay claim; uid como último recurso (cuenta unipersonal)
+      const userCompanyId = tenantFromClaims(claims) ?? profileCompanyId ?? firebaseUser.uid
+      setUser({
+        ...firebaseUser,
+        name: firebaseUser.displayName,
+        companyId: userCompanyId,
+        role: userRole,
+        platformRole: platformRoleFromClaims(claims),
+      })
+      setCompanyId(userCompanyId)
       setLoading(false)
     })
 
