@@ -20,6 +20,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# Firebase Admin service-account credentials are local-only.
+*-firebase-adminsdk-*.json
+
 # vercel
 .vercel
 

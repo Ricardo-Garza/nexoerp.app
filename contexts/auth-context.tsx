@@ -6,7 +6,7 @@ import { getFirebaseAuth, getFirebaseDb } from "@/lib/firebase"
 import { doc, getDoc } from "firebase/firestore"
 import { authService } from "@/lib/auth"
 import { getAuthMode } from "@/lib/config/auth-mode"
-import { platformRoleFromClaims, tenantFromClaims } from "@/lib/auth"
+import { platformRoleFromClaims, tenantFromClaims, tenantRoleFromClaims } from "@/lib/auth"
 import type { PlatformRole } from "@/lib/platform/types"
 
 // Partial<FirebaseUser>: en modo demo el usuario no es un FirebaseUser real;
@@ -105,6 +105,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error("[Auth] Error fetching user profile:", (error as { code?: string })?.code ?? "unknown")
       }
+
+      userRole = tenantRoleFromClaims(claims) ?? userRole
 
       // Tenant: el claim firmado manda; el perfil solo cuando no hay claim; uid como último recurso (cuenta unipersonal)
       const userCompanyId = tenantFromClaims(claims) ?? profileCompanyId ?? firebaseUser.uid

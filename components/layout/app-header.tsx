@@ -16,6 +16,7 @@ import {
 import { TenantIndicator } from "@/components/layout/tenant-indicator"
 import { UserPreferenceSelects } from "@/components/layout/user-preference-selects"
 import { useAuth } from "@/contexts/auth-context"
+import { usePlatform } from "@/contexts/platform-context"
 import { useFirestore } from "@/hooks/use-firestore"
 import { useErpPreferences } from "@/hooks/use-erp-preferences"
 import { getUiText } from "@/lib/i18n/erp-ui"
@@ -31,6 +32,7 @@ type NotificationItem = {
 
 export function AppHeader() {
   const { user, logout } = useAuth()
+  const { platformRole } = usePlatform()
   const pathname = usePathname()
   const { language } = useErpPreferences()
   const text = getUiText(language)
@@ -176,8 +178,14 @@ export function AppHeader() {
                   <p className="text-sm font-medium leading-none">{user?.name || text.header.user}</p>
                   <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                   {user?.role && (
-                    <span className="mt-1 inline-flex w-fit items-center rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                      {user.role === "admin" ? text.header.administrator : text.header.user}
+                    <span className="mt-1 inline-flex w-fit items-center rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary" data-testid="user-role">
+                      {platformRole === "platform_admin"
+                        ? language === "en" ? "Nexo administrator" : "Administrador Nexo"
+                        : platformRole === "platform_support"
+                          ? language === "en" ? "Nexo support" : "Soporte Nexo"
+                          : user.role === "admin"
+                            ? language === "en" ? "Company administrator" : "Administrador de empresa"
+                            : text.header.user}
                     </span>
                   )}
                 </div>

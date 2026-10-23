@@ -2,8 +2,11 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react"
 import { useAuth } from "@/contexts/auth-context"
-import { resolvePlatformRole, canAccessControlPlane } from "@/lib/platform/platform-admin"
-import { ensureTenantsSeeded } from "@/lib/platform/tenant-store"
+import {
+  resolvePlatformRole,
+  canAccessControlPlane as roleCanAccessControlPlane,
+  hasPlatformAdminClaim,
+} from "@/lib/platform/platform-admin"
 import type { PlatformRole } from "@/lib/platform/types"
 
 const ACTIVE_TENANT_KEY = "nexo_active_tenant"
@@ -12,6 +15,7 @@ const DEFAULT_TENANT = "org-delar"
 interface PlatformContextType {
   platformRole: PlatformRole
   isPlatformAdmin: boolean
+  canAccessControlPlane: boolean
   /** Tenant/universo actualmente seleccionado (impersonación de soporte incluida) */
   activeTenantId: string
   setActiveTenant: (tenantId: string) => void
@@ -23,6 +27,7 @@ interface PlatformContextType {
 const PlatformContext = createContext<PlatformContextType>({
   platformRole: "none",
   isPlatformAdmin: false,
+  canAccessControlPlane: false,
   activeTenantId: DEFAULT_TENANT,
   setActiveTenant: () => {},
   impersonating: false,
@@ -36,7 +41,8 @@ export function PlatformProvider({ children }: { children: ReactNode }) {
 
   // Rol de plataforma VERIFICADO (claims del ID token o usuario demo aislado); nunca el correo ni localStorage
   const platformRole = resolvePlatformRole((user as { platformRole?: string } | null)?.platformRole)
-  const isPlatformAdmin = canAccessControlPlane(platformRole)
+  const isPlatformAdmin = hasPlatformAdminClaim(platformRole)
+  const canAccessControlPlane = roleCanAccessControlPlane(platformRole)
 
   const ownTenant = (() => {
     const own = (user as { companyId?: string } | null)?.companyId
@@ -63,14 +69,6 @@ export function PlatformProvider({ children }: { children: ReactNode }) {
     setImpersonating(isPlatformAdmin && next !== (ownTenant || DEFAULT_TENANT))
   }, [user, loading, isPlatformAdmin, ownTenant])
 
-  // Siembra idempotente de tenants: solo el administrador de plataforma puede escribir en `tenants`
-  useEffect(() => {
-    if (!user || !isPlatformAdmin) return
-    ensureTenantsSeeded().catch(() => {
-      /* sin permisos o sin red: el seed dedicado lo cubre */
-    })
-  }, [user, isPlatformAdmin])
-
   const setActiveTenant = useCallback(
     (tenantId: string) => {
       if (!isPlatformAdmin) return // el frontend no autoriza cambios de empresa
@@ -91,7 +89,7 @@ export function PlatformProvider({ children }: { children: ReactNode }) {
 
   return (
     <PlatformContext.Provider
-      value={{ platformRole, isPlatformAdmin, activeTenantId, setActiveTenant, impersonating, clearImpersonation }}
+      value={{ platformRole, isPlatformAdmin, canAccessControlPlane, activeTenantId, setActiveTenant, impersonating, clearImpersonation }}
     >
       {children}
     </PlatformContext.Provider>

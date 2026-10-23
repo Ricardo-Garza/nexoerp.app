@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { DemoDataNotice } from "@/components/copilot/demo-data-notice"
 import { usePlatform } from "@/contexts/platform-context"
 import { buildAssistantReply, type AssistantSuggestion } from "@/lib/assistant/nexo-assistant"
 import { useErpPreferences } from "@/hooks/use-erp-preferences"
@@ -47,7 +48,7 @@ function safeStorage<T>(fn: () => T, fallback: T): T {
 export function FloatingAssistant() {
   const router = useRouter()
   const pathname = usePathname()
-  const { isPlatformAdmin, activeTenantId } = usePlatform()
+  const { canAccessControlPlane, activeTenantId } = usePlatform()
   const { language } = useErpPreferences()
   const text = getUiText(language)
   // El servidor decide quién puede consultar (claim de plataforma o pertenencia firmada al tenant); la UI solo ofrece el modo
@@ -80,18 +81,18 @@ export function FloatingAssistant() {
 
   const guideReplyFor = useCallback(
     (raw: string): GuideMessage => {
-      const reply = buildAssistantReply({ input: raw, pathname, isNexoAdmin: isPlatformAdmin, canImport: true, canExport: true, language })
+      const reply = buildAssistantReply({ input: raw, pathname, isNexoAdmin: canAccessControlPlane, canImport: true, canExport: true, language })
       return { from: "assistant", text: reply.text, suggestions: makeSuggestions(reply.suggestions) }
     },
-    [isPlatformAdmin, language, makeSuggestions, pathname],
+    [canAccessControlPlane, language, makeSuggestions, pathname],
   )
 
   const onDelegate = useCallback(
     (question: string) => {
-      const reply = buildAssistantReply({ input: question, pathname, isNexoAdmin: isPlatformAdmin, canImport: true, canExport: true, language })
+      const reply = buildAssistantReply({ input: question, pathname, isNexoAdmin: canAccessControlPlane, canImport: true, canExport: true, language })
       pushLocalRef.current?.({ id: `g${Date.now()}`, from: "assistant", guide: { text: reply.text, suggestions: reply.suggestions } })
     },
-    [isPlatformAdmin, language, pathname],
+    [canAccessControlPlane, language, pathname],
   )
   const copilot = useCopilot(COPILOT_TENANT_ID, onDelegate)
   const pushLocalRef = useRef(copilot.pushLocal)
@@ -222,9 +223,7 @@ export function FloatingAssistant() {
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">{copilotMode ? "Nexo Intelligence" : text.assistant.title}</p>
               {copilotMode ? (
-                <Badge variant="outline" className="mt-0.5 border-amber-500/50 px-1.5 py-0 text-[10px] text-amber-600 dark:text-amber-400" data-testid="copilot-demo-badge">
-                  Demo Soleil Wire · datos simulados
-                </Badge>
+                <DemoDataNotice compact className="mt-0.5 line-clamp-2" />
               ) : (
                 <p className="truncate text-xs text-muted-foreground">{text.assistant.subtitle}</p>
               )}
@@ -255,7 +254,7 @@ export function FloatingAssistant() {
                     <div className="rounded-2xl bg-muted px-3 py-2.5 text-sm">
                       <p className="font-medium">Hola, soy Nexo Intelligence.</p>
                       <p className="mt-1 text-muted-foreground">Pregúntame por ventas, clientes, inventario, cobranza o el pipeline de Soleil Wire. Calculo directo desde los registros y puedes seguir la conversación («¿y en septiembre?», «compáralos», «en gráfica»).</p>
-                      <p className="mt-1.5 text-[11px] text-muted-foreground">Solo lectura · los datos son simulados para este demo.</p>
+                      <p className="mt-1.5 text-[11px] text-muted-foreground">Consultas de solo lectura con validación de empresa en el servidor.</p>
                     </div>
                     <p className="mb-1.5 mt-3 text-xs font-medium text-muted-foreground">Prueba con:</p>
                     <div className={cn("grid gap-1.5", expanded ? "sm:grid-cols-2" : "grid-cols-1")}>

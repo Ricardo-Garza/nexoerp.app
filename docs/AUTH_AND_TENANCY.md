@@ -1,16 +1,13 @@
 # Autenticación real, claims y aislamiento multiempresa
 
-## Causa raíz del «Modo demostración» en Vercel
+## Diagnóstico de acceso en Vercel
 
 `lib/config/auth-mode.ts` decidía así: si `NEXT_PUBLIC_AUTH_MODE=demo` **o si faltaba alguna** de las variables
 `NEXT_PUBLIC_FIREBASE_*`, el modo era `demo` (comentario original: «situación imposible en los deployments reales»).
-El proyecto Vercel `nexoerp-app` es nuevo y **no tiene esas variables** (el `.env.local` local solo contiene
-`VERCEL_OIDC_TOKEN`), así que el build caía en silencio a autenticación ficticia: mostraba el aviso de demostración y
-solo aceptaba los usuarios demo, por lo que `operaciones@nexo.com` de Firebase era rechazado.
-
-> No pude leer la configuración de ese proyecto en Vercel: el conector disponible en esta sesión está autenticado en
-> otra cuenta/equipo (no ve `ricardoantoniogarza-2303s-projects`). La causa se confirma por el código y por el
-> `.env.local`; falta que el propietario verifique las variables en Vercel (ver «Pasos del propietario»).
+Ese comportamiento ya se eliminó. El 23 de octubre de 2026 se comprobó en el proyecto Vercel existente
+`nexoerp-app` que las seis variables públicas de Firebase están configuradas. Su alcance se amplió de `production` a
+`production` + `preview`, sin crear otro proyecto. El acceso que falta no se corrige con configuración del navegador:
+`operaciones@nexo.com` necesita el custom claim firmado `platformAdmin: true` en Firebase Auth.
 
 ## Qué cambió
 
@@ -20,7 +17,8 @@ solo aceptaba los usuarios demo, por lo que `operaciones@nexo.com` de Firebase e
 | Demo | Activable con una variable, en cualquier entorno | Solo desarrollo local, o entorno aislado explícito (`NEXT_PUBLIC_AUTH_MODE=demo` **y** `NEXT_PUBLIC_DEMO_ISOLATED=true`); **jamás** con `VERCEL_ENV=production`. |
 | Proyecto Firebase | Cualquiera | Debe ser `nexoerp-88c6e` (o `demo-*` de emulador). Otro ⇒ `misconfigured`. |
 | Administrador global | Por correo `operaciones@nexo.com` en frontend **y en las reglas** | Solo por custom claim firmado `platformAdmin: true`. El correo no concede nada. |
-| Empresa del usuario | `localStorage` + perfil editable | Claim `companyId`/`tenantId` (o perfil no editable por el usuario). Para quien no es plataforma, `localStorage` se ignora y se purga. |
+| Empresa del usuario | `localStorage` + perfil editable | Claim `companyId`/`tenantId` (o perfil no editable por el usuario). Para quien no es plataforma, `localStorage` se ignora y se purga. En Firebase la UI solo lista documentos que realmente existen en `tenants`. |
+| Catálogo de empresas | Fallback/siembra desde constantes del frontend | Firestore es la única fuente en producción/Preview; no hay fallback ni alta automática desde el navegador. |
 | `/api/copilot/query` | Cookie demo / correo | ID token de Firebase **verificado en el servidor** (firma RS256 de Google, emisor, audiencia, vigencia, `auth_time`) + autorización por tenant. |
 | Firestore Rules | Cualquier autenticado leía casi todo; el usuario podía auto-asignarse rol/empresa | Aislamiento por empresa, perfil sin escalamiento, auditoría de solo agregado (ver abajo). |
 | Errores | Parcialmente en español, revelaban si la cuenta existe | Todos en español; credenciales incorrectas y «cuenta inexistente» producen el mismo mensaje; el reset no revela cuentas. |
@@ -38,8 +36,11 @@ Archivos principales: `lib/config/auth-mode.ts`, `lib/auth.ts`, `lib/auth-errors
 - **Tenant Admin**: claims `companyId` + `tenantRole: "admin"`. Administra *solo* su empresa (apariencia, miembros).
 - **Tenant User**: claims `companyId` (+ `tenantRole: "user"`). Opera datos de su empresa.
 
-El cambio de empresa en el frontend (`setActiveTenant`) solo funciona para plataforma, **y no autoriza nada**: las reglas de
+El cambio de empresa en el frontend (`setActiveTenant`) solo funciona con `platformAdmin: true`, **y no autoriza nada**: las reglas de
 Firestore y el servidor revalidan con el token en cada operación.
+
+La etiqueta del menú de usuario distingue los ámbitos: `Administrador Nexo` (claim global), `Soporte Nexo` (claim de
+soporte), `Administrador de empresa` (rol del tenant) o `Usuario`. Un perfil que diga `role: admin` no activa el selector.
 
 ## Asignar el claim de administrador (procedimiento seguro)
 
@@ -47,7 +48,7 @@ Requiere Firebase Admin SDK con una identidad autorizada **del propietario** (nu
 
 ```powershell
 $env:GOOGLE_APPLICATION_CREDENTIALS = "C:\ruta\fuera-del-repo\service-account.json"   # o gcloud auth application-default login
-# 1. Copia el UID de operaciones@nexo.com en Firebase Console > Authentication
+# 1. Copia el UID exacto de operaciones@nexo.com en Firebase Console > Authentication > Users
 npm run platform:claims -- show  --email operaciones@nexo.com --expected-uid <UID> --project nexoerp-88c6e
 # 2. Ensayo (no escribe)
 npm run platform:claims -- grant --email operaciones@nexo.com --expected-uid <UID> --project nexoerp-88c6e
@@ -55,11 +56,17 @@ npm run platform:claims -- grant --email operaciones@nexo.com --expected-uid <UI
 npm run platform:claims -- grant --email operaciones@nexo.com --expected-uid <UID> --project nexoerp-88c6e --apply
 ```
 
-Salvaguardas (probadas con el emulador): solo correos de la lista autorizada; `ventas@nexo.com` jamás; el UID real debe
+`show` es estrictamente de lectura y debe imprimir `Acceso global: asignado` o `Acceso global: ausente`; no calcula un
+grant. Salvaguardas (probadas con el emulador): solo correos de la lista autorizada; `ventas@nexo.com` jamás; el UID real debe
 coincidir con `--expected-uid`; no crea cuentas; ensayo por omisión; conserva otros claims; revoca los refresh tokens; deja
 una entrada en `platform_audit`. **Después, la persona debe cerrar sesión y volver a entrar** (o el ID token se refresca
 en ≤ 1 h). No existe ningún endpoint público para conceder claims. Revocar: `... -- revoke ... --apply`.
 Claims de empresa: `... -- tenant --email <correo> --expected-uid <UID> --tenant org-soleilwire --role admin|user --apply`.
+
+Antes y después del claim, comprueba en Firebase Console → Firestore → `tenants/org-soleilwire` que el documento exista y
+que su nombre aprobado sea `Soleil Wire`. La aplicación ya no crea ese documento ni sustituye una colección vacía con
+empresas locales. Si falta, detén la validación y realiza el alta mediante el proceso administrativo aprobado; no ejecutes
+un seed general sobre producción.
 
 ## Firestore Rules
 
@@ -92,22 +99,19 @@ Límite conocido: sin Admin SDK no se consulta la revocación; un token robado v
 migrar la verificación a `firebase-admin` (`checkRevoked`) cuando se configure una cuenta de servicio en Vercel.
 Las server actions del dominio legado siguen denegadas fuera del modo demo (deuda D4, sin cambios).
 
-## Pasos del propietario (Vercel / Firebase)
+## Pasos administrativos pendientes (Firebase)
 
-Yo no tengo acceso a tu cuenta de Vercel ni credenciales de Firebase Admin; esto lo debes hacer tú:
+Este equipo no dispone de Application Default Credentials, `gcloud` ni `GOOGLE_APPLICATION_CREDENTIALS`; por seguridad no
+se intentó leer ni modificar usuarios o claims productivos. El propietario debe:
 
-1. **Vercel → `nexoerp-app` → Settings → Environment Variables** (Production **y** Preview), con los valores de Firebase Console
-   (Project settings → Your apps → Web app), proyecto `nexoerp-88c6e`:
-   `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`,
-   `NEXT_PUBLIC_FIREBASE_APP_ID`, `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`, `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`.
-   **No** definas `NEXT_PUBLIC_AUTH_MODE` ni `NEXT_PUBLIC_DEMO_ISOLATED`. (`NEXT_PUBLIC_*` se incrustan al compilar: hay que
-   redesplegar después de cambiarlas.)
-2. **Firebase Console → Authentication → Sign-in method**: Email/Password habilitado. **Settings → Authorized domains**:
+1. **Firebase Console → Authentication → Sign-in method**: Email/Password habilitado. **Settings → Authorized domains**:
    `nexoerp-app.vercel.app` (y el dominio propio si lo hay); evita comodines o dominios temporales sin control.
-3. Asigna el claim con `npm run platform:claims` (arriba) y vuelve a iniciar sesión.
-4. Despliega un **Preview** y prueba: login real, ausencia del aviso de demostración, `/admin`, selector de empresas, Soleil Wire
+2. Comprobar el UID y el estado de `tenants/org-soleilwire`, ejecutar `show`, el ensayo y finalmente `grant ... --apply`
+   con una identidad administrativa legítima. No compartir ni guardar la credencial dentro del repositorio.
+3. Cerrar sesión y volver a entrar para obtener un ID token nuevo.
+4. Desplegar un **Preview** y probar: login real, `/admin`, selector de empresas, Soleil Wire
    y Nexo Intelligence. Solo entonces promueve a producción.
-5. Publica las reglas únicamente tras la validación descrita arriba.
+5. Publicar las reglas únicamente tras la validación descrita arriba.
 6. (Opcional) `COPILOT_DEMO_DISABLED=true` apaga el copiloto de demostración en un entorno.
 
 ## Cómo se prueba

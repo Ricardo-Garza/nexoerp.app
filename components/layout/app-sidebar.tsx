@@ -71,7 +71,7 @@ const MODULE_ICONS: Record<ModuleId, LucideIcon> = {
 export function AppSidebar() {
   const pathname = usePathname()
   const { user } = useAuth()
-  const { isPlatformAdmin, activeTenantId } = usePlatform()
+  const { canAccessControlPlane, activeTenantId } = usePlatform()
   const { language } = useErpPreferences()
   const text = getUiText(language)
   const [tenant, setTenant] = useState<Tenant | null>(null)
@@ -140,7 +140,7 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 space-y-6 p-4">
-        {isPlatformAdmin && (
+        {canAccessControlPlane && (
           <div className="space-y-1">
             <p className="mb-2 px-3 text-xs font-semibold text-muted-foreground">{text.nav.platform}</p>
             <Link

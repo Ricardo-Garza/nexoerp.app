@@ -51,6 +51,11 @@ export function tenantFromClaims(claims: Record<string, unknown> | undefined): s
   return typeof raw === "string" && raw.length > 0 ? raw : undefined
 }
 
+/** Rol de empresa firmado. El perfil legado solo se usa cuando el token no lo declara. */
+export function tenantRoleFromClaims(claims: Record<string, unknown> | undefined): UserRole | undefined {
+  return claims?.tenantRole === "admin" || claims?.tenantRole === "user" ? claims.tenantRole : undefined
+}
+
 // Perfil en Firestore (nombre, rol de UI) + claims verificados del token (tenant y plataforma).
 async function getUserProfile(firebaseUser: FirebaseUser): Promise<User> {
   const email = firebaseUser.email || ""
@@ -69,7 +74,7 @@ async function getUserProfile(firebaseUser: FirebaseUser): Promise<User> {
       uid: firebaseUser.uid,
       email,
       name: data?.name || emailName,
-      role: data?.role === "admin" ? "admin" : "user",
+      role: tenantRoleFromClaims(tokenResult.claims) ?? (data?.role === "admin" ? "admin" : "user"),
       createdAt: data?.createdAt?.toDate?.(),
       companyId: claimTenant ?? data?.companyId ?? data?.empresaId,
       platformRole,

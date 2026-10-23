@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto"
 import { getApps, initializeApp } from "firebase-admin/app"
 import { getAuth } from "firebase-admin/auth"
 import { getFirestore } from "firebase-admin/firestore"
+import { SEED_TENANTS } from "../../lib/platform/seed-tenants"
 
 /**
  * Siembra el emulador: usuarios con distintos privilegios REALES (custom claims) y contraseñas aleatorias.
@@ -21,6 +22,8 @@ export default async function globalSetup() {
   const auth = getAuth()
   const db = getFirestore()
   for (const u of (await auth.listUsers()).users) await auth.deleteUser(u.uid)
+  // En Firebase las empresas deben existir en la fuente autorizada; la UI nunca las siembra ni inventa.
+  for (const tenant of SEED_TENANTS) await db.doc(`tenants/${tenant.id}`).set(tenant)
   for (const def of Object.values(USERS)) {
     const password = `Pw-${randomBytes(12).toString("base64url")}`
     process.env[def.env] = password
