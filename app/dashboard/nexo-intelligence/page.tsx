@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Play, RotateCcw, Send, ShieldCheck } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -15,7 +16,8 @@ import { ResultCard } from "@/components/copilot/result-card"
 import { useCopilot } from "@/components/copilot/use-copilot"
 
 export default function NexoIntelligencePage() {
-  const { activeTenantId } = usePlatform()
+  const router = useRouter()
+  const { activeTenantId, isPlatformAdmin, setActiveTenant } = usePlatform()
   const enabled = activeTenantId === COPILOT_TENANT_ID
   const copilot = useCopilot(COPILOT_TENANT_ID)
   const [running, setRunning] = useState<string | null>(null)
@@ -64,6 +66,19 @@ export default function NexoIntelligencePage() {
             <div>
               <p className="font-medium">Este demo solo está disponible para la empresa Soleil Wire.</p>
               <p className="mt-1 text-muted-foreground">Entra con un usuario de Soleil Wire o, como administrador de plataforma, selecciona la empresa Soleil Wire en el selector de empresas. Las demás empresas no tienen un origen de datos conectado a Nexo Intelligence.</p>
+              {isPlatformAdmin && (
+                <Button
+                  size="sm"
+                  className="mt-3"
+                  onClick={() => {
+                    setActiveTenant(COPILOT_TENANT_ID)
+                    router.replace("/dashboard/nexo-intelligence")
+                  }}
+                  data-testid="select-soleilwire"
+                >
+                  Cambiar a Soleil Wire
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>

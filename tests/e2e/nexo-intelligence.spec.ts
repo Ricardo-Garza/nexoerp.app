@@ -201,3 +201,14 @@ test("empresas sin origen de datos conservan la guía contextual (sin copiloto)"
   await page.goto("/dashboard/nexo-intelligence")
   await expect(page.getByTestId("intelligence-disabled")).toBeVisible()
 })
+
+test("un administrador global puede cambiar a Soleil Wire desde Intelligence", async ({ page }) => {
+  await page.goto("/login")
+  await page.getByLabel("Correo Electrónico").fill("operaciones@nexo.com")
+  await page.getByLabel("Contraseña").fill("demo")
+  await page.getByRole("button", { name: /iniciar sesión/i }).click()
+  await page.waitForURL("**/dashboard")
+  await page.goto("/dashboard/nexo-intelligence")
+  await page.getByTestId("select-soleilwire").click()
+  await expect(page.getByTestId("intelligence-demo-badge")).toBeVisible()
+})
