@@ -55,6 +55,14 @@ test("una sugerencia ejecuta una consulta real: cifra, KPIs y evidencia de respa
   await expect(answer.getByTestId("copilot-evidence")).toContainText("DEMO")
 })
 
+test("el tablero de Soleil Wire muestra KPIs y gráficas del motor analítico", async ({ page }) => {
+  await loginAsSoleil(page)
+  await expect(page.getByTestId("soleil-dashboard")).toBeVisible()
+  await expect(page.getByTestId("soleil-dashboard")).toContainText("Ventas del mes", { timeout: 20_000 })
+  await expect(page.getByTestId("soleil-dashboard")).toContainText("Top 10 clientes")
+  await expect(page.getByTestId("soleil-dashboard")).toContainText("Productos más vendidos")
+})
+
 test("memoria contextual: septiembre → octubre → compáralos → filtro de familia → gráfica", async ({ page }) => {
   await loginAsSoleil(page)
   await page.getByTestId("assistant-toggle").click()

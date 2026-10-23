@@ -5,6 +5,8 @@ import { CustomizableDashboard } from "@/components/dashboard/customizable-dashb
 import { usePlatform } from "@/contexts/platform-context"
 import { getTenant } from "@/lib/platform/tenant-store"
 import type { Tenant } from "@/lib/platform/types"
+import { COPILOT_TENANT_ID } from "@/lib/copilot/constants"
+import { SoleilDashboard } from "@/components/dashboard/soleil-dashboard"
 
 export default function DashboardPage() {
   const { activeTenantId } = usePlatform()
@@ -24,5 +26,5 @@ export default function DashboardPage() {
     }
   }, [activeTenantId])
 
-  return <CustomizableDashboard tenant={tenant} />
+  return tenant?.id === COPILOT_TENANT_ID ? <SoleilDashboard /> : <CustomizableDashboard tenant={tenant} />
 }
