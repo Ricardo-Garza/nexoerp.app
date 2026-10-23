@@ -4,6 +4,7 @@ const eslintConfig = [
   {
     ignores: [
       ".next/**",
+      ".next-fb/**",
       "node_modules/**",
       "project-context/**",
       "playwright-report/**",

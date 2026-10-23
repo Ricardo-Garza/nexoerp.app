@@ -1,381 +1,265 @@
 rules_version = '2';
+
+// =====================================================================================
+// NexoERP — Firestore Security Rules (aislamiento multiempresa)
+//
+// Principios:
+//  1. Identidad de plataforma SOLO por custom claim firmado (`platformAdmin == true`),
+//     asignado con Firebase Admin SDK. Un correo en el token NO concede nada.
+//  2. Empresa (tenant) del usuario: claim `companyId`/`tenantId` y, si no hay claim, su perfil
+//     `users/{uid}.companyId`. El perfil NO es editable por el propio usuario (sin escalamiento).
+//  3. Cada colección de negocio se aísla por `companyId` (o por autoría `userId`); ya no existe
+//     el comodín «cualquier autenticado lee todo».
+//  4. Todo lo demás está denegado.
+//
+// Probado con el emulador: tests/rules/firestore.rules.test.ts  (npm run test:rules)
+// =====================================================================================
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions
-    function isAuthenticated() {
+
+    // ---------- Identidad ----------
+    function signedIn() {
       return request.auth != null;
     }
-    
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
-    }
-    
-    function hasValidUserId() {
-      return isAuthenticated() && 
-             request.resource.data.userId == request.auth.uid;
-    }
-    
-    function belongsToUser(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+
+    function uid() {
+      return request.auth.uid;
     }
 
-    function userCompanyId() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId;
-    }
-
-    function sameCompany(companyId) {
-      return isAuthenticated() && companyId != null && userCompanyId() == companyId;
-    }
-
-    function isAdmin() {
-      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
-    }
-
-    // --- Nexo Control Plane / multi-tenant --------------------------------
-    // Administrador de plataforma: operaciones@nexo.com (por email del token) o
-    // custom claim platformAdmin. Puede administrar toda la plataforma.
+    // Administrador global: SOLO por custom claim (nunca por correo ni por campos del perfil).
     function isPlatformAdmin() {
-      return isAuthenticated() && (
-        request.auth.token.email == "operaciones@nexo.com" ||
-        request.auth.token.platformAdmin == true
-      );
+      return signedIn() && request.auth.token.get('platformAdmin', false) == true;
     }
 
-    // El tenant del usuario se resuelve por su perfil (companyId/tenantId).
-    function userTenantId() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId;
+    // Soporte de plataforma: solo lectura de empresas y tickets.
+    function isPlatformStaff() {
+      return isPlatformAdmin() || (signedIn() && request.auth.token.get('platformSupport', false) == true);
     }
 
-    // Pertenece al tenant si su perfil apunta a él, o es admin de plataforma.
-    function belongsToTenant(tenantId) {
-      return isPlatformAdmin() || (isAuthenticated() && userTenantId() == tenantId);
+    function hasProfile() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
 
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function claimTenant() {
+      return request.auth.token.get('companyId', request.auth.token.get('tenantId', null));
+    }
+
+    // Empresa del usuario: claim firmado primero; perfil como respaldo (el usuario no puede editarlo).
+    function myTenant() {
+      return claimTenant() != null ? claimTenant() : (hasProfile() ? profile().get('companyId', null) : null);
+    }
+
+    function isMember(tenantId) {
+      return signedIn() && tenantId != null && myTenant() == tenantId;
+    }
+
+    function myTenantRole() {
+      return request.auth.token.get('tenantRole', hasProfile() ? profile().get('role', 'user') : 'user');
+    }
+
+    function isTenantAdmin(tenantId) {
+      return isMember(tenantId) && myTenantRole() == 'admin';
+    }
+
+    function canAccessTenant(tenantId) {
+      return isPlatformAdmin() || isMember(tenantId);
+    }
+
+    function canAdminTenant(tenantId) {
+      return isPlatformAdmin() || isTenantAdmin(tenantId);
+    }
+
+    // Por omisión todo denegado.
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Índice de tenants y metadatos de plataforma: lectura para autenticados
-    // (para poblar el selector), escritura solo para admin de plataforma.
-    match /tenants/{tenantId} {
-      allow read: if belongsToTenant(tenantId) || isAuthenticated();
-      allow create, update, delete: if isPlatformAdmin();
+    // ---------- Usuarios ----------
+    // Campos que el propio usuario puede cambiar en su perfil (nunca role, companyId ni claims).
+    function selfEditableKeys() {
+      return ['name', 'displayName', 'phone', 'photoURL', 'language', 'updatedAt', 'lastLoginAt'];
+    }
 
-      // Datos aislados por tenant: solo miembros del tenant o admin de plataforma.
-      // NINGÚN usuario de otro tenant puede leerlos (aislamiento real §5).
-      match /{sub=**} {
-        allow read: if belongsToTenant(tenantId);
-        allow create, update, delete: if belongsToTenant(tenantId);
+    // Campos que un administrador de empresa puede cambiar a miembros de SU empresa.
+    function tenantAdminEditableKeys() {
+      return ['name', 'displayName', 'phone', 'role', 'disabled', 'updatedAt'];
+    }
+
+    match /users/{userId} {
+      allow read: if signedIn() && (
+        uid() == userId ||
+        isPlatformAdmin() ||
+        (resource != null && resource.data.get('companyId', null) != null && resource.data.companyId == myTenant())
+      );
+
+      // Auto-alta SIN privilegios: rol «user», sin empresa ni campos de plataforma. La empresa y
+      // los roles los asigna un administrador (Admin SDK / plataforma).
+      allow create: if signedIn() && (
+        isPlatformAdmin() ||
+        (
+          uid() == userId &&
+          request.resource.data.keys().hasOnly(['email', 'name', 'displayName', 'role', 'createdAt', 'updatedAt']) &&
+          request.resource.data.get('role', 'user') == 'user' &&
+          request.resource.data.get('email', request.auth.token.get('email', null)) == request.auth.token.get('email', null)
+        )
+      );
+
+      allow update: if signedIn() && (
+        isPlatformAdmin() ||
+        (
+          uid() == userId &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(selfEditableKeys())
+        ) ||
+        (
+          uid() != userId &&
+          isTenantAdmin(resource.data.get('companyId', null)) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(tenantAdminEditableKeys()) &&
+          request.resource.data.get('role', 'user') in ['user', 'admin']
+        )
+      );
+
+      allow delete: if signedIn() && (
+        isPlatformAdmin() ||
+        (uid() != userId && isTenantAdmin(resource.data.get('companyId', null)))
+      );
+
+      match /preferences/{prefId} {
+        allow read, write: if signedIn() && uid() == userId;
       }
     }
 
-    // Soporte de plataforma: crear ticket cualquier autenticado; gestionar solo plataforma.
-    match /platform_support/{ticketId} {
-      allow create: if isAuthenticated();
-      allow read, update, delete: if isPlatformAdmin();
+    // ---------- Control Plane: empresas (tenants) ----------
+    match /tenants/{tenantId} {
+      allow read: if canAccessTenant(tenantId) || isPlatformStaff();
+      allow create, delete: if isPlatformAdmin();
+      // El administrador de la empresa solo ajusta apariencia/documentos; módulos y versión son de plataforma.
+      allow update: if isPlatformAdmin() || (
+        isTenantAdmin(tenantId) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ui', 'branding', 'documents', 'updatedAt'])
+      );
+
+      // Auditoría: se agrega, nunca se edita ni se borra; la lee el admin de la empresa o la plataforma.
+      match /auditEvents/{eventId} {
+        allow read: if canAdminTenant(tenantId) || isPlatformStaff();
+        allow create: if canAccessTenant(tenantId) && request.resource.data.get('tenantId', tenantId) == tenantId;
+        allow update, delete: if false;
+      }
+
+      match /imports/{importId} {
+        allow read: if canAccessTenant(tenantId);
+        allow create: if canAccessTenant(tenantId) && request.resource.data.get('tenantId', tenantId) == tenantId;
+        allow update, delete: if false;
+      }
+
+      // Datos de negocio aislados por empresa. Ningún usuario de otra empresa los ve ni los escribe.
+      match /{collectionId}/{docId=**} {
+        allow read: if !(collectionId in ['auditEvents', 'imports']) && canAccessTenant(tenantId);
+        allow create, update: if !(collectionId in ['auditEvents', 'imports']) && canAccessTenant(tenantId) &&
+          request.resource.data.get('tenantId', tenantId) == tenantId;
+        allow delete: if !(collectionId in ['auditEvents', 'imports']) && canAccessTenant(tenantId);
+      }
     }
 
-    // Colecciones exclusivas de plataforma (releases, blueprints, índice global).
+    // ---------- Plataforma ----------
+    match /platform_support/{ticketId} {
+      // Crear un ticket: autenticado y, si indica empresa, perteneciente a ella.
+      allow create: if signedIn() && (
+        request.resource.data.get('tenantId', null) == null ||
+        canAccessTenant(request.resource.data.tenantId)
+      );
+      allow read: if isPlatformStaff();
+      allow update, delete: if isPlatformAdmin();
+    }
+
     match /platform_meta/{docId} {
-      allow read: if isAuthenticated();
+      allow read: if signedIn();
       allow write: if isPlatformAdmin();
     }
 
-    // Companies
-    match /companies/{companyId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
+    // Bitácora de acciones administrativas de plataforma (p. ej. asignación de claims). Solo se agrega.
+    match /platform_audit/{entryId} {
+      allow read: if isPlatformAdmin();
+      allow create: if isPlatformAdmin() && request.resource.data.get('actorUid', null) == uid();
+      allow update, delete: if false;
     }
 
-    // Users
-    match /users/{userId} {
-      allow read: if isOwner(userId) || sameCompany(resource.data.companyId);
-      allow create: if isOwner(userId);
-      allow update, delete: if isOwner(userId) || (isAdmin() && sameCompany(resource.data.companyId));
-    }
-
-    // User preferences (subcollections)
-    match /users/{userId}/preferences/{prefId} {
-      allow read, write: if isOwner(userId);
-    }
-
-    // CRM Collections
-    match /customers/{customerId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /prospects/{prospectId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /leads/{leadId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /documents/{docId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /customerDocuments/{docId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /accountsReceivable/{receivableId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /cfdi/{cfdiId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    // Inventory & Products
-    match /products/{productId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /categories/{categoryId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /warehouses/{warehouseId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /inventoryStock/{stockId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /stockMovements/{movementId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /warehouseTransfers/{transferId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /physicalCounts/{countId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /reorderRules/{ruleId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /productBatches/{batchId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /salesOrders/{orderId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /salesOrderActivities/{activityId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /deliveries/{deliveryId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /salesInvoices/{invoiceId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    // Legacy orders collection
-    match /orders/{orderId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /quotations/{quotationId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /invoices/{invoiceId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /suppliers/{supplierId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /supplierProducts/{productId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /supplierDocuments/{docId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /notifications/{notificationId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    // Landing demo requests (public create)
+    // Solicitudes de demo desde la landing (creación pública acotada); las gestiona la plataforma.
     match /demo_requests/{requestId} {
-      allow create: if true;
-      allow read, update, delete: if isAdmin();
+      allow create: if request.resource.data.keys().size() <= 20;
+      allow read, update, delete: if isPlatformAdmin();
     }
 
-    match /purchaseOrders/{orderId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
+    // ---------- Empresas (legado) ----------
+    match /companies/{companyId} {
+      allow read: if signedIn() && (
+        isPlatformAdmin() ||
+        resource.data.get('userId', null) == uid() ||
+        companyId == myTenant() ||
+        companyId == uid()
+      );
+      allow create: if signedIn() && (
+        isPlatformAdmin() ||
+        (request.resource.data.get('userId', null) == uid() && (companyId == uid() || companyId == myTenant()))
+      );
+      allow update, delete: if signedIn() && (
+        isPlatformAdmin() ||
+        ((resource.data.get('userId', null) == uid() || isTenantAdmin(companyId)) &&
+          request.resource.data.get('userId', null) == resource.data.get('userId', null))
+      );
     }
 
-    match /goodsReceipts/{receiptId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
+    // ---------- Colecciones de negocio (legado): clientes, productos, pedidos, facturas, inventario, ... ----------
+    // Cada documento pertenece a una empresa (`companyId`) y/o a su autor (`userId`).
+    // Reemplaza el comodín que dejaba leer TODO a cualquier usuario autenticado.
+    function isReservedCollection(name) {
+      return name in ['users', 'tenants', 'companies', 'platform_support', 'platform_meta', 'platform_audit', 'demo_requests'];
     }
 
-    match /accountsPayable/{payableId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
+    function docTenant(data) {
+      return data.get('companyId', null);
     }
 
-    match /purchases/{purchaseId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
+    function canReadDoc(data) {
+      return isPlatformAdmin() ||
+        data.get('userId', null) == uid() ||
+        (docTenant(data) != null && (isMember(docTenant(data)) || docTenant(data) == uid()));
     }
 
-    match /expenses/{expenseId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
+    match /{collection}/{docId} {
+      allow read: if !isReservedCollection(collection) && signedIn() && canReadDoc(resource.data);
 
-    match /inventorySnapshots/{snapshotId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
+      // Alta: como autor y dentro de la propia empresa (o sin empresa, cuenta unipersonal).
+      allow create: if !isReservedCollection(collection) && signedIn() && (
+        isPlatformAdmin() ||
+        (
+          request.resource.data.get('userId', null) == uid() &&
+          (
+            docTenant(request.resource.data) == null ||
+            docTenant(request.resource.data) == uid() ||
+            isMember(docTenant(request.resource.data))
+          )
+        )
+      );
 
-    // Production
-    match /productionOrders/{orderId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
+      // Edición: el autor o el administrador de la empresa; el documento no cambia de empresa ni de autor.
+      allow update: if !isReservedCollection(collection) && signedIn() && (
+        isPlatformAdmin() ||
+        (
+          (resource.data.get('userId', null) == uid() || isTenantAdmin(docTenant(resource.data))) &&
+          docTenant(request.resource.data) == docTenant(resource.data) &&
+          request.resource.data.get('userId', null) == resource.data.get('userId', null)
+        )
+      );
 
-    match /productFormulas/{formulaId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    // Maintenance & Equipment
-    match /equipment/{equipmentId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /workOrders/{workOrderId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    // HR & Employees
-    match /employees/{employeeId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    // Accounting
-    match /ledgerAccounts/{accountId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /journalEntries/{entryId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /budgets/{budgetId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /exchangeRates/{rateId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /calendarEvents/{eventId} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isOwner(resource.data.userId);
-    }
-
-    match /{collection}/{document} {
-      allow read: if isAuthenticated();
-      allow create: if hasValidUserId();
-      allow update, delete: if isAuthenticated() && 
-                             resource.data.userId == request.auth.uid;
+      allow delete: if !isReservedCollection(collection) && signedIn() && (
+        isPlatformAdmin() ||
+        resource.data.get('userId', null) == uid() ||
+        isTenantAdmin(docTenant(resource.data))
+      );
     }
   }
 }

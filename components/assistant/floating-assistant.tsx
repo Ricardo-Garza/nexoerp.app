@@ -50,7 +50,8 @@ export function FloatingAssistant() {
   const { isPlatformAdmin, activeTenantId } = usePlatform()
   const { language } = useErpPreferences()
   const text = getUiText(language)
-  const copilotMode = isPlatformAdmin && activeTenantId === COPILOT_TENANT_ID
+  // El servidor decide quién puede consultar (claim de plataforma o pertenencia firmada al tenant); la UI solo ofrece el modo
+  const copilotMode = activeTenantId === COPILOT_TENANT_ID
 
   const [open, setOpen] = useState(false)
   const [visible, setVisible] = useState(false) // panel montado (permite animar la salida)

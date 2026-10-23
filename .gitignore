@@ -30,3 +30,7 @@ next-env.d.ts
 # playwright
 /test-results/
 /playwright-report/
+
+# firebase emulators / e2e variants
+/.next-fb/
+*-debug.log

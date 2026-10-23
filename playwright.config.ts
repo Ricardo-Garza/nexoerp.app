@@ -25,7 +25,7 @@ export default defineConfig({
   ],
   webServer: {
     command: "npm run start -- -p 3100",
-    env: { NEXT_PUBLIC_AUTH_MODE: "demo" },
+    env: { NEXT_PUBLIC_AUTH_MODE: "demo", NEXT_PUBLIC_DEMO_ISOLATED: "true" },
     url: "http://127.0.0.1:3100/login",
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,

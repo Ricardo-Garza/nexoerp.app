@@ -411,17 +411,20 @@ describe("Centro de Importación — plantillas y auto-mapeo con el paquete Sole
   })
 })
 
-describe("Permisos — Panel Nexo solo para operaciones@nexo.com", () => {
-  it("operaciones@nexo.com es administrador de plataforma", () => {
-    const role = resolvePlatformRole("operaciones@nexo.com")
-    expect(role).toBe("platform_admin")
-    expect(canAccessControlPlane(role)).toBe(true)
+describe("Permisos — Panel Nexo solo con rol de plataforma verificado (claims)", () => {
+  it("el rol de plataforma proviene solo de un rol verificado, nunca del correo", () => {
+    expect(resolvePlatformRole("platform_admin")).toBe("platform_admin")
+    expect(canAccessControlPlane(resolvePlatformRole("platform_admin"))).toBe(true)
+    expect(canAccessControlPlane(resolvePlatformRole("platform_support"))).toBe(true)
+    // «operaciones@nexo.com» como cadena no concede nada
+    expect(resolvePlatformRole("operaciones@nexo.com")).toBe("none")
   })
 
   it("un usuario normal de Soleil Wire no accede al Panel Nexo", () => {
-    const role = resolvePlatformRole("ventas@soleilwire.com")
+    const role = resolvePlatformRole(undefined)
     expect(role).toBe("none")
     expect(canAccessControlPlane(role)).toBe(false)
+    expect(resolvePlatformRole("admin")).toBe("none")
   })
 })
 

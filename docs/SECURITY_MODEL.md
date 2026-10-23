@@ -12,7 +12,7 @@
 3. **Auditoría append-only**: eventos con actor, rol, acción, entidad, razón, correlationId y timestamp UTC; sin datos sensibles en payload.
 4. **Ledger inmutable**: los movimientos de inventario no se editan ni borran; reversas por movimiento compensatorio; idempotency key única por operación.
 5. **Bloqueos de negocio**: lotes vencidos/cuarentena/rechazados/bloqueados no son asignables; override FEFO exige permiso + motivo y queda auditado.
-6. **Modo demo acotado**: activo solo si `NEXT_PUBLIC_AUTH_MODE=demo` o si Firebase no está configurado (imposible en producción, donde las env vars existen). Usuarios demo sin contraseñas reales, documentados, sin datos personales. La sesión demo es una cookie de rol firmable en fase futura; hoy es solo para dev/CI/E2E y no protege datos reales (no hay datos reales en ese modo).
+6. **Modo demo acotado (actualizado)**: solo en desarrollo local o entorno aislado declarado (`NEXT_PUBLIC_AUTH_MODE=demo` + `NEXT_PUBLIC_DEMO_ISOLATED=true`); nunca en producción de Vercel. Si falta la configuración de Firebase, la app muestra un error controlado en lugar de caer a demo. Ver `docs/AUTH_AND_TENANCY.md`.
 7. **Secretos**: cero secretos en repo; build local funciona sin ellos (init Firebase perezoso). Nunca se imprimen valores de env.
 8. **Margen y costos**: visibles solo con `price.margin.view` (Dirección/Finanzas/Admin).
 

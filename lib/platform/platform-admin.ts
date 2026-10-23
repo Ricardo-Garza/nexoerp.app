@@ -3,35 +3,23 @@ import type { PlatformRole } from "./types"
 /**
  * Administradores de plataforma (Nexo Control Plane / Admin Ultra).
  *
- * `operaciones@nexo.com` es el super administrador operativo de Nexo, por encima
- * de cualquier tenant. La pertenencia se ancla al correo (fuente de verdad estable
- * y auditable) y, en producción Firebase, además al campo `platformRole` del
- * documento `users/{uid}`. NUNCA se guardan contraseñas en el repositorio: el
- * usuario Auth se crea con `npm run seed:firebase` o manualmente (ver
- * docs/NEXO_CONTROL_PLANE.md §usuario-maestro).
+ * El acceso global NO se concede por coincidir un correo en el frontend. En Firebase proviene
+ * exclusivamente de un custom claim firmado en el ID token (`platformAdmin: true`) que solo se asigna
+ * con Firebase Admin SDK mediante `npm run platform:grant` (ver docs/AUTH_AND_TENANCY.md). El claim lo
+ * verifican las reglas de Firestore y el servidor (`lib/server/firebase-token.ts`).
+ *
+ * `EXPECTED_PLATFORM_ADMIN_EMAILS` solo documenta qué cuentas pueden recibir el claim: el script de
+ * asignación rechaza cualquier otro correo. No concede ningún privilegio por sí mismo.
  */
-export const PLATFORM_ADMIN_EMAILS: readonly string[] = ["operaciones@nexo.com"]
+export const EXPECTED_PLATFORM_ADMIN_EMAILS: readonly string[] = ["operaciones@nexo.com"]
 
 export function normalizeEmail(email: string | null | undefined): string {
   return (email ?? "").trim().toLowerCase()
 }
 
-export function isPlatformAdminEmail(email: string | null | undefined): boolean {
-  return PLATFORM_ADMIN_EMAILS.includes(normalizeEmail(email))
-}
-
-/**
- * Resuelve el rol de plataforma combinando el allowlist de correos y el campo
- * persistido (`platformRole`) del perfil. El allowlist gana para garantizar que
- * operaciones@nexo.com siempre entre al Control Plane aunque falte el campo.
- */
-export function resolvePlatformRole(
-  email: string | null | undefined,
-  persistedRole?: PlatformRole | string | null,
-): PlatformRole {
-  if (isPlatformAdminEmail(email)) return "platform_admin"
-  if (persistedRole === "platform_admin" || persistedRole === "platform_support") return persistedRole
-  return "none"
+/** Valida un rol de plataforma ya verificado (claims del token o usuario demo aislado). */
+export function resolvePlatformRole(verifiedRole?: PlatformRole | string | null): PlatformRole {
+  return verifiedRole === "platform_admin" || verifiedRole === "platform_support" ? verifiedRole : "none"
 }
 
 export function canAccessControlPlane(role: PlatformRole): boolean {

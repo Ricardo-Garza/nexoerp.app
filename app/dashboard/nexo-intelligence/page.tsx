@@ -15,8 +15,8 @@ import { ResultCard } from "@/components/copilot/result-card"
 import { useCopilot } from "@/components/copilot/use-copilot"
 
 export default function NexoIntelligencePage() {
-  const { isPlatformAdmin, activeTenantId } = usePlatform()
-  const enabled = isPlatformAdmin && activeTenantId === COPILOT_TENANT_ID
+  const { activeTenantId } = usePlatform()
+  const enabled = activeTenantId === COPILOT_TENANT_ID
   const copilot = useCopilot(COPILOT_TENANT_ID)
   const [running, setRunning] = useState<string | null>(null)
   const [input, setInput] = useState("")
@@ -63,7 +63,7 @@ export default function NexoIntelligencePage() {
             <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
             <div>
               <p className="font-medium">Este demo solo está disponible para la empresa Soleil Wire.</p>
-              <p className="mt-1 text-muted-foreground">Entra con un administrador de plataforma y selecciona la empresa Soleil Wire (Administración → Empresas → Entrar). Las demás empresas no tienen un origen de datos conectado a Nexo Intelligence.</p>
+              <p className="mt-1 text-muted-foreground">Entra con un usuario de Soleil Wire o, como administrador de plataforma, selecciona la empresa Soleil Wire en el selector de empresas. Las demás empresas no tienen un origen de datos conectado a Nexo Intelligence.</p>
             </div>
           </CardContent>
         </Card>

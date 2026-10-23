@@ -30,44 +30,64 @@ const PlatformContext = createContext<PlatformContextType>({
 })
 
 export function PlatformProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const [activeTenantId, setActiveTenantId] = useState<string>(DEFAULT_TENANT)
   const [impersonating, setImpersonating] = useState(false)
 
-  const platformRole = resolvePlatformRole(user?.email, (user as { platformRole?: string } | null)?.platformRole)
+  // Rol de plataforma VERIFICADO (claims del ID token o usuario demo aislado); nunca el correo ni localStorage
+  const platformRole = resolvePlatformRole((user as { platformRole?: string } | null)?.platformRole)
   const isPlatformAdmin = canAccessControlPlane(platformRole)
 
-  // Restaura el tenant activo (o el del perfil del usuario)
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    const stored = window.localStorage.getItem(ACTIVE_TENANT_KEY)
-    const fromProfile = (user as { companyId?: string } | null)?.companyId
-    setActiveTenantId(stored || fromProfile || DEFAULT_TENANT)
-    setImpersonating(Boolean(stored) && stored !== (fromProfile || DEFAULT_TENANT))
-  }, [user])
+  const ownTenant = (() => {
+    const own = (user as { companyId?: string } | null)?.companyId
+    // El respaldo «uid como companyId» no es una empresa real para un administrador de plataforma
+    return own && own !== user?.uid ? own : isPlatformAdmin ? undefined : own
+  })()
 
-  // Siembra idempotente de tenants al entrar (una sola vez por sesión de navegador)
+  // Restaura el tenant activo. Solo un administrador de plataforma puede operar una empresa distinta a la suya:
+  // para el resto, el valor guardado en localStorage se ignora y se elimina.
   useEffect(() => {
-    if (!user) return
+    if (typeof window === "undefined" || loading) return // sin sesión resuelta no se decide ni se purga nada
+    let stored: string | null = null
+    try {
+      stored = window.localStorage.getItem(ACTIVE_TENANT_KEY)
+      if (!isPlatformAdmin && stored) {
+        window.localStorage.removeItem(ACTIVE_TENANT_KEY)
+        stored = null
+      }
+    } catch {
+      stored = null
+    }
+    const next = isPlatformAdmin ? stored || ownTenant || DEFAULT_TENANT : ownTenant || DEFAULT_TENANT
+    setActiveTenantId(next)
+    setImpersonating(isPlatformAdmin && next !== (ownTenant || DEFAULT_TENANT))
+  }, [user, loading, isPlatformAdmin, ownTenant])
+
+  // Siembra idempotente de tenants: solo el administrador de plataforma puede escribir en `tenants`
+  useEffect(() => {
+    if (!user || !isPlatformAdmin) return
     ensureTenantsSeeded().catch(() => {
-      /* en producción sin permisos aún; el seed dedicado lo cubre */
+      /* sin permisos o sin red: el seed dedicado lo cubre */
     })
-  }, [user])
+  }, [user, isPlatformAdmin])
 
   const setActiveTenant = useCallback(
     (tenantId: string) => {
+      if (!isPlatformAdmin) return // el frontend no autoriza cambios de empresa
       setActiveTenantId(tenantId)
-      const fromProfile = (user as { companyId?: string } | null)?.companyId || DEFAULT_TENANT
-      setImpersonating(isPlatformAdmin && tenantId !== fromProfile)
-      if (typeof window !== "undefined") window.localStorage.setItem(ACTIVE_TENANT_KEY, tenantId)
+      setImpersonating(tenantId !== (ownTenant || DEFAULT_TENANT))
+      try {
+        window.localStorage.setItem(ACTIVE_TENANT_KEY, tenantId)
+      } catch {
+        /* almacenamiento bloqueado: el cambio vive solo en memoria */
+      }
     },
-    [user, isPlatformAdmin],
+    [isPlatformAdmin, ownTenant],
   )
 
   const clearImpersonation = useCallback(() => {
-    const fromProfile = (user as { companyId?: string } | null)?.companyId || DEFAULT_TENANT
-    setActiveTenant(fromProfile)
-  }, [user, setActiveTenant])
+    setActiveTenant(ownTenant || DEFAULT_TENANT)
+  }, [ownTenant, setActiveTenant])
 
   return (
     <PlatformContext.Provider

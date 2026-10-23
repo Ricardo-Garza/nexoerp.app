@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { usePlatform } from "@/contexts/platform-context"
-import { listTenants } from "@/lib/platform/tenant-store"
+import { getTenant, listTenants } from "@/lib/platform/tenant-store"
 import type { Tenant } from "@/lib/platform/types"
 
 /**
@@ -25,8 +25,14 @@ export function TenantIndicator() {
   const [tenants, setTenants] = useState<Tenant[]>([])
 
   useEffect(() => {
-    listTenants().then(setTenants)
-  }, [])
+    let cancelled = false
+    // Solo plataforma lista todas las empresas; el resto consulta únicamente la suya (las reglas lo exigen)
+    const load = isPlatformAdmin ? listTenants() : getTenant(activeTenantId).then((t) => (t ? [t] : []))
+    load.then((list) => !cancelled && setTenants(list)).catch(() => !cancelled && setTenants([]))
+    return () => {
+      cancelled = true
+    }
+  }, [isPlatformAdmin, activeTenantId])
 
   const active = tenants.find((tenant) => tenant.id === activeTenantId)
 
